@@ -16,14 +16,14 @@ const theme = createMuiTheme({
   },
   typography: {
     caption: {
-      color: '#666'
+      color: '#fff'
     }
   }
 })
 
 const useStyles = makeStyles({
   root: {
-    background: 'linear-gradient(135deg, #56276b, #a578b9)',
+    background: '#171717',
     width: '100vw',
     minHeight: '100vh',
     margin: 0,
