@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import WalletConnectProvider from '@walletconnect/web3-provider'
 import { getNetworkNameFromId } from './utils/Network'
 import { NetworkNames } from './config/enums'
-import TopBar from './components/TopBar/TopBar'
+import TopBar from './components/TopBar'
 declare global {
   interface Window {
     ethereum: any | undefined

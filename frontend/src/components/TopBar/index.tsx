@@ -4,10 +4,10 @@ import {
   Theme,
   AppBar,
   Toolbar,
-  Button,
   IconButton
 } from '@material-ui/core'
 import Logo from '../Logo'
+import ConnectButton from '../Button/ConnectButton'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -16,10 +16,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderBottom: '1px solid rgba(136, 136, 136, 0.4)'
     },
     menuButton: {
-      marginRight: theme.spacing(3)
-    },
-    title: {
-      flexGrow: 1
+      marginRight: theme.spacing(2)
     },
     grid: {
       display: 'flex',
@@ -44,7 +41,7 @@ export default function TopBar() {
           >
             <Logo />
           </IconButton>
-          <Button color="inherit">Login</Button>
+          <ConnectButton />
         </Toolbar>
       </AppBar>
     </div>
