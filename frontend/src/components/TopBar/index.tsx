@@ -7,19 +7,24 @@ import {
   Button,
   IconButton
 } from '@material-ui/core'
-import Logo from '../Logo/Logo'
+import Logo from '../Logo'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       flexGrow: 1,
-      borderBottom: '1px solid #eee'
+      borderBottom: '1px solid rgba(136, 136, 136, 0.4)'
     },
     menuButton: {
-      marginRight: theme.spacing(2)
+      marginRight: theme.spacing(3)
     },
     title: {
       flexGrow: 1
+    },
+    grid: {
+      display: 'flex',
+      flexFlow: 'row',
+      justifyContent: 'space-between'
     }
   }
 })
@@ -30,16 +35,14 @@ export default function TopBar() {
   return (
     <div className={classes.root}>
       <AppBar position="static">
-        <Toolbar variant="regular">
+        <Toolbar className={classes.grid}>
           <IconButton
             edge="start"
             className={classes.menuButton}
             color="inherit"
             aria-label="menu"
           >
-            <div className={classes.title}>
-              <Logo />
-            </div>
+            <Logo />
           </IconButton>
           <Button color="inherit">Login</Button>
         </Toolbar>
