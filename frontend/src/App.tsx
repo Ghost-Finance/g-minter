@@ -44,10 +44,14 @@ const App = () => {
       ? getNetworkNameFromId(window.ethereum.chainId)
       : NetworkNames.UNKNOWN
   )
+  // mock account
+  const [account, setAccount] = useState(
+    '0x9d9f8ab500e93FFF4fB5F1E688FfA9B9dE719FBa'
+  )
 
   return (
     <div>
-      <TopBar />
+      <TopBar networkName={network} account={account} />
     </div>
   )
 }

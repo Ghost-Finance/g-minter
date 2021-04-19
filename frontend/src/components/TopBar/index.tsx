@@ -1,13 +1,14 @@
 import React from 'react'
 import {
+  AppBar,
+  IconButton,
   makeStyles,
   Theme,
-  AppBar,
-  Toolbar,
-  IconButton
+  Toolbar
 } from '@material-ui/core'
 import Logo from '../Logo'
 import ConnectButton from '../Button/ConnectButton'
+import Account from '../Account'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -18,21 +19,25 @@ const useStyles = makeStyles((theme: Theme) => {
     menuButton: {
       marginRight: theme.spacing(2)
     },
-    grid: {
+    flex: {
       display: 'flex',
       flexFlow: 'row',
       justifyContent: 'space-between'
     }
   }
 })
+interface Props {
+  account: string
+  networkName: string
+}
 
-export default function TopBar() {
+const TopBar = ({ account, networkName }: Props) => {
   const classes = useStyles()
 
   return (
     <div className={classes.root}>
       <AppBar position="static">
-        <Toolbar className={classes.grid}>
+        <Toolbar className={classes.flex}>
           <IconButton
             edge="start"
             className={classes.menuButton}
@@ -41,9 +46,15 @@ export default function TopBar() {
           >
             <Logo />
           </IconButton>
-          <ConnectButton />
+          {account ? (
+            <Account address={account} networkName={networkName} />
+          ) : (
+            <ConnectButton />
+          )}
         </Toolbar>
       </AppBar>
     </div>
   )
 }
+
+export default TopBar
