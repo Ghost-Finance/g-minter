@@ -25,6 +25,14 @@ const useStyles = makeStyles((theme) => ({
     color: '#000',
     [theme.breakpoints.down('md')]: {
       fontSize: '12px'
+    },
+    [theme.breakpoints.down('md')]: {
+      fontSize: '12px'
+    }
+  },
+  iconButton: {
+    [theme.breakpoints.down('md')]: {
+      padding: 0
     }
   }
 }))
@@ -35,7 +43,7 @@ const Account = ({ address, networkName }: Props) => {
     <Box component="div" m={1} className={classes.root}>
       <span>{[address.slice(0, 5), address.slice(-5)].join('...')}</span>&nbsp;
       <Chip size="small" label={networkName} className={classes.label} />
-      <IconButton edge="end" color="inherit">
+      <IconButton edge="end" color="inherit" className={classes.iconButton}>
         <ExpandMoreIcon />
       </IconButton>
     </Box>
