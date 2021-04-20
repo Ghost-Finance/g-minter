@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import WalletConnectProvider from '@walletconnect/web3-provider'
 import { getNetworkNameFromId } from './utils/Network'
 import { NetworkNames } from './config/enums'
+import TopBar from './components/TopBar'
 declare global {
   interface Window {
     ethereum: any | undefined
@@ -43,8 +44,16 @@ const App = () => {
       ? getNetworkNameFromId(window.ethereum.chainId)
       : NetworkNames.UNKNOWN
   )
+  // mock account
+  const [account, setAccount] = useState(
+    '0x9d9f8ab500e93FFF4fB5F1E688FfA9B9dE719FBa'
+  )
 
-  return <div></div>
+  return (
+    <div>
+      <TopBar networkName={network} account={account} />
+    </div>
+  )
 }
 
 export default App
