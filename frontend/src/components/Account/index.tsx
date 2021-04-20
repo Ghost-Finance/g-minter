@@ -1,6 +1,7 @@
 import React from 'react'
 import { Box, Chip, IconButton, makeStyles } from '@material-ui/core'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import './account.css'
 
 interface Props {
   address: string
@@ -41,7 +42,10 @@ const Account = ({ address, networkName }: Props) => {
   const classes = useStyles()
   return (
     <Box component="div" m={1} className={classes.root}>
-      <span>{[address.slice(0, 5), address.slice(-5)].join('...')}</span>&nbsp;
+      <span className="ellipse">
+        {[address.slice(0, 5), address.slice(-5)].join('...')}
+      </span>
+      &nbsp;
       <Chip size="small" label={networkName} className={classes.label} />
       <IconButton edge="end" color="inherit" className={classes.iconButton}>
         <ExpandMoreIcon />
