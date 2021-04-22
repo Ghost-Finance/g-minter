@@ -50,9 +50,9 @@ const App = () => {
   )
 
   return (
-    <div>
+    <>
       <TopBar networkName={network} account={account} />
-    </div>
+    </>
   )
 }
 
