@@ -9,6 +9,7 @@ import {
 import Logo from '../Logo'
 import ConnectButton from '../Button/ConnectButton'
 import Account from '../Account'
+import theme from '../../theme'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -32,28 +33,26 @@ interface Props {
 }
 
 const TopBar = ({ account, networkName }: Props) => {
-  const classes = useStyles()
+  const classes = useStyles(theme)
 
   return (
-    <div className={classes.root}>
-      <AppBar position="static">
-        <Toolbar className={classes.flex}>
-          <IconButton
-            edge="start"
-            className={classes.menuButton}
-            color="inherit"
-            aria-label="menu"
-          >
-            <Logo />
-          </IconButton>
-          {account ? (
-            <Account address={account} networkName={networkName} />
-          ) : (
-            <ConnectButton />
-          )}
-        </Toolbar>
-      </AppBar>
-    </div>
+    <AppBar position="fixed" className={classes.root}>
+      <Toolbar className={classes.flex}>
+        <IconButton
+          edge="start"
+          className={classes.menuButton}
+          color="inherit"
+          aria-label="menu"
+        >
+          <Logo />
+        </IconButton>
+        {account ? (
+          <Account address={account} networkName={networkName} />
+        ) : (
+          <ConnectButton />
+        )}
+      </Toolbar>
+    </AppBar>
   )
 }
 
