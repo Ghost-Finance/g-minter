@@ -5,6 +5,8 @@ import WalletConnectProvider from '@walletconnect/web3-provider'
 import { getNetworkNameFromId } from './utils/Network'
 import { NetworkNames } from './config/enums'
 import TopBar from './components/TopBar'
+import Page from './components/Page'
+
 declare global {
   interface Window {
     ethereum: any | undefined
@@ -52,6 +54,7 @@ const App = () => {
   return (
     <>
       <TopBar networkName={network} account={account} />
+      <Page account={account} networkName={network} />
     </>
   )
 }
