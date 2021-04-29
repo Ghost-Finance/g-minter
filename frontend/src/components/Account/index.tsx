@@ -26,9 +26,6 @@ const useStyles = makeStyles((theme) => ({
     color: '#000',
     [theme.breakpoints.down('md')]: {
       fontSize: '12px'
-    },
-    [theme.breakpoints.down('md')]: {
-      fontSize: '12px'
     }
   },
   iconButton: {
