@@ -41,13 +41,13 @@ const theme = createMuiTheme({
       main: TOKEN_NEUTRAL_COLOR_LOW_DARK,
       dark: TOKEN_NEUTRAL_COLOR_LOW_PURE,
       light: TOKEN_NEUTRAL_COLOR_LOW_LIGHT,
-      contrastText: '#fff',
+      contrastText: '#fff'
     },
     secondary: {
       main: TOKEN_NEUTRAL_COLOR_HIGH_PURE,
       dark: TOKEN_NEUTRAL_COLOR_HIGH_DARK,
       light: TOKEN_NEUTRAL_COLOR_HIGH_LIGHT,
-      contrastText: '#000'
+      contrastText: '#fff'
     },
     error: {
       main: TOKEN_FEEDBACK_COLOR_NEGATIVE_PURE,
@@ -64,7 +64,7 @@ const theme = createMuiTheme({
   typography: {
     fontFamily: 'Inter',
     caption: {
-      color: '#fff'
+      white: '#ffffff'
     }
   }
 })

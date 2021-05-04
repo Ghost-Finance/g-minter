@@ -1,6 +1,6 @@
 import React from 'react'
 import App from './App'
-import { CssBaseline, makeStyles, MuiThemeProvider } from '@material-ui/core'
+import { CssBaseline, makeStyles, ThemeProvider } from '@material-ui/core'
 import { SnackbarProvider } from 'notistack'
 import theme from './theme'
 
@@ -17,14 +17,14 @@ const AppTheme = () => {
   const classes = useStyles()
 
   return (
-    <MuiThemeProvider theme={theme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       <SnackbarProvider maxSnack={1}>
         <div className={classes.root}>
           <App />
         </div>
       </SnackbarProvider>
-    </MuiThemeProvider>
+    </ThemeProvider>
   )
 }
 

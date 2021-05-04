@@ -4,14 +4,15 @@ import {
   Grid,
   makeStyles,
   createStyles,
-  Theme
+  Theme,
+  useMediaQuery
 } from '@material-ui/core'
 import GhostRatio from '../GhostRatio'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      display: 'flex',
+      flexGrow: 1,
       paddingLeft: 0,
       paddingRight: 0
     },
@@ -43,16 +44,18 @@ const Page = ({ account, networkName }: Props) => {
   const classes = useStyles()
 
   return (
-    <Container className={classes.root}>
-      <Grid className={classes.column} xs={4}>
-        <Grid item className={classes.item}>
-          <GhostRatio />
+    <div className={classes.root}>
+      <Grid container>
+        <Grid item className={classes.column} xs={12} md={4} sm={4}>
+          <div className={classes.item}>
+            <GhostRatio />
+          </div>
+        </Grid>
+        <Grid item className={classes.columnFixed} xs={12} md={8} sm={8}>
+          <div className={classes.item}></div>
         </Grid>
       </Grid>
-      <Grid className={classes.columnFixed} xs={8}>
-        <Grid item className={classes.item}></Grid>
-      </Grid>
-    </Container>
+    </div>
   )
 }
 
