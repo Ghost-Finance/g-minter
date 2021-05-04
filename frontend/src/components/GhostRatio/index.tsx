@@ -9,7 +9,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   box: {
     display: 'flex',
-    float: 'right',
     width: '288px',
     border: '1px solid #BDBDBD',
     boxSizing: 'border-box',
@@ -36,10 +35,11 @@ const GhostRatio = () => {
         <div className={classes.content}>
           <CircularProgressBar
             size={200}
-            progress={800}
+            progress={850}
             strokeWidth={2}
             circleOneStroke="#333333"
             circleTwoStroke="#4BE29A"
+            errorColorStroke="#F44336"
           />
         </div>
       </div>

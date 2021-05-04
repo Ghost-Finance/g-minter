@@ -1,28 +1,33 @@
 import React, { useState, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Box from '@material-ui/core/Box'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles, Theme } from '@material-ui/core'
 
-const useStyles = makeStyles(() => ({
-  root: {
-    margin: 'auto',
-    padding: '10px'
-  },
-  svg: {
-    display: 'block',
-    // margin: 20px auto;
-    maxWidth: '100%'
-  },
-  svgCircle: {
-    fill: 'none'
-  },
-  svgCircleText: {
-    textAnchor: 'middle',
-    fill: '#fff',
-    fontWeight: 'bold',
-    fontSize: '3rem'
+const useStyles = makeStyles((theme: Theme) => {
+  return {
+    root: {
+      margin: 'auto',
+      padding: '10px'
+    },
+    svg: {
+      display: 'block',
+      maxWidth: '100%'
+    },
+    svgCircle: {
+      fill: 'none'
+    },
+    svgCircleText: {
+      textAnchor: 'middle',
+      fill: '#fff',
+      fontWeight: 'bold',
+      fontSize: '3rem'
+    },
+    text: {
+      color: theme.palette.secondary.dark,
+      textTransform: 'uppercase'
+    }
   }
-}))
+})
 
 interface Props {
   size: number
@@ -30,6 +35,7 @@ interface Props {
   strokeWidth: number
   circleOneStroke: string
   circleTwoStroke: string
+  errorColorStroke: string
 }
 
 const CircularProgressBar = (props: Props) => {
@@ -41,8 +47,10 @@ const CircularProgressBar = (props: Props) => {
     progress,
     strokeWidth,
     circleOneStroke,
-    circleTwoStroke
+    circleTwoStroke,
+    errorColorStroke
   } = props
+  const [colorStroke, setColorStroke] = useState(circleTwoStroke)
 
   const center = size / 2
   const radius = size / 2 - strokeWidth / 2
@@ -50,8 +58,11 @@ const CircularProgressBar = (props: Props) => {
 
   useEffect(() => {
     const progressOffset = ((900 - progress) / 900) * circumference
+    const color = progress < 0 ? errorColorStroke : circleTwoStroke
+
     setOffset(progressOffset)
-  }, [setOffset, progress, circumference, offset])
+    setColorStroke(color)
+  }, [setOffset, setColorStroke, progress, colorStroke, circumference, offset])
 
   const SVGCircleProgress = () => (
     <svg className={classes.svg} width={size} height={size}>
@@ -66,7 +77,7 @@ const CircularProgressBar = (props: Props) => {
       <circle
         className={classes.svgCircle}
         ref={circleRef}
-        stroke={circleTwoStroke}
+        stroke={colorStroke}
         cx={center}
         cy={center}
         r={radius}
@@ -94,8 +105,8 @@ const CircularProgressBar = (props: Props) => {
         component="div"
         display="flex"
         flexDirection="row"
-        justifyContent="space-evenly"
-        color="contrastText"
+        justifyContent="space-between"
+        className={classes.text}
       >
         <span>C-Ratio</span>
         <span>of 900%</span>
@@ -109,7 +120,8 @@ CircularProgressBar.protoTypes = {
   progress: PropTypes.number,
   strokeWidth: PropTypes.number,
   circleOneStroke: PropTypes.string,
-  circleTwoStroke: PropTypes.string
+  circleTwoStroke: PropTypes.string,
+  errorColorStroke: PropTypes.string
 }
 
 export default CircularProgressBar
