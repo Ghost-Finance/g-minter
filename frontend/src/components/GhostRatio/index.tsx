@@ -1,6 +1,7 @@
 import React from 'react'
 import { Box, makeStyles, Theme } from '@material-ui/core'
 import CircularProgressBar from './CircularProgressBar'
+import List from '../List'
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -9,6 +10,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   box: {
     display: 'flex',
+    flexFlow: 'column',
     width: '288px',
     border: '1px solid #BDBDBD',
     boxSizing: 'border-box',
@@ -42,6 +44,17 @@ const GhostRatio = () => {
             errorColorStroke="#F44336"
           />
         </div>
+        <List label="">
+          <div></div>
+        </List>
+
+        <List label="synths">
+          <div></div>
+        </List>
+
+        <List label="ecosystem">
+          <div></div>
+        </List>
       </div>
     </Box>
   )
