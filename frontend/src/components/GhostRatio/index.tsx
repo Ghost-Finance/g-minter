@@ -1,7 +1,7 @@
 import React from 'react'
 import { Box, makeStyles, Theme } from '@material-ui/core'
 import CircularProgressBar from './CircularProgressBar'
-import List from '../List'
+import ListSynths from '../ListSynths'
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -44,17 +44,18 @@ const GhostRatio = () => {
             errorColorStroke="#F44336"
           />
         </div>
-        <List label="">
-          <div></div>
-        </List>
 
-        <List label="synths">
+        <ListSynths label="">
           <div></div>
-        </List>
+        </ListSynths>
 
-        <List label="ecosystem">
+        <ListSynths label="synths">
           <div></div>
-        </List>
+        </ListSynths>
+
+        <ListSynths label="ecosystem">
+          <div></div>
+        </ListSynths>
       </div>
     </Box>
   )

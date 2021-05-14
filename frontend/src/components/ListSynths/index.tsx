@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }))
 
-const List = ({ label, children }: Props) => {
+const ListSynths = ({ label, children }: Props) => {
   const classes = useStyles()
   return (
     <Grid className={classes.root}>
@@ -30,4 +30,4 @@ const List = ({ label, children }: Props) => {
   )
 }
 
-export default List
+export default ListSynths
