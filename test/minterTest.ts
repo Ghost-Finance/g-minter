@@ -15,7 +15,7 @@ let empContractAddress: string
 let collateralAddressUMA: string
 let ubeAddressUma: string
 
-const network = process.env.CHAIN_NETWORK
+const network = process.env.CHAIN_NETWORK || ''
 
 // For Kovan & Mainnet, get contract addresses from env (as they already exists in the chain)
 if (network.toLowerCase() !== 'localhost') {
