@@ -127,3 +127,8 @@
 4. If you've accidentally started a background process for a node then you can use `sudo lsof -i :<port number>` to find the PID then kill it using `kill -9 <PID>` (from https://stackoverflow.com/questions/3855127/find-and-kill-process-locking-port-3000-on-mac)
 
 5. UMA tests don't run due to `No tests configured` err: try `npm uninstall -g ganache-cli`, make sure `yarn ganache-cli --version` returns `Ganache CLI v6.12.2 (ganache-core: 2.13.2)` (or the same version as specified in `protocol` repo's root package.json) then run `yarn test` again
+
+
+## Guidelines:
+  - Use Github Flow. (https://guides.github.com/introduction/flow/)
+  - Name your branches starting with your initials + issue number on the backlog. Ex. I'm Luan Pontolio, my branches are named as lp-git-123 or lp-doing-something.
