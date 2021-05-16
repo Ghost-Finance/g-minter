@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAnchor: 'middle',
       fill: '#fff',
       fontWeight: 'bold',
-      fontSize: '3rem'
+      fontSize: '1.2rem'
     },
     text: {
       color: theme.palette.secondary.dark,

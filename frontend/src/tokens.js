@@ -4,7 +4,7 @@ export const TOKEN_NEUTRAL_COLOR_LOW_PURE = '#1e1e1e'
 
 export const TOKEN_NEUTRAL_COLOR_HIGH_DARK = '#bdbdbd'
 export const TOKEN_NEUTRAL_COLOR_HIGH_LIGHT = '#f2f2f2'
-export const TOKEN_NEUTRAL_COLOR_HIGH_PURE = '#fffff'
+export const TOKEN_NEUTRAL_COLOR_HIGH_PURE = '#ffffff'
 
 export const TOKEN_FEEDBACK_COLOR_POSITIVE_PURE = '#00f545'
 export const TOKEN_FEEDBACK_COLOR_POSITIVE_DARK = '#0a1f15'

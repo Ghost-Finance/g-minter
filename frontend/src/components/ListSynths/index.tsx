@@ -1,15 +1,13 @@
 import React from 'react'
-import { makeStyles, Theme, Typography, Grid } from '@material-ui/core'
-
+import { makeStyles, Theme, Typography, List } from '@material-ui/core'
 interface Props {
   label: string
-  children: JSX.Element
+  children?: JSX.Element | JSX.Element[]
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
-    flexRow: 'column',
-    padding: '25px',
+    padding: '15px',
     marginBottom: '10px'
   },
   label: {
@@ -23,10 +21,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 const ListSynths = ({ label, children }: Props) => {
   const classes = useStyles()
   return (
-    <Grid className={classes.root}>
+    <List className={classes.root}>
       <Typography className={classes.label}>{label}</Typography>
       {children}
-    </Grid>
+    </List>
   )
 }
 

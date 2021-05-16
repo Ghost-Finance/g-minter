@@ -2,6 +2,8 @@ import React from 'react'
 import { Box, makeStyles, Theme } from '@material-ui/core'
 import CircularProgressBar from './CircularProgressBar'
 import ListSynths from '../ListSynths'
+import ItemSynths from '../ItemSynths'
+import { GhostIcon, DaiIcon, SynthsIcon, SpaceXIcon, EtherIcon } from '../Icons'
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -15,6 +17,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     border: '1px solid #BDBDBD',
     boxSizing: 'border-box',
     borderRadius: '200px 200px 0px 0px',
+    float: 'right',
     [theme.breakpoints.down('md')]: {
       width: '100%',
       height: '100%',
@@ -46,15 +49,18 @@ const GhostRatio = () => {
         </div>
 
         <ListSynths label="">
-          <div></div>
+          <ItemSynths icon={<GhostIcon />} label="GHO" valueNumber={100.22} />
+          <ItemSynths icon={<DaiIcon />} label="gDAI" valueNumber={15.25} />
+          <ItemSynths icon={<SynthsIcon />} label="Synths" valueNumber={0.0} />
         </ListSynths>
 
         <ListSynths label="synths">
-          <div></div>
+          <ItemSynths icon={<SpaceXIcon />} label="gSPX" valueNumber={0.0} />
         </ListSynths>
 
         <ListSynths label="ecosystem">
-          <div></div>
+          <ItemSynths icon={<SynthsIcon />} label="GHO" valueNumber={23.23} />
+          <ItemSynths icon={<EtherIcon />} label="ETH" valueNumber={0.0} />
         </ListSynths>
       </div>
     </Box>
