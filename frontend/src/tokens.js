@@ -1,5 +1,5 @@
 export const TOKEN_NEUTRAL_COLOR_LOW_DARK = '#171717'
-export const TOKEN_NEUTRAL_COLOR_LOW_LIGHT = '#33333'
+export const TOKEN_NEUTRAL_COLOR_LOW_LIGHT = '#333333'
 export const TOKEN_NEUTRAL_COLOR_LOW_PURE = '#1e1e1e'
 
 export const TOKEN_NEUTRAL_COLOR_HIGH_DARK = '#bdbdbd'

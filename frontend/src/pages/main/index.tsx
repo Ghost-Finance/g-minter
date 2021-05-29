@@ -1,6 +1,7 @@
 import React from 'react'
 import { Grid, makeStyles, createStyles, Theme } from '@material-ui/core'
 import GhostRatio from '../../components/GhostRatio'
+import { MintrCard } from '../../components/Card'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -45,7 +46,9 @@ const Main = ({ account, networkName }: Props) => {
           </div>
         </Grid>
         <Grid item className={classes.columnFixed} xs={12} md={8} sm={8}>
-          <div className={classes.item}></div>
+          <div className={classes.item}>
+            <MintrCard />
+          </div>
         </Grid>
       </Grid>
     </div>
