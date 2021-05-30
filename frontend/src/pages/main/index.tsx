@@ -1,7 +1,8 @@
 import React from 'react'
 import { Grid, makeStyles, createStyles, Theme } from '@material-ui/core'
+import { MintCardIcon, BurnCardIcon, RewardCardIcon, SynthCardIcon } from '../../components/Icons'
 import GhostRatio from '../../components/GhostRatio'
-import { MintrCard } from '../../components/Card'
+import Gcard from '../../components/Gcard'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -24,8 +25,8 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     item: {
       paddingTop: '70px',
-      padding: theme.spacing(1)
-    }
+      padding: theme.spacing(1),
+    },
   })
 )
 
@@ -47,7 +48,13 @@ const Main = ({ account, networkName }: Props) => {
         </Grid>
         <Grid item className={classes.columnFixed} xs={12} md={8} sm={8}>
           <div className={classes.item}>
-            <MintrCard />
+            <Gcard title="Mint gDAI" image={<MintCardIcon/>} />
+
+            <Gcard title="Mint and Burn" image={<BurnCardIcon/>} />
+
+            <Gcard title="Claim Rewards" image={<RewardCardIcon/>} />
+
+            <Gcard title="Stake Synths" image={<SynthCardIcon/>} />
           </div>
         </Grid>
       </Grid>

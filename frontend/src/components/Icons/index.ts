@@ -3,5 +3,9 @@ import DaiIcon from './DaiIcon'
 import EtherIcon from './EtherIcon'
 import SynthsIcon from './SynthsIcon'
 import SpaceXIcon from './SpaceXIcon'
+import MintCardIcon from './MintCardIcon'
+import BurnCardIcon from './BurnCardIcon'
+import RewardCardIcon from './RewardCardIcon'
+import SynthCardIcon from './SynthCardIcon'
 
-export { GhostIcon, DaiIcon, EtherIcon, SynthsIcon, SpaceXIcon }
+export { GhostIcon, DaiIcon, EtherIcon, SynthsIcon, SpaceXIcon, MintCardIcon, BurnCardIcon, RewardCardIcon, SynthCardIcon }
