@@ -2,4 +2,4 @@ import { TypedUseSelectorHook, useDispatch as uD, useSelector as uS } from 'reac
 import type { RootState, AppDispatch } from './store'
 
 export const useDispatch = () => uD<AppDispatch>()
-export const useSelector: TypedUseSelectorHook<RootState> = uS
+export const useSelector: TypedUseSelectorHook<RootState> = uS;
