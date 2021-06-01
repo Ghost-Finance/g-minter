@@ -4,7 +4,7 @@ import { makeStyles } from "@material-ui/core";
 export default makeStyles((theme) => ({
     root: {
       borderRadius: '100px',
-      border: `1px solid ${theme.palette.primary.light}`,
+      border: `4px solid ${theme.palette.primary.light}`,
       boxSizing: 'border-box',  
       textAlign: 'center',
       padding: '12px',
@@ -13,7 +13,11 @@ export default makeStyles((theme) => ({
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: theme.palette.primary.dark    
+      backgroundColor: theme.palette.primary.dark,
+      '&:hover': {
+        borderColor: theme.palette.primary.dark,
+        backgroundColor: theme.palette.primary.light
+      }    
     },
     rootLoading: {
         border: `1px solid ${theme.palette.warning.main}`,
