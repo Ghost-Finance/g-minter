@@ -7,7 +7,7 @@ export default makeStyles((theme) => ({
       border: `4px solid ${theme.palette.primary.light}`,
       boxSizing: 'border-box',  
       textAlign: 'center',
-      padding: '12px',
+      padding: '12px 25px',
       margin: '10px',
       maxWidth: '210px',
       display: 'flex',
@@ -36,7 +36,8 @@ export default makeStyles((theme) => ({
         color: theme.palette.secondary.contrastText,
         fontSize: '14px',
         textAlign: 'center',
-        lineHeight: '17px'
+        lineHeight: '17px',
+        textTransform: 'none'
     },
     labelLoading: {
         color: theme.palette.warning.main
