@@ -1,11 +1,16 @@
 import Web3Modal from 'web3modal'
 import { Web3Provider } from '@ethersproject/providers'
 import React, { useEffect, useState } from 'react'
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+} from "react-router-dom"
 import WalletConnectProvider from '@walletconnect/web3-provider'
 import { getNetworkNameFromId } from './utils/Network'
 import { NetworkNames } from './config/enums'
 import TopBar from './components/TopBar'
-import Main from './pages/main'
+import MainPage from './pages/MainPage'
 
 declare global {
   interface Window {
@@ -54,7 +59,13 @@ const App = () => {
   return (
     <>
       <TopBar networkName={network} account={account} />
-      <Main account={account} networkName={network} />
+      <Router>
+        <Switch>
+          <Route path="*">
+            <MainPage account={account} networkName={network} />
+          </Route>
+        </Switch>
+      </Router>
     </>
   )
 }

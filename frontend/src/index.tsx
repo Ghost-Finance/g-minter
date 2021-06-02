@@ -5,9 +5,7 @@ import reportWebVitals from './reportWebVitals'
 import AppTheme from './AppTheme'
 
 ReactDOM.render(
-  <React.StrictMode>
-    <AppTheme />
-  </React.StrictMode>,
+  <AppTheme />,
   document.getElementById('root')
 )
 
