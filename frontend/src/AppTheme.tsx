@@ -1,5 +1,5 @@
 import React from 'react'
-import App from './App'
+import App from './pages/App'
 import { CssBaseline, makeStyles, ThemeProvider } from '@material-ui/core'
 import { SnackbarProvider } from 'notistack'
 import theme from './theme'
