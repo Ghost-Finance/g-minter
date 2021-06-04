@@ -32,8 +32,8 @@ const useStyles = makeStyles((theme: Theme) =>
 )
 
 interface Props {
-  account: string
-  networkName: string
+  account?: string
+  networkName?: string
 }
 
 const Main = ({ account, networkName }: Props) => {
