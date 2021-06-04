@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from "react-router-dom"
+import { Link } from 'react-router-dom'
 import { Card, CardMedia } from '@material-ui/core'
 import useStyles from './style'
 interface Props {

@@ -8,7 +8,6 @@ export const useStyles = makeStyles((theme: Theme) =>
       paddingRight: 0
     },
     column: {
-      top: '70px',
       minHeight: '0'
     },
     columnFixed: {
@@ -20,7 +19,6 @@ export const useStyles = makeStyles((theme: Theme) =>
       height: 'calc(100vh - 10px)'
     },
     item: {
-      paddingTop: '60px',
       padding: theme.spacing(1),
     },
   })
