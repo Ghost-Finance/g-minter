@@ -13,11 +13,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   box: {
     display: 'flex',
     flexFlow: 'column',
-    width: '288px',
-    border: '1px solid #BDBDBD',
     boxSizing: 'border-box',
-    borderRadius: '200px 200px 0px 0px',
-    float: 'right',
     [theme.breakpoints.down('md')]: {
       width: '100%',
       height: '100%',

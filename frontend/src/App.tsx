@@ -53,7 +53,7 @@ const App = () => {
 
   return (
     <>
-      <TopBar networkName={network} account={account} />
+      {/* <TopBar networkName={network} account={account} /> */}
       <Main account={account} networkName={network} />
     </>
   )

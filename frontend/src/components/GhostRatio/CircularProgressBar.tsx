@@ -7,14 +7,14 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       margin: 'auto',
-      padding: '10px'
+      padding: '10px',
+
     },
     svg: {
       display: 'block',
-      maxWidth: '100%'
     },
     svgCircle: {
-      fill: 'none'
+      fill: theme.palette.primary.dark,
     },
     svgCircleText: {
       textAnchor: 'middle',

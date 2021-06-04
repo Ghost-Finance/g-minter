@@ -1,6 +1,5 @@
 import React from 'react'
 import {
-  Avatar,
   makeStyles,
   ListItem,
   ListItemAvatar,
@@ -23,6 +22,7 @@ const useStyles = makeStyles((theme) => ({
     border: `1px solid ${theme.palette.secondary.main}`,
     boxSizing: 'border-box',
     fontSize: '14px',
+    backgroundColor: theme.palette.primary.dark,
     color: theme.palette.secondary.contrastText
   },
   value: {
