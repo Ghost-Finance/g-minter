@@ -13,7 +13,8 @@ import {
   TOKEN_FEEDBACK_COLOR_POSITIVE_DARK,
   TOKEN_FEEDBACK_COLOR_NEGATIVE_PURE,
   TOKEN_FEEDBACK_COLOR_NEGATIVE_DARK,
-  TOKEN_BACKGROUND_COLOR_DEFAULT
+  TOKEN_BACKGROUND_COLOR_DEFAULT,
+  TOKEN_WARNING_COLOR_PRIMARY
 } from './tokens'
 
 declare module '@material-ui/core/styles/createMuiTheme' {
@@ -59,6 +60,9 @@ const theme = createMuiTheme({
     },
     background: {
       default: TOKEN_BACKGROUND_COLOR_DEFAULT
+    },
+    warning: {
+        main: TOKEN_WARNING_COLOR_PRIMARY
     }
   },
   typography: {
