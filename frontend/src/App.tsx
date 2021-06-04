@@ -1,17 +1,9 @@
 import Web3Modal from 'web3modal'
 import { Web3Provider } from '@ethersproject/providers'
 import React, { useEffect, useState } from 'react'
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-} from "react-router-dom"
 import WalletConnectProvider from '@walletconnect/web3-provider'
 import { getNetworkNameFromId } from './utils/Network'
 import { NetworkNames } from './config/enums'
-import TopBar from './components/TopBar'
-import MainPage from './pages/MainPage'
-
 declare global {
   interface Window {
     ethereum: any | undefined
@@ -56,18 +48,7 @@ const App = () => {
     '0x9d9f8ab500e93FFF4fB5F1E688FfA9B9dE719FBa'
   )
 
-  return (
-    <>
-      <TopBar networkName={network} account={account} />
-      <Router>
-        <Switch>
-          <Route path="*">
-            <MainPage account={account} networkName={network} />
-          </Route>
-        </Switch>
-      </Router>
-    </>
-  )
+  return (<></>)
 }
 
 export default App

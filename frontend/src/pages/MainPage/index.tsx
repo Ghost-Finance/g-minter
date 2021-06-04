@@ -7,7 +7,7 @@ import {
   Switch,
   Route,
   useLocation,
-} from "react-router-dom"
+} from 'react-router-dom'
 import { Grid, makeStyles, createStyles, Theme } from '@material-ui/core'
 import { MintCardIcon, BurnCardIcon, RewardCardIcon, SynthCardIcon } from '../../components/Icons'
 import MintPage from '../MintPage'
@@ -16,37 +16,12 @@ import RewardPage from '../RewardPage'
 import StakePage from '../StakePage'
 import GhostRatio from '../../components/GhostRatio'
 import GcardLink from '../../components/GcardLink'
+import { useStyles } from './style'
 import './style.css'
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      flexGrow: 1,
-      paddingLeft: 0,
-      paddingRight: 0
-    },
-    column: {
-      top: '70px',
-      minHeight: '0'
-    },
-    columnFixed: {
-      top: '60px',
-      position: 'sticky',
-      overflowY: 'auto',
-      flexShrink: 0,
-      width: '100%',
-      height: 'calc(100vh - 10px)'
-    },
-    item: {
-      paddingTop: '60px',
-      padding: theme.spacing(1),
-    },
-  })
-)
-
 interface Props {
-  account: string
-  networkName: string
+  account?: string
+  networkName?: string
 }
 
 const MainPage = ({ account, networkName }: Props) => {
