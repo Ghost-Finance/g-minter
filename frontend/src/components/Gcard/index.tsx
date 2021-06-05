@@ -6,19 +6,18 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
-    maxWidth: 547,
+    minWidth: 547,
     maxHeight: 328,
     background: theme.palette.primary.dark,
     boxSizing: 'border-box',
     marginBottom: 12,
-    [theme.breakpoints.down('md')]: {
+    [theme.breakpoints.up('md')]: {
       width: '100%',
     },
   },
   media: {
-    backgroundPosition: 'bottom',
     width: '100%',
-    height: '100%',
+    backgroundPosition: 'bottom',
     paddingTop: '1%',
   },
 }))

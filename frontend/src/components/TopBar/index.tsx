@@ -6,7 +6,6 @@ import {
   Theme,
   Toolbar
 } from '@material-ui/core'
-import Logo from '../Logo'
 import ConnectButton from '../Button/ConnectButton'
 import Account from '../Account'
 import theme from '../../theme'
@@ -44,7 +43,6 @@ const TopBar = ({ account, networkName }: Props) => {
           color="inherit"
           aria-label="menu"
         >
-          <Logo />
         </IconButton>
         {account ? (
           <Account address={account} networkName={networkName} />

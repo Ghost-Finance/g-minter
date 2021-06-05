@@ -59,7 +59,7 @@ const theme = createMuiTheme({
       dark: TOKEN_FEEDBACK_COLOR_POSITIVE_DARK
     },
     background: {
-      default: TOKEN_BACKGROUND_COLOR_DEFAULT
+      default: TOKEN_NEUTRAL_COLOR_LOW_DARK
     },
     warning: {
         main: TOKEN_WARNING_COLOR_PRIMARY

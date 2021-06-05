@@ -1,7 +1,7 @@
 import React from 'react'
 
 const SynthCardIcon = () => (
-  <svg width="547" height="328" viewBox="0 0 547 328" fill="none"
+  <svg viewBox="0 0 547 328" fill="none"
 	xmlns="http://www.w3.org/2000/svg">
     <path d="M0 0H547V328H0V0Z" fill="#1E1E1E"/>
     <mask id="path-3-inside-1" fill="white">
