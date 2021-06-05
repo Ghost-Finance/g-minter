@@ -12,6 +12,7 @@ export default makeStyles(theme => ({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: theme.palette.primary.main,
   },
   value: {
     color: theme.palette.secondary.contrastText,
