@@ -23,21 +23,6 @@ const useStyle = makeStyles((theme: Theme) => ({
     paddingTop: '70px',
     padding: theme.spacing(1),
   },
-  appbar: {
-    width: 50,
-    backgroundColor: theme.palette.primary.light,
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-    color: theme.palette.primary.contrastText,
-    [theme.breakpoints.up('sm')]: {
-      display: 'none',
-    },
-  },
-  mobileButton: {
-    marginRight: theme.spacing(2),
-    color: theme.palette.primary.contrastText,
-  }
 }))
 
 export default useStyle

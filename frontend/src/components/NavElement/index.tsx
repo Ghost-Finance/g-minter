@@ -1,25 +1,14 @@
 import React, { ReactElement, useState } from 'react'
 import useStyles from './style'
-import { AppBar, Drawer, Hidden, IconButton, Toolbar } from '@material-ui/core'
-import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
+import { Drawer, Hidden } from '@material-ui/core'
 import { useTheme } from '@material-ui/core/styles'
-import { LogoIcon } from '../../components/Icons'
-import GhostRatio from '../../components/GhostRatio'
 
 interface Props {
-  window?: () => Window
+  children?: JSX.Element[] | JSX.Element
 }
 
-const NavElement = ({ window }: Props): ReactElement => {
+const NavElement = ({ children }: Props): ReactElement => {
   const classes = useStyles()
-  const theme = useTheme();
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const container = window !== undefined ? () => window().document.body : undefined
 
   return (
     <>
@@ -33,8 +22,7 @@ const NavElement = ({ window }: Props): ReactElement => {
             open
           >
             <div className={classes.content}>
-              <LogoIcon />
-              <GhostRatio />
+              {children}
             </div>
           </Drawer>
         </Hidden>
