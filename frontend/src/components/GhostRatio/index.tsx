@@ -1,14 +1,20 @@
-import React from 'react'
-import { Box, makeStyles, Theme } from '@material-ui/core'
-import CircularProgressBar from './CircularProgressBar'
-import ListSynths from '../ListSynths'
-import ItemSynths from '../ItemSynths'
-import { GhostIcon, DaiIcon, SynthsIcon, SpaceXIcon, EtherIcon } from '../Icons'
+import React from 'react';
+import { Box, makeStyles, Theme } from '@material-ui/core';
+import CircularProgressBar from './CircularProgressBar';
+import ListSynths from '../ListSynths';
+import Token from '../Token';
+import {
+  GhostIcon,
+  DaiIcon,
+  SynthsIcon,
+  SpaceXIcon,
+  EtherIcon,
+} from '../Icons';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     flexGrow: 1,
-    marginTop: '28px'
+    marginTop: '28px',
   },
   box: {
     display: 'flex',
@@ -17,19 +23,19 @@ const useStyles = makeStyles((theme: Theme) => ({
     [theme.breakpoints.down('md')]: {
       width: '100%',
       height: '100%',
-      float: 'none'
-    }
+      float: 'none',
+    },
   },
   content: {
     width: '100%',
     display: 'flex',
     flexFlow: 'column',
-    padding: '25px'
-  }
-}))
+    padding: '25px',
+  },
+}));
 
 const GhostRatio = () => {
-  const classes = useStyles()
+  const classes = useStyles();
   return (
     <Box component="div" m={1} className={classes.root}>
       <div className={classes.box}>
@@ -45,22 +51,22 @@ const GhostRatio = () => {
         </div>
 
         <ListSynths label="">
-          <ItemSynths icon={<GhostIcon />} label="GHO" valueNumber={100.22} />
-          <ItemSynths icon={<DaiIcon />} label="gDAI" valueNumber={15.25} />
-          <ItemSynths icon={<SynthsIcon />} label="Synths" valueNumber={0.0} />
+          <Token icon={<GhostIcon />} label="GHO" valueNumber={100.22} />
+          <Token icon={<DaiIcon />} label="gDAI" valueNumber={15.25} />
+          <Token icon={<SynthsIcon />} label="Synths" valueNumber={0.0} />
         </ListSynths>
 
         <ListSynths label="synths">
-          <ItemSynths icon={<SpaceXIcon />} label="gSPX" valueNumber={0.0} />
+          <Token icon={<SpaceXIcon />} label="gSPX" valueNumber={0.0} />
         </ListSynths>
 
         <ListSynths label="ecosystem">
-          <ItemSynths icon={<SynthsIcon />} label="GHO" valueNumber={23.23} />
-          <ItemSynths icon={<EtherIcon />} label="ETH" valueNumber={0.0} />
+          <Token center icon={<SynthsIcon />} label="GHO" valueNumber={23.23} />
+          <Token center icon={<EtherIcon />} label="ETH" valueNumber={0.0} />
         </ListSynths>
       </div>
     </Box>
-  )
-}
+  );
+};
 
-export default GhostRatio
+export default GhostRatio;
