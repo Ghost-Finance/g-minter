@@ -4,9 +4,6 @@ import React, { useEffect, useState } from 'react'
 import WalletConnectProvider from '@walletconnect/web3-provider'
 import { getNetworkNameFromId } from './utils/Network'
 import { NetworkNames } from './config/enums'
-import TopBar from './components/TopBar'
-import Main from './pages/main'
-
 declare global {
   interface Window {
     ethereum: any | undefined
@@ -51,12 +48,7 @@ const App = () => {
     '0x9d9f8ab500e93FFF4fB5F1E688FfA9B9dE719FBa'
   )
 
-  return (
-    <>
-      <TopBar networkName={network} account={account} />
-      <Main account={account} networkName={network} />
-    </>
-  )
+  return (<></>)
 }
 
 export default App
