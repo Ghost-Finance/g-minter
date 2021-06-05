@@ -9,6 +9,8 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       display: 'flex',
+      width: '100%',
+      flexDirection: 'row',
     },
     main: {
       flexGrow: 1,
@@ -40,7 +42,7 @@ const Main = ({ account, networkName }: Props) => {
   const classes = useStyles()
 
   return (
-    <div className={classes.root}>
+    <Grid container direction="row" className={classes.root}>
       <CssBaseline />
       <NavElement />
       <main className={classes.main}>
@@ -58,7 +60,7 @@ const Main = ({ account, networkName }: Props) => {
           </Grid>
         </Grid>
       </main>
-    </div>
+    </Grid>
   )
 }
 

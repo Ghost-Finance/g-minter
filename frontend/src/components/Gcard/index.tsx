@@ -6,7 +6,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
-    maxWidth: 547,
+    minWidth: 547,
     maxHeight: 328,
     background: theme.palette.primary.dark,
     boxSizing: 'border-box',

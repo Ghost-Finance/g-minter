@@ -8,9 +8,9 @@ export default (): React.ReactElement => {
     const classes = useStyles();
 
     return(
-        <div className={classes.root}>
-            <AppMenu />
-            <Main />
-        </div>
+      <div className={classes.root}>
+        <AppMenu />
+        <Main />
+      </div>
     )
 }

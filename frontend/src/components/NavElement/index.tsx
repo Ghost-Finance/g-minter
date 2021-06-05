@@ -23,39 +23,7 @@ const NavElement = ({ window }: Props): ReactElement => {
 
   return (
     <>
-      <AppBar position="static" className={classes.appbar} onClick={handleDrawerToggle}>
-        <Toolbar>
-          <IconButton
-            edge="start"
-            size="small"
-            aria-label="open c-ratio"
-            className={classes.menuButton}
-          >
-            <ArrowForwardIosIcon/>
-          </IconButton>
-        </Toolbar>
-      </AppBar>
       <nav className={classes.root} aria-label="C-Ratio">
-        <Hidden smUp implementation="css">
-          <Drawer
-            container={container}
-            variant="temporary"
-            anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-            open={mobileOpen}
-            onClose={handleDrawerToggle}
-            classes={{
-              paper: classes.drawerPaper,
-            }}
-            ModalProps={{
-              keepMounted: true,
-            }}
-          >
-            <div className={classes.content}>
-              <LogoIcon />
-              <GhostRatio />
-            </div>
-          </Drawer>
-        </Hidden>
         <Hidden xsDown implementation="css">
           <Drawer
             classes={{

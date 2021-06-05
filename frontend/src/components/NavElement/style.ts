@@ -9,7 +9,9 @@ const useStyle = makeStyles((theme: Theme) => ({
   },
   drawerPaper: {
     width: 400,
-    backgroundColor: theme.palette.primary.light,
+    zIndex: 1000,
+    left: '80px',
+    backgroundColor: theme.palette.primary.dark,
     [theme.breakpoints.down('md')]: {
       width: 300,
     },
