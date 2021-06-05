@@ -3,15 +3,20 @@ import { makeStyles, createStyles, Theme } from '@material-ui/core'
 export const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
+      display: 'flex',
+      width: '100%',
+      flexDirection: 'row',
+    },
+    main: {
       flexGrow: 1,
-      paddingLeft: 0,
-      paddingRight: 0
+      paddingLeft: theme.spacing(3),
+      paddingRight: theme.spacing(3),
     },
     column: {
       minHeight: '0'
     },
     columnFixed: {
-      top: '60px',
+      top: 0,
       position: 'sticky',
       overflowY: 'auto',
       flexShrink: 0,

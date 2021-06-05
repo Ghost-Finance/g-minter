@@ -8,14 +8,17 @@ import {
   Route,
   useLocation,
 } from 'react-router-dom'
-import { Grid, makeStyles, createStyles, Theme } from '@material-ui/core'
+import { Grid } from '@material-ui/core'
 import { MintCardIcon, BurnCardIcon, RewardCardIcon, SynthCardIcon } from '../../components/Icons'
+import CssBaseline from '@material-ui/core/CssBaseline'
+import NavElement from '../../components/NavElement'
 import MintPage from '../MintPage'
 import BurnPage from '../BurnPage'
 import RewardPage from '../RewardPage'
 import StakePage from '../StakePage'
-import GhostRatio from '../../components/GhostRatio'
 import GcardLink from '../../components/GcardLink'
+import GhostRatio from '../../components/GhostRatio'
+import { LogoIcon } from '../../components/Icons'
 import { useStyles } from './style'
 import './style.css'
 
@@ -29,16 +32,16 @@ const MainPage = ({ account, networkName }: Props) => {
   const location = useLocation()
 
   return (
-    <div className={classes.root}>
-      <Grid container>
-        <Grid item className={classes.column} xs={12} md={4} sm={4}>
-          <div className={classes.item}>
-            <GhostRatio />
-          </div>
-        </Grid>
-        <Grid item className={classes.columnFixed} xs={12} md={8} sm={8}>
-          <div className={classes.item}>
-            <div>
+    <Grid container direction="row" className={classes.root}>
+      <CssBaseline />
+      <NavElement >
+        <LogoIcon />
+        <GhostRatio />
+      </NavElement>
+      <main className={classes.main}>
+        <Grid container>
+          <Grid item className={classes.columnFixed} >
+            <div className={classes.item}>
               <GcardLink to="/mint" title="Mint gDAI" image={<MintCardIcon/>} />
 
               <GcardLink to="/mint-burn" title="Mint and Burn" image={<BurnCardIcon/>} />
@@ -61,10 +64,10 @@ const MainPage = ({ account, networkName }: Props) => {
                 </Switch>
               </CSSTransition>
             </TransitionGroup>
-          </div>
+          </Grid>
         </Grid>
-      </Grid>
-    </div>
+      </main>
+    </Grid>
   )
 }
 

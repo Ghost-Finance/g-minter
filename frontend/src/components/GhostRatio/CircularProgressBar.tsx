@@ -8,7 +8,6 @@ const useStyles = makeStyles((theme: Theme) => {
     root: {
       margin: 'auto',
       padding: '10px',
-
     },
     svg: {
       display: 'block',

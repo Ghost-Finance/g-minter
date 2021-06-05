@@ -1,7 +1,7 @@
 .page {
   position: fixed;
   top: 0px;
-  left: 0;
+  left: 480px;
   right: 0;
   height: 100vh;
   overflow: auto;
@@ -18,4 +18,10 @@
 .fade-enter-done {
   transform: translate3d(0, 0, 0);
   opacity: 1;
+}
+
+@media only screen and (max-width: 600px) {
+  .page {
+    left: 0;
+  }
 }
