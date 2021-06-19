@@ -1,4 +1,4 @@
-import { makeStyles, createStyles, Theme } from '@material-ui/core'
+import { makeStyles, createStyles, Theme } from '@material-ui/core';
 
 export const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -13,18 +13,18 @@ export const useStyles = makeStyles((theme: Theme) =>
       paddingRight: theme.spacing(3),
     },
     column: {
-      minHeight: '0'
+      minHeight: '0',
     },
     columnFixed: {
-      top: 0,
+      top: 150,
       position: 'sticky',
       overflowY: 'auto',
       flexShrink: 0,
       width: '100%',
-      height: 'calc(100vh - 10px)'
+      height: '100%',
     },
     item: {
-      padding: theme.spacing(1),
+      // padding: theme.spacing(1),
     },
   })
-)
+);
