@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, makeStyles, Theme } from '@material-ui/core';
-import CircularProgressBar from './CircularProgressBar';
 import ListSynths from '../ListSynths';
 import Token from '../Token';
 import {
@@ -10,40 +9,20 @@ import {
   SpaceXIcon,
   EtherIcon,
 } from '../Icons';
-
-const useStyles = makeStyles((theme: Theme) => ({
-  root: {
-    flexGrow: 1,
-    marginTop: '28px',
-  },
-  box: {
-    display: 'flex',
-    flexFlow: 'column',
-    boxSizing: 'border-box',
-    [theme.breakpoints.down('md')]: {
-      width: '100%',
-      height: '100%',
-      float: 'none',
-    },
-  },
-  content: {
-    width: '100%',
-    display: 'flex',
-    flexFlow: 'column',
-    padding: '25px',
-  },
-}));
+import CRatio from '../CRatio';
+import useStyles from './styles';
+import theme from '../../theme';
 
 const GhostRatio = () => {
-  const classes = useStyles();
+  const classes = useStyles(theme);
   return (
     <Box component="div" m={1} className={classes.root}>
       <div className={classes.box}>
         <div className={classes.content}>
-          <CircularProgressBar
+          <CRatio
             size={200}
-            progress={850}
-            strokeWidth={2}
+            progress={0}
+            strokeWidth={4}
             circleOneStroke="#333333"
             circleTwoStroke="#4BE29A"
             errorColorStroke="#F44336"
