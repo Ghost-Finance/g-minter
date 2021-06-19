@@ -23,8 +23,12 @@ export default makeStyles(theme => ({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  avatar: {
+  centerAvatar: {
     minWidth: 0,
     margin: '0px 8px',
   },
+  avatar: {
+    minWidth: '40px',
+  },
+  labelDiv: {},
 }));

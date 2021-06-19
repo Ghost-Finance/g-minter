@@ -20,7 +20,7 @@ const Token = ({ label, icon, valueNumber, center }: T): JSX.Element => {
   const classes = useStyles(theme);
 
   const _avatar = (
-    <ListItemAvatar className={center ? classes.avatar : ''}>
+    <ListItemAvatar className={center ? classes.centerAvatar : classes.avatar}>
       <div>{icon}</div>
     </ListItemAvatar>
   );
