@@ -2,6 +2,7 @@ import { Badge, Button, Typography } from '@material-ui/core';
 import React, { MouseEventHandler } from 'react';
 import useStyles from './styles';
 import theme from '../../../theme';
+import hooks from '../../../hooks/walletConnect';
 
 type T = {
   onClick?: Function;
@@ -9,16 +10,18 @@ type T = {
 
 const ConnectWallet = ({ onClick }: T): React.ReactElement => {
   const classes = useStyles(theme);
+  const { connectWalletMetaMask, wallet } = hooks();
 
   const handleClick = () => {
-    if (onClick) onClick();
+    if (wallet.loadingWallet) return;
+    connectWalletMetaMask();
   };
 
   return (
     <Button onClick={handleClick} className={classes.root}>
       <Badge className={classes.badge} />
       <Typography variant="caption" className={classes.label}>
-        Connect your wallet
+        {wallet?.account || 'Connect your wallet'}
       </Typography>
     </Button>
   );
