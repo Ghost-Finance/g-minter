@@ -29,7 +29,6 @@ export default () => {
     });
     ethereum.on('connect', async () => {
       const accounts = await ethereum.request({ method: 'eth_accounts' });
-      console.log('connected', accounts);
       changeAccount(accounts);
     });
   };
@@ -39,20 +38,17 @@ export default () => {
     return isMetaMask;
   };
 
-  const connectWalletMetaMask = () => {
-    connectWallet(metamaskProvider);
-  };
-
   const connectWallet = async (provider: any) => {
     if (!isMetaMaskInstalled) return;
     if (wallet?.loadingWallet) return;
     web3.setProvider(provider);
     try {
       dispatch(setLoadingWallet(true));
-      await ethereum.request({
+      const accounts = await ethereum.request({
         method: 'eth_requestAccounts',
         params: [{ eth_accounts: {} }],
       });
+      changeAccount(accounts);
     } catch (e) {}
     dispatch(setLoadingWallet(false));
   };
@@ -63,6 +59,6 @@ export default () => {
 
   return {
     wallet,
-    connectWalletMetaMask,
+    connectWallet,
   };
 };

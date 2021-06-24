@@ -3,27 +3,31 @@ import React, { MouseEventHandler } from 'react';
 import useStyles from './styles';
 import theme from '../../../theme';
 import hooks from '../../../hooks/walletConnect';
+import { Link } from 'react-router-dom';
 
-type T = {
-  onClick?: Function;
-};
-
-const ConnectWallet = ({ onClick }: T): React.ReactElement => {
+const ConnectWallet = (): React.ReactElement => {
   const classes = useStyles(theme);
-  const { connectWalletMetaMask, wallet } = hooks();
+  const { wallet } = hooks();
 
-  const handleClick = () => {
-    if (wallet.loadingWallet) return;
-    connectWalletMetaMask();
+  const handleLink = (location: any) => {
+    if (wallet.connected) {
+      return {};
+    }
+    return {
+      ...location,
+      pathname: '/wallet-connect',
+    };
   };
 
   return (
-    <Button onClick={handleClick} className={classes.root}>
-      <Badge className={classes.badge} />
-      <Typography variant="caption" className={classes.label}>
-        {wallet?.account || 'Connect your wallet'}
-      </Typography>
-    </Button>
+    <Link to={handleLink} className={classes.link}>
+      <Button className={classes.root}>
+        <Badge className={classes.badge} />
+        <Typography variant="caption" className={classes.label}>
+          {wallet?.account || 'Connect your wallet'}
+        </Typography>
+      </Button>
+    </Link>
   );
 };
 

@@ -40,4 +40,7 @@ export default makeStyles(theme => ({
   labelLoading: {
     color: theme.palette.warning.main,
   },
+  link: {
+    textDecoration: 'none',
+  },
 }));

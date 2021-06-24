@@ -19,7 +19,8 @@ import GhostRatio from '../../components/GhostRatio';
 import { LogoIcon } from '../../components/Icons';
 import { useStyles } from './style';
 import './style.css';
-import WalletDrawer from './WalletDrawer';
+import WalletConnectPage from '../WalletConnectPage';
+import ConnectWallet from '../../components/Button/ConnectWallet';
 
 interface Props {
   account?: string;
@@ -39,7 +40,9 @@ const MainPage = ({ account, networkName }: Props) => {
       </NavElement>
       <main className={classes.main}>
         <Grid container>
-          <WalletDrawer />
+          <Grid className={classes.walletGrid}>
+            <ConnectWallet />
+          </Grid>
           <Grid item className={classes.columnFixed}>
             <div className={classes.item}>
               <GcardLink
@@ -73,6 +76,10 @@ const MainPage = ({ account, networkName }: Props) => {
                   <Route path="/mint-burn" children={<BurnPage />} />
                   <Route path="/rewards" children={<RewardPage />} />
                   <Route path="/stake" children={<StakePage />} />
+                  <Route
+                    path="/wallet-connect"
+                    children={<WalletConnectPage />}
+                  />
                 </Switch>
               </CSSTransition>
             </TransitionGroup>
