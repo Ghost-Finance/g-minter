@@ -60,7 +60,7 @@ const MainPage = ({ account, networkName }: Props) => {
         <GhostRatio />
       </NavElement>
       <main className={classes.main}>
-        <Grid container>
+        <Grid container direction="row" justify="flex-end" alignItems="center">
           <Grid item>
             <SwapCard text="Swap GHO into your wallet" />
           </Grid>
