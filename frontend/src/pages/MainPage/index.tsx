@@ -15,7 +15,7 @@ import BurnPage from '../BurnPage';
 import RewardPage from '../RewardPage';
 import StakePage from '../StakePage';
 import GcardLink from '../../components/GcardLink';
-import GhostRatio from '../../components/GhostRatio';
+import GhostRatio from '../../components/GhostRatioComponent/GhostRatio';
 import SwapCard from '../../components/SwapCard';
 import { LogoIcon } from '../../components/Icons';
 import { useStyles } from './style';
@@ -64,10 +64,10 @@ const MainPage = ({ account, networkName }: Props) => {
           <Grid item>
             <SwapCard text="Swap GHO into your wallet" />
           </Grid>
-          <Grid item className={classes.columnFixed} justify-xs-center>
+          <Grid item className={classes.columnFixed} justify-xs-center="true">
             <div className={classes.item}>
-              {cardsData.map((props) => (
-                <GcardLink {...props} />
+              {cardsData.map((props, key) => (
+                <GcardLink {...props} key={key} />
               ))}
             </div>
             <TransitionGroup>
