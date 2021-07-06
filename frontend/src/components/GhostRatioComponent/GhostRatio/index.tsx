@@ -1,17 +1,17 @@
 import React from 'react';
 import { Box, makeStyles, Theme } from '@material-ui/core';
-import ListSynths from '../ListSynths';
-import Token from '../Token';
+import ListSynths from '../../ListSynths';
+import Token from '../../Token';
 import {
   GhostIcon,
   DaiIcon,
   SynthsIcon,
   SpaceXIcon,
   EtherIcon,
-} from '../Icons';
-import CRatio from '../CRatio';
+} from '../../Icons';
+import CRatio from '../../CRatio';
 import useStyles from './styles';
-import theme from '../../theme';
+import theme from '../../../theme';
 
 const GhostRatio = () => {
   const classes = useStyles(theme);
