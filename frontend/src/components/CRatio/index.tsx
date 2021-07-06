@@ -70,10 +70,10 @@ const CircularProgressBar = (props: Props) => {
     >
       <SVGCircleProgress />
       <div className={classes.infos} style={{ width: size, height: size }}>
-        <text className={classes.svgCircleText}>
+        <div className={classes.svgCircleText}>
           {`${isNaN(progress) || progress <= 0 ? '-' : Math.round(progress)}%`}
-        </text>
-        <text className={classes.text}>C-RATIO</text>
+        </div>
+        <div className={classes.text}>C-RATIO</div>
       </div>
     </Box>
   );
