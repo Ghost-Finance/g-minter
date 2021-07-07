@@ -23,7 +23,6 @@ const GhostRatioSimulation = () => {
             size={200}
             progress={0}
             strokeWidth={4}
-            circleOneStroke="#333333"
             circleTwoStroke="#4BE29A"
             errorColorStroke="#F44336"
           />

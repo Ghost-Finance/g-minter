@@ -6,23 +6,23 @@ import CloseIcon from '@material-ui/icons/Close';
 import GhostRationSimulation from '../../components/GhostRatioComponent/GhostRatioSimulation';
 import useStyle from './style';
 
-const MintPage = () => {
+interface Props {
+  backRootPage?: React.MouseEventHandler<HTMLAnchorElement>;
+}
+
+const MintPage = ({ backRootPage }: Props) => {
   const classes = useStyle();
+
   return (
-    <div className="page">
+    <div className="modal">
       <Grid container direction="row" className={classes.root}>
-        <div className={classes.paperTop}>
-          <Link to="/">
+        <div>
+          <Link to="/" onClick={backRootPage}>
             <IconButton>
               <CloseIcon />
             </IconButton>
           </Link>
         </div>
-        {/* <div className={classes.content}>
-          <div className={classes.paperContent}>
-            <GhostRationSimulation />
-          </div>
-        </div> */}
       </Grid>
     </div>
   );

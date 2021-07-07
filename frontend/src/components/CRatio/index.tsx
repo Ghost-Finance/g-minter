@@ -6,9 +6,9 @@ type Props = {
   size: number;
   progress: number;
   strokeWidth: number;
-  circleOneStroke: string;
-  circleTwoStroke: string;
-  errorColorStroke: string;
+  circleOneStroke?: string;
+  circleTwoStroke?: string;
+  errorColorStroke?: string;
 };
 
 const CircularProgressBar = (props: Props) => {

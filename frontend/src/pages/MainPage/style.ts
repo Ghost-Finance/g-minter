@@ -7,6 +7,19 @@ export const useStyles = makeStyles((theme: Theme) =>
       width: '100%',
       flexDirection: 'row',
     },
+    pageActived: {
+      display: 'flex',
+      width: '100%',
+      height: '100vh',
+      backgroundColor: theme.palette.primary.light,
+    },
+    pageActivedTop: {
+      width: '100%',
+      height: 300,
+      backgroundPosition: 'center center',
+      backgroundSize: 'cover',
+      backgroundColor: theme.palette.primary.dark,
+    },
     main: {
       flexGrow: 1,
       paddingLeft: theme.spacing(3),
@@ -26,6 +39,5 @@ export const useStyles = makeStyles((theme: Theme) =>
     item: {
       padding: theme.spacing(1),
     },
-    drawerWithTrasparentBackground: {},
   })
 );
