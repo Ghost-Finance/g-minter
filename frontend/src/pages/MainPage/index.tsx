@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { Switch, Route, useLocation } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
@@ -8,6 +8,7 @@ import {
   RewardCardIcon,
   SynthCardIcon,
 } from '../../components/Icons';
+import AppMenu from '../AppMenu';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import NavElement from '../../components/NavElement';
 import MintPage from '../MintPage';
@@ -20,6 +21,7 @@ import SwapCard from '../../components/SwapCard';
 import { LogoIcon } from '../../components/Icons';
 import { useStyles } from './style';
 import './style.css';
+import GhostRatioSimulation from '../../components/GhostRatioComponent/GhostRatioSimulation';
 
 interface Props {
   account?: string;
@@ -29,6 +31,8 @@ interface Props {
 const MainPage = ({ account, networkName }: Props) => {
   const classes = useStyles();
   const location = useLocation();
+  const [stylePage, setStylePageChanged] = useState(true);
+
   const cardsData = [
     {
       to: '/mint',
@@ -55,9 +59,10 @@ const MainPage = ({ account, networkName }: Props) => {
   return (
     <Grid container direction="row" className={classes.root}>
       <CssBaseline />
-      <NavElement>
+      {stylePage && <AppMenu />}
+      <NavElement styleWithBackgound={stylePage}>
         <LogoIcon />
-        <GhostRatio />
+        {stylePage ? <GhostRatio /> : <GhostRatioSimulation />}
       </NavElement>
       <main className={classes.main}>
         <Grid container direction="row" justify="flex-end" alignItems="center">
@@ -71,7 +76,13 @@ const MainPage = ({ account, networkName }: Props) => {
               ))}
             </div>
             <TransitionGroup>
-              <CSSTransition timeout={300} key={location.key} classNames="fade">
+              <CSSTransition
+                timeout={300}
+                key={location.key}
+                classNames="fade"
+                onEnter={() => setStylePageChanged(false)}
+                onExited={() => setStylePageChanged(true)}
+              >
                 <Switch location={location}>
                   <Route path="/mint" children={<MintPage />} />
                   <Route path="/mint-burn" children={<BurnPage />} />

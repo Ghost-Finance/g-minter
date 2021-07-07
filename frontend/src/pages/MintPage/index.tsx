@@ -18,11 +18,11 @@ const MintPage = () => {
             </IconButton>
           </Link>
         </div>
-        <div className={classes.content}>
+        {/* <div className={classes.content}>
           <div className={classes.paperContent}>
             <GhostRationSimulation />
           </div>
-        </div>
+        </div> */}
       </Grid>
     </div>
   );

@@ -24,7 +24,8 @@ export const useStyles = makeStyles((theme: Theme) =>
       height: '100%',
     },
     item: {
-      // padding: theme.spacing(1),
+      padding: theme.spacing(1),
     },
+    drawerWithTrasparentBackground: {},
   })
 );
