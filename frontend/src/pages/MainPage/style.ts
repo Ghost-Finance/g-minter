@@ -24,7 +24,13 @@ export const useStyles = makeStyles((theme: Theme) =>
       height: '100%',
     },
     item: {
-      // padding: theme.spacing(1),
+      padding: theme.spacing(1),
+    },
+    walletGrid: {
+      paddingTop: 48,
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'flex-end',
     },
   })
 );

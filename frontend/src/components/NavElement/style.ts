@@ -1,4 +1,4 @@
-import { makeStyles, Theme } from '@material-ui/core'
+import { makeStyles, Theme } from '@material-ui/core';
 
 const useStyle = makeStyles((theme: Theme) => ({
   root: {
@@ -20,9 +20,9 @@ const useStyle = makeStyles((theme: Theme) => ({
     display: 'flex',
     flexFlow: 'column',
     alignItems: 'center',
-    paddingTop: '70px',
+    paddingTop: '48px',
     padding: theme.spacing(1),
   },
-}))
+}));
 
-export default useStyle
+export default useStyle;
