@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import Web3 from 'web3';
 import { useDispatch, useSelector } from '../redux/hooks';
+
 import {
   setAccount,
   setConnection,
@@ -41,6 +42,7 @@ export default () => {
   const connectWallet = async (provider: any) => {
     if (!isMetaMaskInstalled) return;
     if (wallet?.loadingWallet) return;
+    debugger;
     web3.setProvider(provider);
     try {
       dispatch(setLoadingWallet(true));
