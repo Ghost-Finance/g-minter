@@ -16,16 +16,18 @@ const RenderProvider = ({ provider }: T) => {
   const classes = useStyles(theme);
   const { image, label, onClick } = provider();
   return (
-    <Card className={classes.providerRoot} variant="outlined">
-      <a className={classes.providerAction} onClick={onClick}>
-        <div className={classes.providerImgContainer}>
-          <img className={classes.providerImg} src={image} />
-        </div>
-        <div className={classes.providerLabelContainer}>
-          <Typography className={classes.providerLabel}>{label}</Typography>
-        </div>
-      </a>
-    </Card>
+    <Grid item>
+      <Card className={classes.providerRoot} variant="outlined">
+        <a className={classes.providerAction} onClick={onClick}>
+          <div className={classes.providerImgContainer}>
+            <img className={classes.providerImg} src={image} />
+          </div>
+          <div className={classes.providerLabelContainer}>
+            <Typography className={classes.providerLabel}>{label}</Typography>
+          </div>
+        </a>
+      </Card>
+    </Grid>
   );
 };
 
@@ -41,7 +43,7 @@ export default () => {
   }, [connected]);
 
   return (
-    <div className={`page ${classes.page}`}>
+    <div className={`modal ${classes.page}`}>
       <div className={classes.side}>
         <Link to="/">
           <img className={classes.back} src={arrow} />
@@ -53,7 +55,7 @@ export default () => {
           <br />
           your wallet
         </Typography>
-        <Grid direction="row" spacing={5}>
+        <Grid container direction="row" spacing={2}>
           {Providers.map(p => (
             <RenderProvider provider={p} />
           ))}

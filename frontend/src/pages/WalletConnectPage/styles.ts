@@ -2,21 +2,24 @@ import { makeStyles, Theme } from '@material-ui/core';
 
 export default makeStyles((theme: Theme) => ({
   page: {
-    backgroundColor: 'rgba(0,0,0,0.9)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     display: 'flex',
-    flexDirection: 'row',
-    paddingTop: '88px',
+    flexDirection: 'column',
+    paddingTop: '80px',
   },
   content: {
     flex: 1,
     backgroundColor: theme.palette.primary.light,
     borderTop: `4px ${theme.palette.secondary.dark} solid`,
     padding: '10%',
+    width: '60%',
     display: 'flex',
     flexDirection: 'column',
+    marginLeft: '5%',
+    marginRight: '5%',
   },
   side: {
-    width: '20%',
+    width: '10%',
   },
   back: {
     padding: '0 15px',
@@ -28,11 +31,14 @@ export default makeStyles((theme: Theme) => ({
     lineHeight: '44px',
   },
   providerRoot: {
-    maxWidth: '170px',
+    width: '170px',
     backgroundColor: 'transparent',
     border: `4px ${theme.palette.secondary.dark} solid`,
     borderRadius: '20px',
     marginTop: '10%',
+    [theme.breakpoints.up('md')]: {
+      width: '150px',
+    },
   },
   providerImgContainer: {
     backgroundColor: theme.palette.primary.dark,
