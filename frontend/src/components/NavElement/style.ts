@@ -9,9 +9,19 @@ const useStyle = makeStyles((theme: Theme) => ({
   },
   drawerPaper: {
     width: 400,
-    zIndex: 1000,
+    zIndex: 100,
     left: '80px',
     backgroundColor: theme.palette.primary.dark,
+    [theme.breakpoints.down('md')]: {
+      width: 300,
+    },
+  },
+  drawerPaperWithoutBackground: {
+    width: 400,
+    zIndex: 100,
+    left: 0,
+    backgroundColor: 'transparent',
+    border: 0,
     [theme.breakpoints.down('md')]: {
       width: 300,
     },

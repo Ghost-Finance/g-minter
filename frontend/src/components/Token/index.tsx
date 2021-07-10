@@ -14,10 +14,11 @@ type T = {
   icon?: JSX.Element;
   valueNumber: number | string;
   center?: boolean;
+  full?: boolean;
 };
 
-const Token = ({ label, icon, valueNumber, center }: T): JSX.Element => {
-  const classes = useStyles(theme);
+const Token = ({ label, icon, valueNumber, center, full }: T): JSX.Element => {
+  const classes = useStyles();
 
   const _avatar = (
     <ListItemAvatar className={center ? classes.centerAvatar : classes.avatar}>
@@ -36,7 +37,7 @@ const Token = ({ label, icon, valueNumber, center }: T): JSX.Element => {
   );
 
   return (
-    <ListItem className={classes.root}>
+    <ListItem className={`${classes.root} ${(full && classes.full) || ''}`}>
       {center ? (
         <div className={classes.center}>
           {_label}

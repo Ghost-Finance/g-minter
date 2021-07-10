@@ -1,15 +1,26 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import IconButton from '@material-ui/core/IconButton'
-import CloseIcon from '@material-ui/icons/Close'
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Grid } from '@material-ui/core';
+import IconButton from '@material-ui/core/IconButton';
+import CloseIcon from '@material-ui/icons/Close';
+import useStyle from './style';
 
-const StakePage = () => (
-  <div className="page">
-    <Link to="/">
-      <IconButton><CloseIcon/></IconButton>
-    </Link>
-    StakePage
-  </div>
-)
+const StakePage = () => {
+  const classes = useStyle();
 
-export default StakePage
+  return (
+    <div className="modal">
+      <Grid container direction="row" className={classes.root}>
+        <div>
+          <Link to="/">
+            <IconButton>
+              <CloseIcon style={{ color: '#fff' }} />
+            </IconButton>
+          </Link>
+        </div>
+      </Grid>
+    </div>
+  );
+};
+
+export default StakePage;

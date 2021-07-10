@@ -1,14 +1,14 @@
-import React, { ReactElement, useState } from 'react'
-import useStyles from './style'
-import { Drawer, Hidden } from '@material-ui/core'
-import { useTheme } from '@material-ui/core/styles'
+import React, { ReactElement } from 'react';
+import useStyles from './style';
+import { Drawer, Hidden } from '@material-ui/core';
 
 interface Props {
-  children?: JSX.Element[] | JSX.Element
+  children?: JSX.Element[] | JSX.Element;
+  styleWithBackgound?: boolean;
 }
 
-const NavElement = ({ children }: Props): ReactElement => {
-  const classes = useStyles()
+const NavElement = ({ children, styleWithBackgound }: Props): ReactElement => {
+  const classes = useStyles();
 
   return (
     <>
@@ -16,19 +16,19 @@ const NavElement = ({ children }: Props): ReactElement => {
         <Hidden xsDown implementation="css">
           <Drawer
             classes={{
-              paper: classes.drawerPaper,
+              paper: styleWithBackgound
+                ? classes.drawerPaper
+                : classes.drawerPaperWithoutBackground,
             }}
             variant="permanent"
             open
           >
-            <div className={classes.content}>
-              {children}
-            </div>
+            <div className={classes.content}>{children}</div>
           </Drawer>
         </Hidden>
       </nav>
     </>
-  )
-}
+  );
+};
 
-export default NavElement
+export default NavElement;
