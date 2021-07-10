@@ -9,7 +9,7 @@ import {
 } from '../redux/wallet/actions';
 
 const metamaskProvider = 'ws://localhost:7545';
-const web3 = new Web3(metamaskProvider);
+const web3 = new Web3();
 const { ethereum } = (window || {}) as any;
 
 export default () => {
@@ -42,7 +42,6 @@ export default () => {
   const connectWallet = async (provider: any) => {
     if (!isMetaMaskInstalled) return;
     if (wallet?.loadingWallet) return;
-    debugger;
     web3.setProvider(provider);
     try {
       dispatch(setLoadingWallet(true));
