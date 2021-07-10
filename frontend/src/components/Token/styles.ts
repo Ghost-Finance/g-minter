@@ -30,5 +30,7 @@ export default makeStyles(theme => ({
   avatar: {
     minWidth: '40px',
   },
-  labelDiv: {},
+  full: {
+    backgroundColor: theme.palette.primary.light,
+  },
 }));
