@@ -56,8 +56,8 @@ export default () => {
           your wallet
         </Typography>
         <Grid container direction="row" spacing={2}>
-          {Providers.map(p => (
-            <RenderProvider provider={p} />
+          {Providers.map((p, key) => (
+            <RenderProvider key={key} provider={p} />
           ))}
         </Grid>
       </div>

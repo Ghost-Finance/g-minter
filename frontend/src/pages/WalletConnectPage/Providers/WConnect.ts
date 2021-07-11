@@ -5,12 +5,14 @@ import hooks from '../../../hooks/walletConnect';
 
 const wConnectProvider = new WalletConnectProvider({
   infuraId: 'ad00fd516c774c208f606b37cf984a3b',
+  qrcode: true,
 });
 
 export default () => {
   const { connectWallet } = hooks();
   const onClick = () => {
-    connectWallet(wConnectProvider);
+    wConnectProvider.enable();
+    // connectWallet(wConnectProvider);
   };
 
   return {
