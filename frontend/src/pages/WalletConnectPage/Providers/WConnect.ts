@@ -10,9 +10,9 @@ const wConnectProvider = new WalletConnectProvider({
 
 export default () => {
   const { connectWallet } = hooks();
-  const onClick = () => {
-    wConnectProvider.enable();
-    // connectWallet(wConnectProvider);
+  const onClick = async () => {
+    await wConnectProvider.enable();
+    await connectWallet(wConnectProvider);
   };
 
   return {

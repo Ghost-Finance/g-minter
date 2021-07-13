@@ -8,13 +8,13 @@ import {
   setLoadingWallet,
 } from '../redux/wallet/actions';
 
-const metamaskProvider = process?.env?.METAMASK_PROVIDER || '';
-const web3 = new Web3(metamaskProvider);
+const web3 = new Web3();
 const { ethereum } = (window || {}) as any;
 
 export default () => {
   const wallet = useSelector(state => state.wallet);
   const dispatch = useDispatch();
+  const reloadPage = () => window.location.reload();
 
   const changeAccount = (accounts: string[] | null): void => {
     dispatch(setAccount(accounts?.length ? accounts[0] : null));
@@ -23,7 +23,10 @@ export default () => {
 
   const listeners = () => {
     ethereum.on('chainChanged', () => {
-      window.location.reload();
+      reloadPage();
+    });
+    ethereum.on('disconnect', async () => {
+      reloadPage();
     });
     ethereum.on('accountsChanged', (accounts: string[] | null) => {
       changeAccount(accounts);
