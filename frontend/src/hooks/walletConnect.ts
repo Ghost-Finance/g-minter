@@ -8,8 +8,8 @@ import {
   setLoadingWallet,
 } from '../redux/wallet/actions';
 
-const metamaskProvider = 'ws://localhost:7545';
-const web3 = new Web3();
+const metamaskProvider = process?.env?.METAMASK_PROVIDER || '';
+const web3 = new Web3(metamaskProvider);
 const { ethereum } = (window || {}) as any;
 
 export default () => {
@@ -32,6 +32,9 @@ export default () => {
       const accounts = await ethereum.request({ method: 'eth_accounts' });
       changeAccount(accounts);
     });
+    if (ethereum?.selectedAddress) {
+      changeAccount([ethereum?.selectedAddress]);
+    }
   };
 
   const isMetaMaskInstalled = (): boolean => {
@@ -49,7 +52,7 @@ export default () => {
         method: 'eth_requestAccounts',
         params: [{ eth_accounts: {} }],
       });
-      changeAccount(accounts);
+      if (accounts?.length) changeAccount(accounts);
     } catch (e) {}
     dispatch(setLoadingWallet(false));
   };
