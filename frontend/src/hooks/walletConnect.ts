@@ -31,6 +31,9 @@ export default () => {
       const accounts = await ethereum.request({ method: 'eth_accounts' });
       changeAccount(accounts);
     });
+    if(ethereum?.selectedAddress){
+        changeAccount([ethereum?.selectedAddress]);
+    }
   };
 
   const isMetaMaskInstalled = (): boolean => {
@@ -48,7 +51,8 @@ export default () => {
         method: 'eth_requestAccounts',
         params: [{ eth_accounts: {} }],
       });
-      changeAccount(accounts);
+      if(accounts?.length)
+        changeAccount(accounts);
     } catch (e) {}
     dispatch(setLoadingWallet(false));
   };
