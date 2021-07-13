@@ -7,7 +7,7 @@ import {
   setLoadingWallet,
 } from '../redux/wallet/actions';
 
-const metamaskProvider = 'ws://localhost:7545';
+const metamaskProvider =  process?.env?.METAMASK_PROVIDER || '';
 const web3 = new Web3(metamaskProvider);
 const { ethereum } = (window || {}) as any;
 
