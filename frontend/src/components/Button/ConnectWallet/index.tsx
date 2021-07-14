@@ -19,12 +19,17 @@ const ConnectWallet = (): React.ReactElement => {
     };
   };
 
+  const { account } = wallet;
   return (
     <Link to={handleLink} className={classes.link}>
       <Button className={classes.root}>
-        <Badge className={classes.badge} />
-        <Typography variant="caption" className={classes.label}>
-          {wallet?.account || 'Connect your wallet'}
+        <Typography
+          variant="caption"
+          className={`${classes.label} ${account ? classes.ellipse : ''}`}
+        >
+          {account
+            ? [account?.slice(0, 5), account?.slice(-5)].join('...')
+            : 'Connect your wallet'}
         </Typography>
       </Button>
     </Link>

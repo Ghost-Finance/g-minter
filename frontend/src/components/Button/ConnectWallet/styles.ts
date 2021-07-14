@@ -37,6 +37,17 @@ export default makeStyles(theme => ({
     lineHeight: '17px',
     textTransform: 'none',
   },
+  ellipse: {
+    '&::before': {
+      content: '""',
+      display: 'inline-block',
+      background: '#65c466',
+      width: 10,
+      height: 10,
+      margin: '0px 3px',
+      borderRadius: '50%',
+    },
+  },
   labelLoading: {
     color: theme.palette.warning.main,
   },
