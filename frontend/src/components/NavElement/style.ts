@@ -30,7 +30,7 @@ const useStyle = makeStyles((theme: Theme) => ({
     display: 'flex',
     flexFlow: 'column',
     alignItems: 'center',
-    paddingTop: '70px',
+    paddingTop: '48px',
     padding: theme.spacing(1),
   },
 }));

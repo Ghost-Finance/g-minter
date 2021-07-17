@@ -17,6 +17,8 @@ import SwapCard from '../../components/SwapCard';
 import GhostRatioSimulation from '../../components/GhostRatioComponent/GhostRatioSimulation';
 import cardsData from './cardsData';
 import './style.css';
+import WalletConnectPage from '../WalletConnectPage';
+import ConnectWallet from '../../components/Button/ConnectWallet';
 
 interface Props {
   account?: string;
@@ -53,7 +55,7 @@ const MainPage = ({ account, networkName }: Props) => {
             alignItems="center"
           >
             <Grid item>
-              <SwapCard text="Swap GHO into your wallet" />
+              <ConnectWallet />
             </Grid>
             <Grid item className={classes.columnFixed} justify-xs-center="true">
               <div className={classes.item}>
@@ -77,6 +79,7 @@ const MainPage = ({ account, networkName }: Props) => {
             <Route path="/mint-burn" children={<BurnPage />} />
             <Route path="/rewards" children={<RewardPage />} />
             <Route path="/stake" children={<StakePage />} />
+            <Route path="/wallet-connect" children={<WalletConnectPage />} />
           </Switch>
         </CSSTransition>
       </TransitionGroup>
