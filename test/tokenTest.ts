@@ -53,7 +53,7 @@ describe.only('Token', () => {
     });
 
     it('Should transfer tokens between accounts', async function() {
-      // Tranfer 50 to one accountOne
+      // Tranfer 50 to accountOne
       await token.transfer(contractAccounts[0].address, 50);
       const addressOneBalance = await token.balanceOf(
         contractAccounts[0].address
