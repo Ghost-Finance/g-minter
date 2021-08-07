@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 contract Token {
-  uint256 public totalSupply;
+  uint256 public totalSupply_;
   string  public name;
   string  public symbol;
   uint256 public decimals = 18;
@@ -43,11 +43,11 @@ contract Token {
   function mint(address to, uint256 value) external {
     require(msg.sender == owner, "unauthorized");
     balanceOf[to] += value;
-    totalSupply += value;
+    totalSupply_ += value;
     emit Transfer(address(0), to, value);
   }
 
   function tokenSupply() public view returns (uint256) {
-    return totalSupply;
+    return totalSupply_;
   }
 }
