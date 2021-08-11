@@ -45,7 +45,7 @@ describe.only('Token', () => {
   });
 
   describe('Mintable', async function() {
-    it('Shoul return error if sender is not the contract owner', async function() {
+    it('Should return error if sender is not the contract owner', async function() {
       const Token = await ethers.getContractFactory(tokenContractLabelString);
       const token = await Token.deploy('GHOST', 'GDAI');
 
@@ -56,7 +56,7 @@ describe.only('Token', () => {
       ).to.be.revertedWith('revert');
     });
 
-    it('Shoul return success to mint a token', async function() {
+    it('Should return success to mint a token', async function() {
       const Token = await ethers.getContractFactory(tokenContractLabelString);
       const token = await Token.deploy('GHOST', 'GDAI');
 
