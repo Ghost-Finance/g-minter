@@ -1,12 +1,15 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract Token {
-  uint256 public totalSupply_;
+contract GTokenERC20 {
+  // --- ERC20 Data ---
   string  public name;
   string  public symbol;
-  uint256 public decimals = 18;
+  string  public version;
+  uint8   public constant decimals = 18;
+  uint256 public totalSupply;
   address public owner;
+
   mapping (address => uint256) public balanceOf;
   mapping (address => mapping (address => uint256)) public allowances;
 
@@ -43,11 +46,11 @@ contract Token {
   function mint(address to, uint256 value) external {
     require(msg.sender == owner, "unauthorized");
     balanceOf[to] += value;
-    totalSupply_ += value;
+    totalSupply += value;
     emit Transfer(address(0), to, value);
   }
 
-  function tokenSupply() public view returns (uint256) {
-    return totalSupply_;
+  function allowance(address owner_, address spender_) public view virtual returns (uint256) {
+    return allowances[owner_][spender_];
   }
 }
