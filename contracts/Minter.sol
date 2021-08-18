@@ -1,80 +1,140 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import './GDai.sol';
+import './Token.sol';
 import './base/Feed.sol';
 
 contract Minter {
   address public owner;
 
-  // Collateral
-  GDai public collateralToken;
+  Token public collateralToken;
   Feed public  collateralFeed;
-  mapping (address => mapping (GDai => uint256)) public collateralBalance;
+  AuctionHouse auctionHouse;
+  Token[] public synths;
 
-  // Synths
-  GDai[] public synths;
-  mapping (GDai => uint256) public cRatios;
-  mapping (GDai => Feed) public feeds;
-  mapping (address => mapping (GDai => uint256)) public synthDebt;
-
-  // AuctionHouse
-  // AuctionHouse auctionHouse;
+  mapping (address => mapping (Token => uint256)) public collateralBalance;
+  mapping (Token => uint256) public cRatiosActive;
+  mapping (Token => uint256) public cRatioPassive;
+  mapping (Token => Feed) public feeds;
+  mapping (address => mapping (Token => uint256)) public synthDebt;
+  mapping (address => mapping (Token => uint256)) public plrDelay;
 
   // Events
+  event CreateSynth(string indexed name, string indexed symbol, Feed feed);
+  event Mint(address indexed account, uint256 amount, uint256 collateral);
+  event Burn(address indexed account, address token, uint256 amount);
+  event WithdrawnCollateral(address indexed account, address token, uint amount);
+  event DepositCollateral(address indexed account, address token, uint amount);
+
+  // Events for liquidation
+  event AccountFlaggedForLiquidation(address indexed account, uint256 deadline);
+  event Liquidate(address indexed accountLiquidated, address indexed accountFrom, address token, uint256 collateralValue);
+
+  modifier onlyOwner() {
+    require(msg.sender == owner, "unauthorized");
+    _;
+  }
 
   constructor(address collateralToken_, address collateralFeed_, address auctionHouse_) {
-    collateralToken = GDai(collateralToken_);
+    collateralToken = Token(collateralToken_);
     collateralFeed  = Feed(collateralFeed_);
-    // auctionHouse  = AuctionHouse(auctionHouse_);
+    auctionHouse  = AuctionHouse(auctionHouse_);
     owner = msg.sender;
   }
-  function getSynth(uint256 index) public view returns (GDai) {
+
+  function getSynth(uint256 index) public view returns (Token) {
     return synths[index];
   }
-  function createSynth(string calldata name, string calldata symbol, uint256 cRatio, Feed feed) external {
-    require(msg.sender == owner, "unauthorized");
-    synths.push(new GDai());
-    cRatios[synths[synths.length - 1]] = cRatio;
-    feeds[synths[synths.length - 1]] = feed;
+
+  function createSynth(string calldata name, string calldata symbol, uint256 cRatioActive_, uint256 cRatioPassive_, Feed feed) external onlyOwner {
+    require(cRatioPassive_ > cRatioActive_, "invalid cRatio");
+
+    uint id = synths.length;
+    synths.push(new Token(name, symbol));
+    cRatiosActive[synths[id]] = cRatioActive_;
+    cRatioPassive[synths[id]] = cRatioPassive_;
+    feeds[synths[id]] = feed;
+
+    emit CreateSynth(name, symbol, feed);
   }
 
-  function depositCollateral(uint256 amount, GDai token) external {
+  function depositCollateral(uint256 amount, Token token) external {
+    collateralToken.approve(msg.sender, amount);
     require(collateralToken.transferFrom(msg.sender, address(this), amount), "transfer failed");
     collateralBalance[msg.sender][token] += amount;
+
+    emit DepositCollateral(msg.sender, address(token), amount);
   }
 
-  function withdrawCollateral(uint256 amount, GDai token) external {
+  function withdrawnCollateral(uint256 amount, Token token) external {
     uint256 futureCollateralValue = (collateralBalance[msg.sender][token] - amount) * collateralFeed.price() / 1 ether;
-    uint256 debtValue = synthDebt[msg.sender][token] * feeds[token].price() / 1 ether;          
-    require(futureCollateralValue >= debtValue * cRatios[token] / 100, "below cRatio");
+    uint256 debtValue = synthDebt[msg.sender][token] * feeds[token].price() / 1 ether;
+    require(futureCollateralValue >= debtValue * cRatiosActive[token] / 100, "below cRatio");
 
     collateralBalance[msg.sender][token] -= amount;
     collateralToken.transfer(msg.sender, amount);
+
+    emit WithdrawnCollateral(msg.sender, address(token), amount);
   }
 
-  function mint(GDai token, uint256 amount) external {
+  function mint(Token token, uint256 amount) external {
     uint256 collateralValue = (collateralBalance[msg.sender][token] * collateralFeed.price()) / 1 ether;
     uint256 futureDebtValue = (synthDebt[msg.sender][token] + amount) * feeds[token].price() / 1 ether;
-    require(collateralValue >= futureDebtValue * cRatios[token] / 100, "below cRatio");
+    require(collateralValue >= futureDebtValue * cRatiosActive[token] / 100, "below cRatio");
+
     token.mint(msg.sender, amount);
+    token.approve(address(this), amount);
     synthDebt[msg.sender][token] += amount;
+
+    emit Mint(msg.sender, amount, collateralValue);
   }
 
-  function burn(GDai token, uint256 amount) external {
+  function burn(Token token, uint256 amount) external {
     require(token.transferFrom(msg.sender, address(0), amount), "transfer failed");
     synthDebt[msg.sender][token] -= amount;
+
+    emit Burn(msg.sender, address(token), amount);
   }
 
-  function liquidate(address user, GDai token) external {
+  function liquidate(address user, Token token) external {
+    require(user != msg.sender, "invalid account");
+    uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;
+    uint256 debtValue = synthDebt[user][token] * feeds[token].price() / 1 ether;
+    require((collateralValue < debtValue * cRatiosActive[token] / 100) || (collateralValue < debtValue * cRatioPassive[token] / 100 && plrDelay[user][token] < block.timestamp), "above cRatio");
+
+    collateralToken.approve(address(auctionHouse), collateralValue);
+    token.approve(address(auctionHouse), debtValue);
+    uint256 target = (debtValue / 10) * 11;
+    uint256 priceReductionRatio = (1000000000 / uint256(10000000001)) * (10**27);
+    auctionHouse.start(user, address(token), msg.sender, target, collateralValue, debtValue, priceReductionRatio);
+    // auctionHouse.start(address(token), msg.sender, target, collateralBalance[user][token], synthDebt[user][token], priceReductionRatio);
+    collateralBalance[user][token] = 0;
+
+    emit Liquidate(user, msg.sender, address(token), collateralValue);
+  }
+
+  function flagLiquidate(address user, Token token) external {
     uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;
     uint256 debtValue = synthDebt[user][token] * feeds[token].price() / 1 ether;  
-    require(collateralValue < debtValue * cRatios[token] / 100, "above cRatio");
+    require(collateralValue < debtValue * cRatioPassive[token] / 100, "above cRatioPassivo");
+    plrDelay[user][token] = block.timestamp + 10 days;
 
-    // collateralToken.approve(address(auctionHouse), collateralBalance[user][token]);
-    // auctionHouse.startAuction(collateralBalance[user][token], synthDebt[user][token], address(token), user);
-    collateralBalance[user][token] = 0;
+    emit AccountFlaggedForLiquidation(user, plrDelay[user][token]);
   }
 
-  function settleDebt(address user, GDai token, uint amount) public {}
+  function settleDebt(address user, Token token, uint amount) public {}
+
+  function balanceOfSynth(address from, Token token) external view returns (uint) {
+    return token.balanceOf(from);
+  }
+
+  function updateSynthCRatio(uint id, uint256 cRatio, uint256 cRatioPassivo_) external onlyOwner {
+    require(cRatioPassivo_ > cRatio, "invalid cRatio");
+    cRatiosActive[synths[id]] = cRatio;
+    cRatioPassive[synths[id]] = cRatioPassivo_;
+  }
+
+  function updateSynthFeed(uint id, Feed feed) external {
+    feeds[synths[id]] = feed;
+  }
 }
