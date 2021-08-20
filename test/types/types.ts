@@ -1,40 +1,39 @@
 type TokenDetails = {
-  name: string
-  symbol: string
-  decimals: string
-}
+  name: string;
+  symbol: string;
+};
 
 type DepositedCollateralEvent = {
-  user: string
-  collateral: number
-  collateralAddress: string
-}
+  user: string;
+  collateral: number;
+  collateralAddress: string;
+};
 
 type WithdrawnCollateralEvent = {
-  user: string
-  collateral: number
-  collateralAddress: string
-}
+  user: string;
+  collateral: number;
+  collateralAddress: string;
+};
 
 type MintEvent = {
-  user: string
-  value: number
-}
+  user: string;
+  value: number;
+};
 
 type BurnEvent = {
-  user: string
-  value: number
-}
+  user: string;
+  value: number;
+};
 
 type ChangedFinancialContractAddressEvent = {
-  newFinancialContractAddress: string
-}
+  newFinancialContractAddress: string;
+};
 
-export type {
+export {
   TokenDetails,
   DepositedCollateralEvent,
   WithdrawnCollateralEvent,
   MintEvent,
   BurnEvent,
-  ChangedFinancialContractAddressEvent
-}
+  ChangedFinancialContractAddressEvent,
+};
