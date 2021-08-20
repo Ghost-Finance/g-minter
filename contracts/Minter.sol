@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import './Token.sol';
+import './AuctionHouse.sol';
 import './base/Feed.sol';
 
 contract Minter {
@@ -47,7 +48,7 @@ contract Minter {
   }
 
   function createSynth(string calldata name, string calldata symbol, uint256 cRatioActive_, uint256 cRatioPassive_, Feed feed) external onlyOwner {
-    require(cRatioPassive_ > cRatioActive_, "invalid cRatio");
+    require(cRatioPassive_ > cRatioActive_, "Invalid cRatioActive");
 
     uint id = synths.length;
     synths.push(new Token(name, symbol));
@@ -106,7 +107,7 @@ contract Minter {
     token.approve(address(auctionHouse), debtValue);
     uint256 target = (debtValue / 10) * 11;
     uint256 priceReductionRatio = (1000000000 / uint256(10000000001)) * (10**27);
-    auctionHouse.start(user, address(token), msg.sender, target, collateralValue, debtValue, priceReductionRatio);
+    auctionHouse.start(user, address(token), msg.sender, target, collateralValue, debtValue, priceReductionRatio, address(collateralFeed));
     // auctionHouse.start(address(token), msg.sender, target, collateralBalance[user][token], synthDebt[user][token], priceReductionRatio);
     collateralBalance[user][token] = 0;
 
