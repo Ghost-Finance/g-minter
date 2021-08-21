@@ -3,6 +3,12 @@ type TokenDetails = {
   symbol: string;
 };
 
+type CreateSynthEvent = {
+  name: string;
+  symbol: string;
+  feed: string;
+};
+
 type DepositedCollateralEvent = {
   user: string;
   collateral: number;
@@ -31,6 +37,7 @@ type ChangedFinancialContractAddressEvent = {
 
 export {
   TokenDetails,
+  CreateSynthEvent,
   DepositedCollateralEvent,
   WithdrawnCollateralEvent,
   MintEvent,

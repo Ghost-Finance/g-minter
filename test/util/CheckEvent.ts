@@ -1,15 +1,46 @@
-import { ethers } from 'hardhat'
+import { ethers } from 'hardhat';
 
-import { BigNumber, Contract } from 'ethers'
-import { expect } from 'chai'
+import { BigNumber, Contract } from 'ethers';
+import { expect } from 'chai';
 import {
+  CreateSynthEvent,
   BurnEvent,
   ChangedFinancialContractAddressEvent,
   DepositedCollateralEvent,
   MintEvent,
-  WithdrawnCollateralEvent
-} from '../types/types'
-import { formatEther } from 'ethers/lib/utils'
+  WithdrawnCollateralEvent,
+} from '../types/types';
+import { formatEther } from 'ethers/lib/utils';
+
+export const checkCreateSynthEvent = async (
+  contract: Contract,
+  name: string,
+  symbol: string,
+  feedAddress: Contract
+): Promise<boolean> => {
+  let createSynthEvent = new Promise<CreateSynthEvent>((resolve, reject) => {
+    contract.on('CreateSynth', (name, symbol, feed) => {
+      resolve({
+        name: name,
+        symbol: symbol,
+        feed: feed,
+      });
+    });
+
+    setTimeout(() => {
+      reject(new Error('timeout'));
+    }, 60000);
+  });
+
+  const eventCreateSynth = await createSynthEvent;
+  expect(eventCreateSynth.name).to.be.equal(name);
+  expect(eventCreateSynth.symbol).to.be.equal(symbol);
+  expect(eventCreateSynth.feed).to.be.equal(feedAddress);
+
+  contract.removeAllListeners();
+
+  return true;
+};
 
 export const checkDepositEvent = async (
   contract: Contract,
@@ -26,45 +57,45 @@ export const checkDepositEvent = async (
           resolve({
             user: user,
             collateral: collateral,
-            collateralAddress: collateralAddress
-          })
+            collateralAddress: collateralAddress,
+          });
         }
-      )
+      );
 
       setTimeout(() => {
-        reject(new Error('timeout'))
-      }, 60000)
+        reject(new Error('timeout'));
+      }, 60000);
     }
-  )
+  );
 
   const mintEvent = new Promise<MintEvent>((resolve, reject) => {
     contract.on('Mint', (user, value) => {
       resolve({
         user: user,
-        value: value
-      })
-    })
+        value: value,
+      });
+    });
 
     setTimeout(() => {
-      reject(new Error('timeout'))
-    }, 60000)
-  })
+      reject(new Error('timeout'));
+    }, 60000);
+  });
 
-  const eventMint = await mintEvent
-  console.log('Tokens minted: ', formatEther(eventMint.value))
-  expect(eventMint.user).to.be.equal(sender)
-  expect(eventMint.value).to.be.equal(tokensMinted)
+  const eventMint = await mintEvent;
+  console.log('Tokens minted: ', formatEther(eventMint.value));
+  expect(eventMint.user).to.be.equal(sender);
+  expect(eventMint.value).to.be.equal(tokensMinted);
 
-  const eventDeposit = await depositEvent
-  console.log('Collateral deposited: ', formatEther(eventDeposit.collateral))
-  expect(eventDeposit.user).to.be.equal(sender)
-  expect(eventDeposit.collateral).to.be.equal(collateralValueDeposit)
-  expect(eventDeposit.collateralAddress).to.be.equal(address)
+  const eventDeposit = await depositEvent;
+  console.log('Collateral deposited: ', formatEther(eventDeposit.collateral));
+  expect(eventDeposit.user).to.be.equal(sender);
+  expect(eventDeposit.collateral).to.be.equal(collateralValueDeposit);
+  expect(eventDeposit.collateralAddress).to.be.equal(address);
 
-  contract.removeAllListeners()
+  contract.removeAllListeners();
 
-  return true
-}
+  return true;
+};
 
 export const checkWithdrawalEvent = async (
   contract: Contract,
@@ -81,69 +112,69 @@ export const checkWithdrawalEvent = async (
           resolve({
             user: user,
             collateral: collateral,
-            collateralAddress: collateralAddress
-          })
+            collateralAddress: collateralAddress,
+          });
         }
-      )
+      );
 
       setTimeout(() => {
-        reject(new Error('timeout'))
-      }, 60000)
+        reject(new Error('timeout'));
+      }, 60000);
     }
-  )
+  );
 
   const burnEvent = new Promise<BurnEvent>((resolve, reject) => {
     contract.on('Burn', (user, value) => {
       resolve({
         user: user,
-        value: value
-      })
-    })
+        value: value,
+      });
+    });
 
     setTimeout(() => {
-      reject(new Error('timeout'))
-    }, 60000)
-  })
+      reject(new Error('timeout'));
+    }, 60000);
+  });
 
-  const eventBurn = await burnEvent
-  console.log('Tokens burned: ', formatEther(eventBurn.value))
-  expect(eventBurn.user).to.be.equal(sender)
-  expect(eventBurn.value).to.be.equal(tokenToBurn)
+  const eventBurn = await burnEvent;
+  console.log('Tokens burned: ', formatEther(eventBurn.value));
+  expect(eventBurn.user).to.be.equal(sender);
+  expect(eventBurn.value).to.be.equal(tokenToBurn);
 
-  const eventWithdrawal = await withdrawalEvent
-  console.log('Collateral: ', formatEther(eventWithdrawal.collateral))
-  expect(eventWithdrawal.user).to.be.equal(sender)
-  expect(eventWithdrawal.collateral).to.be.equal(collateralValue)
-  expect(eventWithdrawal.collateralAddress).to.be.equal(address)
-  contract.removeAllListeners()
+  const eventWithdrawal = await withdrawalEvent;
+  console.log('Collateral: ', formatEther(eventWithdrawal.collateral));
+  expect(eventWithdrawal.user).to.be.equal(sender);
+  expect(eventWithdrawal.collateral).to.be.equal(collateralValue);
+  expect(eventWithdrawal.collateralAddress).to.be.equal(address);
+  contract.removeAllListeners();
 
-  return true
-}
+  return true;
+};
 
 export const checkChangedFinancialContractAddressEvent = async (
   contract: Contract,
   address: string
 ): Promise<boolean> => {
-  let changedFinancialContractAddressEvent = new Promise<ChangedFinancialContractAddressEvent>(
-    (resolve, reject) => {
-      contract.on('WithdrawnCollateral', (newFinancialContractAddress) => {
-        resolve({
-          newFinancialContractAddress: newFinancialContractAddress
-        })
-      })
+  let changedFinancialContractAddressEvent = new Promise<
+    ChangedFinancialContractAddressEvent
+  >((resolve, reject) => {
+    contract.on('WithdrawnCollateral', newFinancialContractAddress => {
+      resolve({
+        newFinancialContractAddress: newFinancialContractAddress,
+      });
+    });
 
-      setTimeout(() => {
-        reject(new Error('timeout'))
-      }, 60000)
-    }
-  )
+    setTimeout(() => {
+      reject(new Error('timeout'));
+    }, 60000);
+  });
 
-  const eventChangedFinancialContractAddress = await changedFinancialContractAddressEvent
+  const eventChangedFinancialContractAddress = await changedFinancialContractAddressEvent;
   expect(
     eventChangedFinancialContractAddress.newFinancialContractAddress
-  ).to.be.equal(address)
+  ).to.be.equal(address);
 
-  contract.removeAllListeners()
+  contract.removeAllListeners();
 
-  return true
-}
+  return true;
+};
