@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { parseEther } from 'ethers/lib/utils';
-import { deployContract, isValidContract } from './util/DeployContract';
+import { checkCreateSynthEvent } from './util/CheckEvent';
 
 // contract label name Minter.
 let minterContractLabelString: string = 'Minter';
@@ -89,11 +89,19 @@ describe.only('Minter create a synths', async function() {
     }
   });
 
-  it('Success on create a new Synth', async function() {
+  it.only('Success on create a new Synth', async function() {
     const feedSynth = await Feed.deploy(amount, 'Feed GDAI');
 
     await minter.createSynth('Test coin', 'COIN', 200, 300, feedSynth.address);
 
+    expect(
+      await checkCreateSynthEvent(
+        minter,
+        'Test coin',
+        'COIN',
+        feedSynth.address
+      )
+    ).to.be.true;
     expect(await feedSynth.name()).to.equal('Feed GDAI');
     expect(await minter.getSynth(0)).to.exist;
   });

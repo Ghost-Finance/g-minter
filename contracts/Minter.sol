@@ -21,7 +21,7 @@ contract Minter {
   mapping (address => mapping (Token => uint256)) public plrDelay;
 
   // Events
-  event CreateSynth(string indexed name, string indexed symbol, Feed feed);
+  event CreateSynth(string name, string symbol, address feed);
   event Mint(address indexed account, uint256 amount, uint256 collateral);
   event Burn(address indexed account, address token, uint256 amount);
   event WithdrawnCollateral(address indexed account, address token, uint amount);
@@ -56,7 +56,7 @@ contract Minter {
     cRatioPassive[synths[id]] = cRatioPassive_;
     feeds[synths[id]] = feed;
 
-    emit CreateSynth(name, symbol, feed);
+    emit CreateSynth(name, symbol, address(feed));
   }
 
   function depositCollateral(uint256 amount, Token token) external {
