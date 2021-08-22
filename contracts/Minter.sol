@@ -25,7 +25,7 @@ contract Minter {
   event Mint(address indexed account, uint256 amount, uint256 collateral);
   event Burn(address indexed account, address token, uint256 amount);
   event WithdrawnCollateral(address indexed account, address token, uint amount);
-  event DepositCollateral(address indexed account, address token, uint amount);
+  event DepositedCollateral(address indexed account, address token, uint amount);
 
   // Events for liquidation
   event AccountFlaggedForLiquidation(address indexed account, uint256 deadline);
@@ -59,12 +59,12 @@ contract Minter {
     emit CreateSynth(name, symbol, address(feed));
   }
 
-  function depositCollateral(uint256 amount, Token token) external {
+  function depositCollateral(Token token, uint256 amount) external {
     collateralToken.approve(msg.sender, amount);
     require(collateralToken.transferFrom(msg.sender, address(this), amount), "transfer failed");
     collateralBalance[msg.sender][token] += amount;
 
-    emit DepositCollateral(msg.sender, address(token), amount);
+    emit DepositedCollateral(msg.sender, address(token), amount);
   }
 
   function withdrawnCollateral(uint256 amount, Token token) external {

@@ -3,6 +3,12 @@ type TokenDetails = {
   symbol: string;
 };
 
+type ApproveEvent = {
+  to: string;
+  from: string;
+  amount: number;
+};
+
 type CreateSynthEvent = {
   name: string;
   symbol: string;
@@ -11,8 +17,8 @@ type CreateSynthEvent = {
 
 type DepositedCollateralEvent = {
   user: string;
-  collateral: number;
-  collateralAddress: string;
+  tokenCollateral: string;
+  amount: number;
 };
 
 type WithdrawnCollateralEvent = {
@@ -37,6 +43,7 @@ type ChangedFinancialContractAddressEvent = {
 
 export {
   TokenDetails,
+  ApproveEvent,
   CreateSynthEvent,
   DepositedCollateralEvent,
   WithdrawnCollateralEvent,

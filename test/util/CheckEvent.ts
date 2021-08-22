@@ -7,7 +7,7 @@ import {
   BurnEvent,
   ChangedFinancialContractAddressEvent,
   DepositedCollateralEvent,
-  MintEvent,
+  ApproveEvent,
   WithdrawnCollateralEvent,
 } from '../types/types';
 import { formatEther } from 'ethers/lib/utils';
@@ -44,23 +44,19 @@ export const checkCreateSynthEvent = async (
 
 export const checkDepositEvent = async (
   contract: Contract,
-  sender: string,
-  address: string,
-  collateralValueDeposit: BigNumber,
-  tokensMinted: BigNumber
+  receiver: string,
+  tokenCollateralAddress: string,
+  amountToDeposit: BigNumber
 ): Promise<boolean> => {
   let depositEvent = new Promise<DepositedCollateralEvent>(
     (resolve, reject) => {
-      contract.on(
-        'DepositedCollateral',
-        (user, collateral, collateralAddress) => {
-          resolve({
-            user: user,
-            collateral: collateral,
-            collateralAddress: collateralAddress,
-          });
-        }
-      );
+      contract.on('DepositedCollateral', (user, token, amount) => {
+        resolve({
+          user: user,
+          tokenCollateral: token,
+          amount: amount,
+        });
+      });
 
       setTimeout(() => {
         reject(new Error('timeout'));
@@ -68,29 +64,10 @@ export const checkDepositEvent = async (
     }
   );
 
-  const mintEvent = new Promise<MintEvent>((resolve, reject) => {
-    contract.on('Mint', (user, value) => {
-      resolve({
-        user: user,
-        value: value,
-      });
-    });
-
-    setTimeout(() => {
-      reject(new Error('timeout'));
-    }, 60000);
-  });
-
-  const eventMint = await mintEvent;
-  console.log('Tokens minted: ', formatEther(eventMint.value));
-  expect(eventMint.user).to.be.equal(sender);
-  expect(eventMint.value).to.be.equal(tokensMinted);
-
   const eventDeposit = await depositEvent;
-  console.log('Collateral deposited: ', formatEther(eventDeposit.collateral));
-  expect(eventDeposit.user).to.be.equal(sender);
-  expect(eventDeposit.collateral).to.be.equal(collateralValueDeposit);
-  expect(eventDeposit.collateralAddress).to.be.equal(address);
+  expect(eventDeposit.user).to.be.equal(receiver);
+  expect(eventDeposit.tokenCollateral).to.be.equal(tokenCollateralAddress);
+  expect(eventDeposit.amount).to.be.equal(amountToDeposit);
 
   contract.removeAllListeners();
 
