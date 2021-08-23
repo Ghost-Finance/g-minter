@@ -29,7 +29,7 @@ type WithdrawnCollateralEvent = {
 
 type MintEvent = {
   user: string;
-  value: number;
+  amountTotal: number;
 };
 
 type BurnEvent = {

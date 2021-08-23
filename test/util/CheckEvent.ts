@@ -7,7 +7,7 @@ import {
   BurnEvent,
   ChangedFinancialContractAddressEvent,
   DepositedCollateralEvent,
-  ApproveEvent,
+  MintEvent,
   WithdrawnCollateralEvent,
 } from '../types/types';
 import { formatEther } from 'ethers/lib/utils';
@@ -70,6 +70,31 @@ export const checkDepositEvent = async (
   expect(eventDeposit.amount).to.be.equal(amountToDeposit);
 
   contract.removeAllListeners();
+
+  return true;
+};
+
+export const checkMintEvent = async (
+  contract: Contract,
+  sender: string,
+  amount: BigNumber
+): Promise<boolean> => {
+  let mintEvent = new Promise<MintEvent>((resolve, reject) => {
+    contract.on('Mint', (user, value) => {
+      resolve({
+        user: user,
+        amountTotal: value,
+      });
+    });
+
+    setTimeout(() => {
+      reject(new Error('timeout'));
+    }, 60000);
+  });
+
+  const eventMint = await mintEvent;
+  expect(eventMint.user).to.be.equal(sender);
+  expect(eventMint.amountTotal).to.be.equal(amount);
 
   return true;
 };

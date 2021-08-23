@@ -3,7 +3,11 @@ import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { parseEther } from 'ethers/lib/utils';
-import { checkCreateSynthEvent, checkDepositEvent } from './util/CheckEvent';
+import {
+  checkCreateSynthEvent,
+  checkDepositEvent,
+  checkMintEvent,
+} from './util/CheckEvent';
 
 // contract label name Minter.
 let minterContractLabelString: string = 'Minter';
@@ -115,7 +119,7 @@ describe('Minter', async function() {
   });
 
   describe('Deposit Collateral', async function() {
-    let amountToDeposit;
+    let tokenSynth, amountToDeposit;
 
     beforeEach(async function() {
       amountToDeposit = BigNumber.from(parseEther('5'));
@@ -127,6 +131,8 @@ describe('Minter', async function() {
         300,
         feedSynth.address
       );
+
+      tokenSynth = await minter.getSynth(0);
     });
 
     it('Should return error to deposit collateral if account has not collateral token to deposit', async function() {
@@ -135,26 +141,97 @@ describe('Minter', async function() {
       try {
         await minter
           .connect(account)
-          .depositCollateral(token.address, amountToDeposit);
+          .depositCollateral(tokenSynth, amountToDeposit);
       } catch (error) {
-        console.log(error.message);
         expect(error.message).to.be.equal(
           'VM Exception while processing transaction: revert '
         );
       }
     });
 
+    it('Should return error to deposit collateral if is a invalid token', async function() {
+      try {
+        await minter.depositCollateral(token.address, amountToDeposit);
+      } catch (error) {
+        expect(error.message).to.be.equal(
+          'VM Exception while processing transaction: revert invalid token'
+        );
+      }
+    });
+
     it('Should return success when deposit the collateral', async function() {
-      await minter.depositCollateral(token.address, amountToDeposit);
+      await minter.depositCollateral(tokenSynth, amountToDeposit);
 
       expect(
         await checkDepositEvent(
           minter,
           contractCreatorOwner.address,
-          token.address,
+          tokenSynth,
           amountToDeposit
         )
       ).to.be.true;
+    });
+  });
+
+  describe('Mint a token', async function() {
+    let tokenSynth, amountToMint;
+
+    beforeEach(async function() {
+      amountToMint = BigNumber.from(parseEther('10'));
+      const feedSynth = await Feed.deploy(amount, 'Feed Coin');
+      await minter.createSynth(
+        'Test coin',
+        'COIN',
+        200,
+        300,
+        feedSynth.address
+      );
+
+      tokenSynth = await minter.getSynth(0);
+    });
+
+    it('Should return error to mint if account has deposit collareal', async function() {
+      try {
+        await minter.mint(tokenSynth, amountToMint);
+      } catch (error) {
+        expect(error.message).to.be.equal(
+          'VM Exception while processing transaction: revert Without collateral deposit'
+        );
+      }
+    });
+
+    it('Should return error to mint if account has below cRatio', async function() {
+      await minter.depositCollateral(tokenSynth, parseEther('10'));
+      await feed.updatePrice(parseEther('5'));
+
+      try {
+        await minter.mint(tokenSynth, amountToMint);
+      } catch (error) {
+        expect(error.message).to.be.equal(
+          'VM Exception while processing transaction: revert below cRatio'
+        );
+      }
+    });
+
+    it('Should return error to mint if token minted is the same as collateral', async function() {
+      await minter.depositCollateral(tokenSynth, parseEther('10'));
+
+      try {
+        await minter.mint(token.address, amountToMint);
+      } catch (error) {
+        expect(error.message).to.be.equal(
+          'VM Exception while processing transaction: revert invalid token'
+        );
+      }
+    });
+
+    it('Should return success when mint a synth', async function() {
+      const value = BigNumber.from(parseEther('5'));
+      await minter.depositCollateral(tokenSynth, parseEther('10'));
+      await minter.mint(tokenSynth, value);
+
+      expect(await checkMintEvent(minter, contractCreatorOwner.address, value))
+        .to.be.true;
     });
   });
 });

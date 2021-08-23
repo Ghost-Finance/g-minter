@@ -22,7 +22,7 @@ contract Minter {
 
   // Events
   event CreateSynth(string name, string symbol, address feed);
-  event Mint(address indexed account, uint256 amount, uint256 collateral);
+  event Mint(address indexed account, uint256 totalAmount);
   event Burn(address indexed account, address token, uint256 amount);
   event WithdrawnCollateral(address indexed account, address token, uint amount);
   event DepositedCollateral(address indexed account, address token, uint amount);
@@ -33,6 +33,11 @@ contract Minter {
 
   modifier onlyOwner() {
     require(msg.sender == owner, "unauthorized");
+    _;
+  }
+
+  modifier isCollateral(Token token) {
+    require(address(token) != address(collateralToken), 'invalid token');
     _;
   }
 
@@ -59,7 +64,7 @@ contract Minter {
     emit CreateSynth(name, symbol, address(feed));
   }
 
-  function depositCollateral(Token token, uint256 amount) external {
+  function depositCollateral(Token token, uint256 amount) external isCollateral(token) {
     collateralToken.approve(msg.sender, amount);
     require(collateralToken.transferFrom(msg.sender, address(this), amount), "transfer failed");
     collateralBalance[msg.sender][token] += amount;
@@ -78,7 +83,9 @@ contract Minter {
     emit WithdrawnCollateral(msg.sender, address(token), amount);
   }
 
-  function mint(Token token, uint256 amount) external {
+  function mint(Token token, uint256 amount) external isCollateral(token) {
+    require(collateralBalance[msg.sender][token] > 0, 'Without collateral deposit');
+
     uint256 collateralValue = (collateralBalance[msg.sender][token] * collateralFeed.price()) / 1 ether;
     uint256 futureDebtValue = (synthDebt[msg.sender][token] + amount) * feeds[token].price() / 1 ether;
     require(collateralValue >= futureDebtValue * cRatiosActive[token] / 100, "below cRatio");
@@ -87,7 +94,7 @@ contract Minter {
     token.approve(address(this), amount);
     synthDebt[msg.sender][token] += amount;
 
-    emit Mint(msg.sender, amount, collateralValue);
+    emit Mint(msg.sender, synthDebt[msg.sender][token]);
   }
 
   function burn(Token token, uint256 amount) external {
@@ -98,25 +105,25 @@ contract Minter {
   }
 
   function liquidate(address user, Token token) external {
-    require(user != msg.sender, "invalid account");
     uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;
     uint256 debtValue = synthDebt[user][token] * feeds[token].price() / 1 ether;
     require((collateralValue < debtValue * cRatiosActive[token] / 100) || (collateralValue < debtValue * cRatioPassive[token] / 100 && plrDelay[user][token] < block.timestamp), "above cRatio");
 
     collateralToken.approve(address(auctionHouse), collateralValue);
-    token.approve(address(auctionHouse), debtValue);
-    uint256 target = (debtValue / 10) * 11;
-    uint256 priceReductionRatio = (1000000000 / uint256(10000000001)) * (10**27);
-    auctionHouse.start(user, address(token), msg.sender, target, collateralValue, debtValue, priceReductionRatio, address(collateralFeed));
-    // auctionHouse.start(address(token), msg.sender, target, collateralBalance[user][token], synthDebt[user][token], priceReductionRatio);
-    collateralBalance[user][token] = 0;
+    // token.approve(address(auctionHouse), debtValue);
+    // uint256 priceReductionRatio = (1000000000 / uint256(10000000001)) * (10**27);
+    {
+        auctionHouse.start(user, address(token), address(collateralToken), msg.sender, collateralValue, debtValue, (10**27), address(collateralFeed), address(feeds[token]));
+        // auctionHouse.start(address(token), msg.sender, target, collateralBalance[user][token], synthDebt[user][token], priceReductionRatio);
+        collateralBalance[user][token] = 0;
 
-    emit Liquidate(user, msg.sender, address(token), collateralValue);
+        emit Liquidate(user, msg.sender, address(token), collateralValue);
+    }
   }
 
   function flagLiquidate(address user, Token token) external {
     uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;
-    uint256 debtValue = synthDebt[user][token] * feeds[token].price() / 1 ether;  
+    uint256 debtValue = synthDebt[user][token] * feeds[token].price() / 1 ether;
     require(collateralValue < debtValue * cRatioPassive[token] / 100, "above cRatioPassivo");
     plrDelay[user][token] = block.timestamp + 10 days;
 
