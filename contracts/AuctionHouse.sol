@@ -60,9 +60,7 @@ contract AuctionHouse {
       // emitir evento
       emit Start(tokenAddress_, keeperAddress_, collateralAmount_, initialDate, endDate);
 
-      // tras o tokenToSell
       require(GTokenERC20(collateralTokenAddress_).transferFrom(msg.sender, address(this), collateralAmount_), "token transfer fail");
-      // require(Token(tokenAddress_).transferFrom(tx.origin, address(this), initialPrice_), "token transfer fail");
   }
 
   // auctionId,
