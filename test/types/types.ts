@@ -1,40 +1,53 @@
 type TokenDetails = {
-  name: string
-  symbol: string
-  decimals: string
-}
+  name: string;
+  symbol: string;
+};
+
+type ApproveEvent = {
+  to: string;
+  from: string;
+  amount: number;
+};
+
+type CreateSynthEvent = {
+  name: string;
+  symbol: string;
+  feed: string;
+};
 
 type DepositedCollateralEvent = {
-  user: string
-  collateral: number
-  collateralAddress: string
-}
+  user: string;
+  tokenCollateral: string;
+  amount: number;
+};
 
 type WithdrawnCollateralEvent = {
-  user: string
-  collateral: number
-  collateralAddress: string
-}
+  user: string;
+  collateral: number;
+  collateralAddress: string;
+};
 
 type MintEvent = {
-  user: string
-  value: number
-}
+  user: string;
+  amountTotal: number;
+};
 
 type BurnEvent = {
-  user: string
-  value: number
-}
+  user: string;
+  value: number;
+};
 
 type ChangedFinancialContractAddressEvent = {
-  newFinancialContractAddress: string
-}
+  newFinancialContractAddress: string;
+};
 
-export type {
+export {
   TokenDetails,
+  ApproveEvent,
+  CreateSynthEvent,
   DepositedCollateralEvent,
   WithdrawnCollateralEvent,
   MintEvent,
   BurnEvent,
-  ChangedFinancialContractAddressEvent
-}
+  ChangedFinancialContractAddressEvent,
+};
