@@ -32,7 +32,7 @@ contract Minter {
   event Liquidate(address indexed accountLiquidated, address indexed accountFrom, address token, uint256 collateralValue);
 
   modifier onlyOwner() {
-    require(msg.sender == owner, "unauthorized");
+    require(msg.sender == owner, 'unauthorized');
     _;
   }
 
@@ -53,7 +53,7 @@ contract Minter {
   }
 
   function createSynth(string calldata name, string calldata symbol, uint256 cRatioActive_, uint256 cRatioPassive_, Feed feed) external onlyOwner {
-    require(cRatioPassive_ > cRatioActive_, "Invalid cRatioActive");
+    require(cRatioPassive_ > cRatioActive_, 'Invalid cRatioActive');
 
     uint id = synths.length;
     synths.push(new GTokenERC20(name, symbol));
@@ -66,7 +66,7 @@ contract Minter {
 
   function depositCollateral(GTokenERC20 token, uint256 amount) external isCollateral(token) {
     collateralToken.approve(msg.sender, amount);
-    require(collateralToken.transferFrom(msg.sender, address(this), amount), "transfer failed");
+    require(collateralToken.transferFrom(msg.sender, address(this), amount), 'transfer failed');
     collateralBalance[msg.sender][token] += amount;
 
     emit DepositedCollateral(msg.sender, address(token), amount);
@@ -75,7 +75,7 @@ contract Minter {
   function withdrawnCollateral(uint256 amount, GTokenERC20 token) external {
     uint256 futureCollateralValue = (collateralBalance[msg.sender][token] - amount) * collateralFeed.price() / 1 ether;
     uint256 debtValue = synthDebt[msg.sender][token] * feeds[token].price() / 1 ether;
-    require(futureCollateralValue >= debtValue * cRatiosActive[token] / 100, "below cRatio");
+    require(futureCollateralValue >= debtValue * cRatiosActive[token] / 100, 'below cRatio');
 
     collateralBalance[msg.sender][token] -= amount;
     collateralToken.transfer(msg.sender, amount);
@@ -88,7 +88,7 @@ contract Minter {
 
     uint256 collateralValue = (collateralBalance[msg.sender][token] * collateralFeed.price()) / 1 ether;
     uint256 futureDebtValue = (synthDebt[msg.sender][token] + amount) * feeds[token].price() / 1 ether;
-    require(collateralValue >= futureDebtValue * cRatiosActive[token] / 100, "below cRatio");
+    require(collateralValue >= futureDebtValue * cRatiosActive[token] / 100, 'below cRatio');
 
     token.approve(address(this), amount);
     synthDebt[msg.sender][token] += amount;
@@ -97,7 +97,7 @@ contract Minter {
   }
 
   function burn(GTokenERC20 token, uint256 amount) external {
-    require(token.transferFrom(msg.sender, address(0), amount), "transfer failed");
+    require(token.transferFrom(msg.sender, address(0), amount), 'transfer failed');
     synthDebt[msg.sender][token] -= amount;
 
     emit Burn(msg.sender, address(token), amount);
@@ -106,7 +106,7 @@ contract Minter {
   function liquidate(address user, GTokenERC20 token) external {
     uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;
     uint256 debtValue = synthDebt[user][token] * feeds[token].price() / 1 ether;
-    require((collateralValue < debtValue * cRatiosActive[token] / 100) || (collateralValue < debtValue * cRatioPassive[token] / 100 && plrDelay[user][token] < block.timestamp), "above cRatio");
+    require((collateralValue < debtValue * cRatiosActive[token] / 100) || (collateralValue < debtValue * cRatioPassive[token] / 100 && plrDelay[user][token] < block.timestamp), 'above cRatio');
 
     collateralToken.approve(address(auctionHouse), collateralValue);
     // token.approve(address(auctionHouse), debtValue);
@@ -123,7 +123,7 @@ contract Minter {
   function flagLiquidate(address user, GTokenERC20 token) external {
     uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;
     uint256 debtValue = synthDebt[user][token] * feeds[token].price() / 1 ether;
-    require(collateralValue < debtValue * cRatioPassive[token] / 100, "above cRatioPassivo");
+    require(collateralValue < debtValue * cRatioPassive[token] / 100, 'above cRatioPassivo');
     plrDelay[user][token] = block.timestamp + 10 days;
 
     emit AccountFlaggedForLiquidation(user, plrDelay[user][token]);
@@ -136,7 +136,7 @@ contract Minter {
   }
 
   function updateSynthCRatio(uint id, uint256 cRatio, uint256 cRatioPassivo_) external onlyOwner {
-    require(cRatioPassivo_ > cRatio, "invalid cRatio");
+    require(cRatioPassivo_ > cRatio, 'invalid cRatio');
     cRatiosActive[synths[id]] = cRatio;
     cRatioPassive[synths[id]] = cRatioPassivo_;
   }
