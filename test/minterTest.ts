@@ -69,9 +69,7 @@ describe('Minter', async function() {
           .connect(account)
           .createSynth('Test coin', 'COIN', 100, 200, feedSynth.address);
       } catch (error) {
-        expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert unauthorized'
-        );
+        expect(error.message).to.match(/unauthorized/);
       }
     });
 
@@ -87,9 +85,7 @@ describe('Minter', async function() {
           feedSynth.address
         );
       } catch (error) {
-        expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert Invalid cRatioActive'
-        );
+        expect(error.message).to.match(/Invalid cRatioActive/);
       }
     });
 
@@ -142,8 +138,8 @@ describe('Minter', async function() {
           .connect(account)
           .depositCollateral(tokenSynth, amountToDeposit);
       } catch (error) {
-        expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert ERC20: transfer amount exceeds balance'
+        expect(error.message).to.match(
+          /ERC20: transfer amount exceeds balance/
         );
       }
     });
@@ -152,9 +148,7 @@ describe('Minter', async function() {
       try {
         await minter.depositCollateral(token.address, amountToDeposit);
       } catch (error) {
-        expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert invalid token'
-        );
+        expect(error.message).to.match(/invalid token/);
       }
     });
 
@@ -193,9 +187,7 @@ describe('Minter', async function() {
       try {
         await minter.mint(tokenSynth, amountToMint);
       } catch (error) {
-        expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert Without collateral deposit'
-        );
+        expect(error.message).to.match(/Without collateral deposit/);
       }
     });
 
@@ -206,9 +198,7 @@ describe('Minter', async function() {
       try {
         await minter.mint(tokenSynth, amountToMint);
       } catch (error) {
-        expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert below cRatio'
-        );
+        expect(error.message).to.match(/below cRatio/);
       }
     });
 
@@ -218,9 +208,7 @@ describe('Minter', async function() {
       try {
         await minter.mint(token.address, amountToMint);
       } catch (error) {
-        expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert invalid token'
-        );
+        expect(error.message).to.match(/invalid token/);
       }
     });
 
