@@ -11,7 +11,7 @@ import {
 
 // contract label name Minter.
 let minterContractLabelString: string = 'Minter';
-let tokenContractLabelString: string = 'Token';
+let tokenContractLabelString: string = 'GTokenERC20';
 let feedContractLabelString: string = 'Feed';
 let auctionHouseContractLabelString: string = 'AuctionHouse';
 
@@ -24,7 +24,7 @@ const amount = BigNumber.from(parseEther('10'));
 describe('Minter', async function() {
   let owners,
     accounts,
-    Token,
+    TokenERC20,
     Feed,
     Minter,
     AuctionHouse,
@@ -39,7 +39,7 @@ describe('Minter', async function() {
     contractAccounts = accounts;
 
     // Declare contracts
-    Token = await ethers.getContractFactory(tokenContractLabelString);
+    TokenERC20 = await ethers.getContractFactory(tokenContractLabelString);
     Feed = await ethers.getContractFactory(feedContractLabelString);
     AuctionHouse = await ethers.getContractFactory(
       auctionHouseContractLabelString
@@ -47,7 +47,7 @@ describe('Minter', async function() {
     Minter = await ethers.getContractFactory(minterContractLabelString);
 
     // Deploy contracts
-    token = await Token.deploy('erc20 coin', 'Token');
+    token = await TokenERC20.deploy('erc20 coin', 'Token');
     feed = await Feed.deploy(parseEther('10'), 'Feed Token');
     auctionHouse = await AuctionHouse.deploy();
     minter = await Minter.deploy(
@@ -57,7 +57,6 @@ describe('Minter', async function() {
     );
 
     await token.approve(minter.address, amount);
-    await token.mint(contractCreatorOwner.address, amount);
   });
 
   describe('Create a Synths', async function() {
@@ -144,7 +143,7 @@ describe('Minter', async function() {
           .depositCollateral(tokenSynth, amountToDeposit);
       } catch (error) {
         expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert '
+          'VM Exception while processing transaction: revert ERC20: transfer amount exceeds balance'
         );
       }
     });
@@ -190,7 +189,7 @@ describe('Minter', async function() {
       tokenSynth = await minter.getSynth(0);
     });
 
-    it('Should return error to mint if account has deposit collareal', async function() {
+    it("Should return error to mint if account hasn't the collateral balance", async function() {
       try {
         await minter.mint(tokenSynth, amountToMint);
       } catch (error) {

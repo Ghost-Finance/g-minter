@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import './Token.sol';
+import './GTokenERC20.sol';
 
 contract AuctionHouse {
   struct Auction {
@@ -61,7 +61,7 @@ contract AuctionHouse {
       emit Start(tokenAddress_, keeperAddress_, collateralAmount_, initialDate, endDate);
 
       // tras o tokenToSell
-      require(Token(collateralTokenAddress_).transferFrom(msg.sender, address(this), collateralAmount_), "token transfer fail");
+      require(GTokenERC20(collateralTokenAddress_).transferFrom(msg.sender, address(this), collateralAmount_), "token transfer fail");
       // require(Token(tokenAddress_).transferFrom(tx.origin, address(this), initialPrice_), "token transfer fail");
   }
 
@@ -84,7 +84,7 @@ contract AuctionHouse {
 
     // uint amountToFixCollateral = calculateAmountToFixCollateral(auction.initialPrice, slice);
 
-    // require(Token(auction.tokenAddress).transferFrom(msg.sender, receiver, slice), "token transfer fail");
+    // require(GTokenERC20(auction.tokenAddress).transferFrom(msg.sender, receiver, slice), "token transfer fail");
     // etapas:
     //  - slice deve calcular
     auction.collateralAmount -= slice;
