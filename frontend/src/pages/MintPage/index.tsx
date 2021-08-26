@@ -4,6 +4,7 @@ import { Grid } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import useStyle from './style';
+import ButtonForm from '../../components/Button/ButtonForm';
 
 const MintPage = () => {
   const classes = useStyle();
@@ -18,6 +19,7 @@ const MintPage = () => {
             </IconButton>
           </Link>
         </div>
+        <div></div>
       </Grid>
     </div>
   );
