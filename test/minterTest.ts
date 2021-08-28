@@ -47,7 +47,7 @@ describe('Minter', async function() {
     Minter = await ethers.getContractFactory(minterContractLabelString);
 
     // Deploy contracts
-    token = await TokenERC20.deploy('erc20 coin', 'Token');
+    token = await TokenERC20.deploy('erc20 coin', 'Token', amount);
     feed = await Feed.deploy(parseEther('10'), 'Feed Token');
     auctionHouse = await AuctionHouse.deploy();
     minter = await Minter.deploy(
@@ -89,12 +89,13 @@ describe('Minter', async function() {
       }
     });
 
-    it('Success on create a new Synth', async function() {
+    it.only('Success on create a new Synth', async function() {
       const feedSynth = await Feed.deploy(amount, 'Feed GDAI');
 
       await minter.createSynth(
         'Test coin',
         'COIN',
+        amount,
         200,
         300,
         feedSynth.address

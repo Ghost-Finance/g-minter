@@ -52,11 +52,11 @@ contract Minter {
     return synths[index];
   }
 
-  function createSynth(string calldata name, string calldata symbol, uint256 cRatioActive_, uint256 cRatioPassive_, Feed feed) external onlyOwner {
+  function createSynth(string calldata name, string calldata symbol, uint initialSupply, uint256 cRatioActive_, uint256 cRatioPassive_, Feed feed) external onlyOwner {
     require(cRatioPassive_ > cRatioActive_, 'Invalid cRatioActive');
 
     uint id = synths.length;
-    synths.push(new GTokenERC20(name, symbol));
+    synths.push(new GTokenERC20(name, symbol, initialSupply));
     cRatiosActive[synths[id]] = cRatioActive_;
     cRatioPassive[synths[id]] = cRatioPassive_;
     feeds[synths[id]] = feed;
