@@ -88,7 +88,7 @@ contract Minter {
 
     uint256 collateralValue = (collateralBalance[msg.sender][token] * collateralFeed.price()) / 1 ether;
     uint256 futureDebtValue = (synthDebt[msg.sender][token] + amount) * feeds[token].price() / 1 ether;
-    require(collateralValue >= futureDebtValue * cRatiosActive[token] / 100, 'below cRatio');
+    require(collateralValue >= futureDebtValue * cRatiosActive[token] / 100, 'Below cRatio');
 
     token.approve(address(this), amount);
     synthDebt[msg.sender][token] += amount;

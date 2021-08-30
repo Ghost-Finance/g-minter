@@ -3,10 +3,20 @@ type TokenDetails = {
   symbol: string;
 };
 
+type AccountFlaggedForLiquidationEvent = {
+  account: string;
+  endFlagDate: Number;
+};
+
 type ApproveEvent = {
   to: string;
   from: string;
   amount: number;
+};
+
+type BurnEvent = {
+  user: string;
+  value: number;
 };
 
 type CreateSynthEvent = {
@@ -32,22 +42,13 @@ type MintEvent = {
   amountTotal: number;
 };
 
-type BurnEvent = {
-  user: string;
-  value: number;
-};
-
-type ChangedFinancialContractAddressEvent = {
-  newFinancialContractAddress: string;
-};
-
 export {
-  TokenDetails,
+  AccountFlaggedForLiquidationEvent,
   ApproveEvent,
+  BurnEvent,
   CreateSynthEvent,
   DepositedCollateralEvent,
-  WithdrawnCollateralEvent,
   MintEvent,
-  BurnEvent,
-  ChangedFinancialContractAddressEvent,
+  TokenDetails,
+  WithdrawnCollateralEvent,
 };

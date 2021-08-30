@@ -3,14 +3,41 @@ import { ethers } from 'hardhat';
 import { BigNumber, Contract } from 'ethers';
 import { expect } from 'chai';
 import {
+  AccountFlaggedForLiquidationEvent,
   CreateSynthEvent,
   BurnEvent,
-  ChangedFinancialContractAddressEvent,
   DepositedCollateralEvent,
   MintEvent,
   WithdrawnCollateralEvent,
 } from '../types/types';
 import { formatEther } from 'ethers/lib/utils';
+
+export const checkFlagLiquidateEvent = async (
+  contract: Contract,
+  account: string,
+  endFlagDate: Date
+): Promise<boolean> => {
+  let accountFlaggedEvent = new Promise<AccountFlaggedForLiquidationEvent>(
+    (resolve, reject) => {
+      contract.on('AccountFlaggedForLiquidation', (account, endFlagDate) =>
+        resolve({
+          account: account,
+          endFlagDate: new Date(endFlagDate * 1000).getDate(),
+        })
+      );
+
+      setTimeout(() => {
+        reject(new Error('timeout'));
+      }, 60000);
+    }
+  );
+
+  const eventFlagLiquidate = await accountFlaggedEvent;
+  expect(eventFlagLiquidate.account).to.be.equal(account);
+  expect(eventFlagLiquidate.endFlagDate).to.be.equal(endFlagDate.getDate());
+
+  return true;
+};
 
 export const checkCreateSynthEvent = async (
   contract: Contract,
@@ -148,34 +175,6 @@ export const checkWithdrawalEvent = async (
   expect(eventWithdrawal.user).to.be.equal(sender);
   expect(eventWithdrawal.collateral).to.be.equal(collateralValue);
   expect(eventWithdrawal.collateralAddress).to.be.equal(address);
-  contract.removeAllListeners();
-
-  return true;
-};
-
-export const checkChangedFinancialContractAddressEvent = async (
-  contract: Contract,
-  address: string
-): Promise<boolean> => {
-  let changedFinancialContractAddressEvent = new Promise<
-    ChangedFinancialContractAddressEvent
-  >((resolve, reject) => {
-    contract.on('WithdrawnCollateral', newFinancialContractAddress => {
-      resolve({
-        newFinancialContractAddress: newFinancialContractAddress,
-      });
-    });
-
-    setTimeout(() => {
-      reject(new Error('timeout'));
-    }, 60000);
-  });
-
-  const eventChangedFinancialContractAddress = await changedFinancialContractAddressEvent;
-  expect(
-    eventChangedFinancialContractAddress.newFinancialContractAddress
-  ).to.be.equal(address);
-
   contract.removeAllListeners();
 
   return true;

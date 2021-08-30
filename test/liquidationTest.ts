@@ -1,9 +1,12 @@
 import { ethers } from 'hardhat';
-import { expect } from 'chai';
+import * as chai from 'chai';
 import { BigNumber } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
-import { checkDepositEvent, checkMintEvent } from './util/CheckEvent';
+import { checkFlagLiquidateEvent } from './util/CheckEvent';
 import setup from './util/setup';
+
+chai.use(require('chai-datetime'));
+const { expect } = chai;
 
 const amount = BigNumber.from(parseEther('10'));
 const amountToDeposit = BigNumber.from(parseEther('10'));
@@ -26,10 +29,7 @@ describe('Liquidation', async function() {
     synthTokenAddress = await state.minter.getSynth(0);
 
     await state.minter.depositCollateral(synthTokenAddress, amountToDeposit);
-    await state.minter.mint(
-      synthTokenAddress,
-      BigNumber.from(parseEther('10'))
-    );
+    await state.minter.mint(synthTokenAddress, BigNumber.from(parseEther('5')));
   });
 
   describe('Flag account to liquidate', async function() {
@@ -43,34 +43,24 @@ describe('Liquidation', async function() {
       }
     });
 
-    it.only('Should revert if account is above cRatio passive of 300%', async function() {
-      const value = BigNumber.from(parseEther('5'));
-      const account = state.contractAccounts[1];
-      await state.token.transfer(account.address, value);
+    it('Should revert if account is above passive cRatio of 300%', async function() {
+      const account = state.contractCreatorOwner;
 
       try {
-        await state.minter
-          .connect(account)
-          .depositCollateral(synthTokenAddress, value);
-        expect(
-          await checkDepositEvent(
-            state.minter,
-            account.address,
-            synthTokenAddress,
-            amountToDeposit
-          )
-        ).to.be.true;
-
-        await state.minter
-          .connect(account)
-          .mint(synthTokenAddress, BigNumber.from(parseEther('1')));
-        expect(await checkMintEvent(state.minter, account.address, amount)).to
-          .be.true;
-
         await state.minter.flagLiquidate(account.address, synthTokenAddress);
       } catch (error) {
         expect(error.message).to.match(/Abouve cRatioPassivo/);
       }
+    });
+
+    it('Should return success if account is below passive cRatio of 300%', async function() {
+      const date = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
+      const account = state.contractCreatorOwner;
+
+      await state.feed.updatePrice(BigNumber.from(parseEther('0.7')));
+      await state.minter.flagLiquidate(account.address, synthTokenAddress);
+      expect(await checkFlagLiquidateEvent(state.minter, account.address, date))
+        .to.be.true;
     });
   });
 });

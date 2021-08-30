@@ -172,7 +172,7 @@ describe('Minter', async function() {
       try {
         await state.minter.mint(tokenSynth, amountToMint);
       } catch (error) {
-        expect(error.message).to.match(/below cRatio/);
+        expect(error.message).to.match(/Below cRatio/);
       }
     });
 
