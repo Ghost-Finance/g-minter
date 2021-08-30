@@ -4,7 +4,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { parseEther } from 'ethers/lib/utils';
 
 let minterContractLabelString: string = 'Minter';
-let tokenContractLabelString: string = 'Token';
+let tokenContractLabelString: string = 'GTokenERC20';
 let feedContractLabelString: string = 'Feed';
 let auctionHouseContractLabelString: string = 'AuctionHouse';
 
@@ -28,7 +28,7 @@ const setup = async () => {
   );
   Minter = await ethers.getContractFactory(minterContractLabelString);
 
-  token = await Token.deploy('erc20 coin', 'Token');
+  token = await Token.deploy('erc20 coin', 'Token', amount);
   feed = await Feed.deploy(parseEther('10'), 'Feed Token');
   auctionHouse = await AuctionHouse.deploy();
   minter = await Minter.deploy(
@@ -38,7 +38,6 @@ const setup = async () => {
   );
 
   await token.approve(minter.address, amount);
-  await token.mint(contractCreatorOwner.address, amount);
 
   return {
     contractAccounts,

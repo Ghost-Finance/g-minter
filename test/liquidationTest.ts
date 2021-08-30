@@ -17,6 +17,7 @@ describe('Liquidation', async function() {
     await state.minter.createSynth(
       'Test coin',
       'COIN',
+      amount,
       200,
       300,
       feedSynth.address
@@ -35,12 +36,11 @@ describe('Liquidation', async function() {
       try {
         await state.minter.flagLiquidate(account.address, synthTokenAddress);
       } catch (error) {
-        console.log(error.message);
         expect(error.message).to.match(/User cannot be flagged for liquidate/);
       }
     });
 
-    it.only('Should revert if account is above cRatio passive of 300%', async function() {
+    it('Should revert if account is above cRatio passive of 300%', async function() {
       const value = BigNumber.from(parseEther('5'));
       const account = state.contractAccounts[0];
       await state.token.mint(account.address, amount);
