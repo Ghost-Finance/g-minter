@@ -11,7 +11,7 @@ import {
 
 // contract label name Minter.
 let minterContractLabelString: string = 'Minter';
-let tokenContractLabelString: string = 'Token';
+let tokenContractLabelString: string = 'GTokenERC20';
 let feedContractLabelString: string = 'Feed';
 let auctionHouseContractLabelString: string = 'AuctionHouse';
 
@@ -24,7 +24,7 @@ const amount = BigNumber.from(parseEther('10'));
 describe('Minter', async function() {
   let owners,
     accounts,
-    Token,
+    TokenERC20,
     Feed,
     Minter,
     AuctionHouse,
@@ -39,7 +39,7 @@ describe('Minter', async function() {
     contractAccounts = accounts;
 
     // Declare contracts
-    Token = await ethers.getContractFactory(tokenContractLabelString);
+    TokenERC20 = await ethers.getContractFactory(tokenContractLabelString);
     Feed = await ethers.getContractFactory(feedContractLabelString);
     AuctionHouse = await ethers.getContractFactory(
       auctionHouseContractLabelString
@@ -47,7 +47,7 @@ describe('Minter', async function() {
     Minter = await ethers.getContractFactory(minterContractLabelString);
 
     // Deploy contracts
-    token = await Token.deploy('erc20 coin', 'Token');
+    token = await TokenERC20.deploy('erc20 coin', 'Token', amount);
     feed = await Feed.deploy(parseEther('10'), 'Feed Token');
     auctionHouse = await AuctionHouse.deploy();
     minter = await Minter.deploy(
@@ -57,7 +57,6 @@ describe('Minter', async function() {
     );
 
     await token.approve(minter.address, amount);
-    await token.mint(contractCreatorOwner.address, amount);
   });
 
   describe('Create a Synths', async function() {
@@ -68,11 +67,16 @@ describe('Minter', async function() {
       try {
         await minter
           .connect(account)
-          .createSynth('Test coin', 'COIN', 100, 200, feedSynth.address);
+          .createSynth(
+            'Test coin',
+            'COIN',
+            amount,
+            100,
+            200,
+            feedSynth.address
+          );
       } catch (error) {
-        expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert unauthorized'
-        );
+        expect(error.message).to.match(/unauthorized/);
       }
     });
 
@@ -83,14 +87,13 @@ describe('Minter', async function() {
         await minter.createSynth(
           'Test coin',
           'COIN',
+          amount,
           300,
           200,
           feedSynth.address
         );
       } catch (error) {
-        expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert Invalid cRatioActive'
-        );
+        expect(error.message).to.match(/Invalid cRatioActive/);
       }
     });
 
@@ -100,6 +103,7 @@ describe('Minter', async function() {
       await minter.createSynth(
         'Test coin',
         'COIN',
+        amount,
         200,
         300,
         feedSynth.address
@@ -127,6 +131,7 @@ describe('Minter', async function() {
       await minter.createSynth(
         'Test coin',
         'COIN',
+        amount,
         200,
         300,
         feedSynth.address
@@ -143,8 +148,8 @@ describe('Minter', async function() {
           .connect(account)
           .depositCollateral(tokenSynth, amountToDeposit);
       } catch (error) {
-        expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert '
+        expect(error.message).to.match(
+          /ERC20: transfer amount exceeds balance/
         );
       }
     });
@@ -153,9 +158,7 @@ describe('Minter', async function() {
       try {
         await minter.depositCollateral(token.address, amountToDeposit);
       } catch (error) {
-        expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert invalid token'
-        );
+        expect(error.message).to.match(/invalid token/);
       }
     });
 
@@ -182,6 +185,7 @@ describe('Minter', async function() {
       await minter.createSynth(
         'Test coin',
         'COIN',
+        amount,
         200,
         300,
         feedSynth.address
@@ -190,13 +194,11 @@ describe('Minter', async function() {
       tokenSynth = await minter.getSynth(0);
     });
 
-    it('Should return error to mint if account has deposit collareal', async function() {
+    it("Should return error to mint if account hasn't the collateral balance", async function() {
       try {
         await minter.mint(tokenSynth, amountToMint);
       } catch (error) {
-        expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert Without collateral deposit'
-        );
+        expect(error.message).to.match(/Without collateral deposit/);
       }
     });
 
@@ -207,9 +209,7 @@ describe('Minter', async function() {
       try {
         await minter.mint(tokenSynth, amountToMint);
       } catch (error) {
-        expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert below cRatio'
-        );
+        expect(error.message).to.match(/below cRatio/);
       }
     });
 
@@ -219,9 +219,7 @@ describe('Minter', async function() {
       try {
         await minter.mint(token.address, amountToMint);
       } catch (error) {
-        expect(error.message).to.be.equal(
-          'VM Exception while processing transaction: revert invalid token'
-        );
+        expect(error.message).to.match(/invalid token/);
       }
     });
 
