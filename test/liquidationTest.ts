@@ -26,7 +26,10 @@ describe('Liquidation', async function() {
     synthTokenAddress = await state.minter.getSynth(0);
 
     await state.minter.depositCollateral(synthTokenAddress, amountToDeposit);
-    await state.minter.mint(synthTokenAddress, BigNumber.from(parseEther('5')));
+    await state.minter.mint(
+      synthTokenAddress,
+      BigNumber.from(parseEther('10'))
+    );
   });
 
   describe('Flag account to liquidate', async function() {
@@ -40,15 +43,15 @@ describe('Liquidation', async function() {
       }
     });
 
-    it('Should revert if account is above cRatio passive of 300%', async function() {
+    it.only('Should revert if account is above cRatio passive of 300%', async function() {
       const value = BigNumber.from(parseEther('5'));
-      const account = state.contractAccounts[0];
-      await state.token.mint(account.address, amount);
+      const account = state.contractAccounts[1];
+      await state.token.transfer(account.address, value);
 
       try {
         await state.minter
           .connect(account)
-          .depositCollateral(synthTokenAddress, amountToDeposit);
+          .depositCollateral(synthTokenAddress, value);
         expect(
           await checkDepositEvent(
             state.minter,
@@ -58,14 +61,11 @@ describe('Liquidation', async function() {
           )
         ).to.be.true;
 
-        await state.minter.connect(account).mint(synthTokenAddress, value);
-        expect(
-          await checkMintEvent(
-            state.minter,
-            state.contractCreatorOwner.address,
-            amount
-          )
-        ).to.be.true;
+        await state.minter
+          .connect(account)
+          .mint(synthTokenAddress, BigNumber.from(parseEther('1')));
+        expect(await checkMintEvent(state.minter, account.address, amount)).to
+          .be.true;
 
         await state.minter.flagLiquidate(account.address, synthTokenAddress);
       } catch (error) {
