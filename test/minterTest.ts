@@ -67,7 +67,14 @@ describe('Minter', async function() {
       try {
         await minter
           .connect(account)
-          .createSynth('Test coin', 'COIN', 100, 200, feedSynth.address);
+          .createSynth(
+            'Test coin',
+            'COIN',
+            amount,
+            100,
+            200,
+            feedSynth.address
+          );
       } catch (error) {
         expect(error.message).to.match(/unauthorized/);
       }
@@ -80,6 +87,7 @@ describe('Minter', async function() {
         await minter.createSynth(
           'Test coin',
           'COIN',
+          amount,
           300,
           200,
           feedSynth.address
@@ -89,7 +97,7 @@ describe('Minter', async function() {
       }
     });
 
-    it.only('Success on create a new Synth', async function() {
+    it('Success on create a new Synth', async function() {
       const feedSynth = await Feed.deploy(amount, 'Feed GDAI');
 
       await minter.createSynth(
@@ -123,6 +131,7 @@ describe('Minter', async function() {
       await minter.createSynth(
         'Test coin',
         'COIN',
+        amount,
         200,
         300,
         feedSynth.address
@@ -176,6 +185,7 @@ describe('Minter', async function() {
       await minter.createSynth(
         'Test coin',
         'COIN',
+        amount,
         200,
         300,
         feedSynth.address
