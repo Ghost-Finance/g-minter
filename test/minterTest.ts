@@ -27,7 +27,14 @@ describe('Minter', async function() {
       try {
         await state.minter
           .connect(account)
-          .createSynth('Test coin', 'COIN', 100, 200, feedSynth.address);
+          .createSynth(
+            'Test coin',
+            'COIN',
+            amount,
+            100,
+            200,
+            feedSynth.address
+          );
       } catch (error) {
         expect(error.message).to.match(/unauthorized/);
       }
@@ -40,6 +47,7 @@ describe('Minter', async function() {
         await state.minter.createSynth(
           'Test coin',
           'COIN',
+          amount,
           300,
           200,
           feedSynth.address
@@ -55,6 +63,7 @@ describe('Minter', async function() {
       await state.minter.createSynth(
         'Test coin',
         'COIN',
+        amount,
         200,
         300,
         feedSynth.address
@@ -82,6 +91,7 @@ describe('Minter', async function() {
       await state.minter.createSynth(
         'Test coin',
         'COIN',
+        amount,
         200,
         300,
         feedSynth.address
@@ -98,7 +108,9 @@ describe('Minter', async function() {
           .connect(account)
           .depositCollateral(tokenSynth, amountToDeposit);
       } catch (error) {
-        expect(error.message).to.match(/revert/);
+        expect(error.message).to.match(
+          /ERC20: transfer amount exceeds balance/
+        );
       }
     });
 
@@ -136,6 +148,7 @@ describe('Minter', async function() {
       await state.minter.createSynth(
         'Test coin',
         'COIN',
+        amount,
         200,
         300,
         feedSynth.address
@@ -144,7 +157,7 @@ describe('Minter', async function() {
       tokenSynth = await state.minter.getSynth(0);
     });
 
-    it('Should return error to mint if account has deposit collareal', async function() {
+    it("Should return error to mint if account hasn't the collateral balance", async function() {
       try {
         await state.minter.mint(tokenSynth, amountToMint);
       } catch (error) {
