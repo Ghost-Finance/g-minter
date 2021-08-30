@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import './Token.sol';
 import './AuctionHouse.sol';
 import './base/Feed.sol';
+import 'hardhat/console.sol';
 
 contract Minter {
   address public owner;
@@ -32,7 +33,7 @@ contract Minter {
   event Liquidate(address indexed accountLiquidated, address indexed accountFrom, address token, uint256 collateralValue);
 
   modifier onlyOwner() {
-    require(msg.sender == owner, "unauthorized");
+    require(msg.sender == owner, 'unauthorized');
     _;
   }
 
@@ -122,9 +123,11 @@ contract Minter {
   }
 
   function flagLiquidate(address user, Token token) external {
+    require(collateralBalance[user][token] > 0 && synthDebt[user][token] > 0, 'User cannot be flagged for liquidate');
+
     uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;
     uint256 debtValue = synthDebt[user][token] * feeds[token].price() / 1 ether;
-    require(collateralValue < debtValue * cRatioPassive[token] / 100, "above cRatioPassivo");
+    require(collateralValue < debtValue * cRatioPassive[token] / 100, "Above cRatioPassivo");
     plrDelay[user][token] = block.timestamp + 10 days;
 
     emit AccountFlaggedForLiquidation(user, plrDelay[user][token]);

@@ -2,25 +2,30 @@
 pragma solidity ^0.8.0;
 
 import './Token.sol';
+import './base/Feed.sol';
 
 contract AuctionHouse {
   struct Auction {
     address user;
-    address tokenAddress; //cdpAccountAddress;
+    address tokenAddress;
     address collateralTokenAddress;
     address keeperAddress;
-    uint256 collateralAmount;
-    uint initialPrice;
-    uint256 priceReductionRatio;
+    uint256 collateralBalance;
+    uint256 collateralValue;
+    uint auctionTarget;
     address collateralFeedPrice;
     address synthFeedPrice;
     uint startTimestamp;
     uint endTimestamp;
   }
 
-  uint constant WAD = 10**18;
-  uint constant RAY = 10**27;
-  uint constant RAD = 10**45;
+  uint256 constant WAD = 10**18;
+  uint256 constant RAY = 10**27;
+  uint256 constant RAD = 10**45;
+  uint256 constant PRICE_REDUCTION_RATIO = (uint256(99) * RAY) / 100;
+  uint256 constant ratio = 9;
+  uint256 constant buf = 1 ether;
+  uint256 constant step = 90;
 
   Auction[] public auctions;
 
@@ -28,105 +33,89 @@ contract AuctionHouse {
   event Take(uint indexed id, address indexed keeper, address indexed to, uint amount, uint totalAmount, uint end);
 
   function start (
-      address user_,
-      address tokenAddress_,
-      address collateralTokenAddress_,
-      address keeperAddress_,
-      uint256 collateralAmount_,
-      uint initialPrice_, // pode ser de oracle
-      uint256 priceReductionRatio_, // 0.999999999999999999999999999 1% aa. step=90s
-      address collateralFeedPrice_,
-      address synthFeedPrice_
+    address user_,
+    address tokenAddress_,
+    address collateralTokenAddress_,
+    address keeperAddress_,
+    uint256 collateralBalance_,
+    uint256 collateralValue_,
+    uint256 auctionTarget_,
+    address collateralFeedPrice_,
+    address synthFeedPrice_
   ) public {
-      uint256 initialDate = block.timestamp;
-      uint256 endDate = initialDate + 1 weeks;
+    uint256 startTimestamp_ = block.timestamp;
+    uint256 endTimestamp_ = startTimestamp_ + 1 weeks;
 
-      auctions.push(
-          Auction(
-              user_,
-              tokenAddress_,
-              collateralTokenAddress_,
-              keeperAddress_,
-              collateralAmount_,
-              initialPrice_,
-              priceReductionRatio_,
-              collateralFeedPrice_,
-              synthFeedPrice_,
-              initialDate,
-              endDate
-          )
-      );
+    auctions.push(
+      Auction(
+        user_,
+        tokenAddress_,
+        collateralTokenAddress_,
+        keeperAddress_,
+        collateralBalance_,
+        collateralValue_,
+        auctionTarget_,
+        collateralFeedPrice_,
+        synthFeedPrice_,
+        startTimestamp_,
+        endTimestamp_
+      )
+    );
 
-      // emitir evento
-      emit Start(tokenAddress_, keeperAddress_, collateralAmount_, initialDate, endDate);
-
-      // tras o tokenToSell
-      require(Token(collateralTokenAddress_).transferFrom(msg.sender, address(this), collateralAmount_), "token transfer fail");
-      // require(Token(tokenAddress_).transferFrom(tx.origin, address(this), initialPrice_), "token transfer fail");
+    emit Start(tokenAddress_, keeperAddress_, collateralBalance_, startTimestamp_, endTimestamp_);
+    require(Token(collateralTokenAddress_).transferFrom(msg.sender, address(this), collateralValue_), "token transfer fail");
   }
 
-  // auctionId,
-  // amt amount para a comprar
-  // receiver address
-  // address timeHouse que deve retornar o preço atual do GDai
-  // liquidateDelinquentAccount
-  function take(uint auctionId, uint amount, address receiver) public {
+  function take(uint256 auctionId, uint256 amount, uint256 maxCollateralPrice, address receiver) public  {
     Auction storage auction = auctions[auctionId];
     uint slice;
     require(amount > 0);
     require(block.timestamp > auction.startTimestamp && block.timestamp < auction.endTimestamp);
-    // uint totalAmountAuction = price(auction.initialPrice, block.timestamp - auction.startTimestamp, auction.priceReductionRatio) * auction.auctionTarget;
-    if (amount > auction.collateralAmount) {
-        slice = auction.collateralAmount;
+    if (amount > auction.collateralBalance) {
+      slice = auction.collateralBalance;
     } else {
-        slice = amount;
+      slice = amount;
     }
 
-    // uint amountToFixCollateral = calculateAmountToFixCollateral(auction.initialPrice, slice);
+    uint initialPrice = Feed(auction.collateralFeedPrice).price();
+    uint priceTimeHouse = price(initialPrice, block.timestamp - auction.startTimestamp);
+    require(priceTimeHouse < maxCollateralPrice);
 
-    // require(Token(auction.tokenAddress).transferFrom(msg.sender, receiver, slice), "token transfer fail");
-    // etapas:
-    //  - slice deve calcular
-    auction.collateralAmount -= slice;
-    if (auction.collateralAmount == 0) {
-        auction.endTimestamp = block.timestamp;
+    uint owe = mul(slice, priceTimeHouse) / WAD;
+    uint liquidationTarget = calculateAmountToFixCollateral(auction.auctionTarget, (auction.collateralBalance * priceTimeHouse) / WAD);
+    require(liquidationTarget > 0);
+
+    if (liquidationTarget > owe) {
+      slice = owe / priceTimeHouse;
+      auction.auctionTarget = liquidationTarget - owe;
+    } else {
+      slice = liquidationTarget / priceTimeHouse;
+      auction.auctionTarget = 0;
     }
 
-    // emitir evento
-    emit Take(auctionId, msg.sender, receiver, slice, auction.collateralAmount, auction.endTimestamp);
+    emit Take(auctionId, msg.sender, receiver, slice, auction.auctionTarget, auction.endTimestamp);
   }
 
-  /**
-    * r = target issuance ratio
-    * D = debt balance
-    * V = Collateral
-    * P = liquidation penalty
-    * Calculates amount of synths = (D - V * r) / (1 - (1 + P) * r)
-    */
-  function calculateAmountToFixCollateral(uint debtBalance, uint collateral) public view returns (uint) {
-    uint ratio = 900; //getIssuanceRatio();
+  function calculateAmountToFixCollateral(uint256 debtBalance, uint256 collateral) public pure returns (uint) {
+    uint dividend = (ratio * debtBalance) - collateral;
 
-    // uint dividend = debtBalance.sub(collateral.multiplyDecimal(ratio));
-    uint dividend = debtBalance - (collateral * ratio / WAD);
-    // uint divisor = unit.sub(unit.add(getLiquidationPenalty()).multiplyDecimal(ratio));
-    uint divisor = WAD - (WAD + WAD / 10) * ratio;
-
-    return dividend * WAD / divisor;
+    return dividend / (ratio - 1);
   }
 
-  // top: initial price
-  // dur: seconds since the auction has started
-  // cut: cut encodes the percentage to decrease per second.
-  //   For efficiency, the values is set as (1 - (% value / 100)) * RAY
-  //   So, for a 1% decrease per second, cut would be (1 - 0.01) * RAY
-  //
-  // returns: top * (cut ^ dur)
-  //
-  function price(uint256 initialPrice, uint256 duration, uint priceReductionRatio) public pure returns (uint256) {
-    return rpow(priceReductionRatio, duration, RAY) * initialPrice / RAY;
+  function getAuction(uint auctionId) public view returns (Auction memory) {
+    return auctions[auctionId];
   }
 
-  // optimized version from dss PR #78
+  function price(uint256 initialPrice, uint256 duration) public pure returns (uint256) {
+    return rmul(initialPrice, rpow(PRICE_REDUCTION_RATIO, duration / step, RAY));
+  }
+
+  function rmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
+    z = mul(x, y);
+    require(y == 0 || z / y == x);
+    z = div(z, RAY);
+  }
+
   function rpow(uint256 x, uint256 n, uint256 b) internal pure returns (uint256 z) {
     assembly {
       switch n case 0 { z := b }
@@ -154,7 +143,11 @@ contract AuctionHouse {
     }
   }
 
-  function getAuction(uint auctionId) public view returns (Auction memory) {
-    return auctions[auctionId];
+  function mul(uint256 x, uint256 y) internal pure returns (uint256 z) {
+    z = x * y;
+  }
+
+  function div(uint256 x, uint256 y) internal pure returns (uint256 z) {
+    z = x / y;
   }
 }
