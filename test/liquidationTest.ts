@@ -40,7 +40,7 @@ describe('Liquidation', async function() {
   });
 
   describe('Flag account to liquidate', async function() {
-    it("Should revert if account hasn't collateral", async function() {
+    it("Should revert if the account hasn't collateral", async function() {
       const owner = state.contractCreatorOwner.address;
 
       try {
@@ -52,7 +52,7 @@ describe('Liquidation', async function() {
       }
     });
 
-    it('Should revert if account is above passive cRatio of 300%', async function() {
+    it('Should revert if the account is above passive C-Ratio of 300%', async function() {
       const owner = state.contractCreatorOwner.address;
 
       try {
@@ -64,7 +64,7 @@ describe('Liquidation', async function() {
       }
     });
 
-    it('Should return success if account is below passive cRatio of 300%', async function() {
+    it('Should return success if the account is below passive C-Ratio of 300%', async function() {
       const date = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
       const owner = state.contractCreatorOwner.address;
       await state.feed.updatePrice(BigNumber.from(parseEther('0.7')));
