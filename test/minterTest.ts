@@ -10,7 +10,7 @@ import {
 } from './util/CheckEvent';
 import setup from './util/setup';
 
-const amount = BigNumber.from(parseEther('10'));
+const amount = BigNumber.from(parseEther('500'));
 
 describe('Minter', async function() {
   let state;
@@ -144,7 +144,7 @@ describe('Minter', async function() {
 
     beforeEach(async function() {
       amountToMint = BigNumber.from(parseEther('1'));
-      const feedSynth = await state.Feed.deploy(amount, 'Feed Coin');
+      const feedSynth = await state.Feed.deploy(amountToMint, 'Feed Coin');
       await state.minter.createSynth(
         'Test coin',
         'COIN',
@@ -166,8 +166,8 @@ describe('Minter', async function() {
     });
 
     it('Should return error to mint if account has below cRatio', async function() {
-      await state.minter.depositCollateral(tokenSynth, parseEther('10'));
-      await state.feed.updatePrice(parseEther('5'));
+      await state.minter.depositCollateral(tokenSynth, parseEther('100'));
+      await state.feed.updatePrice(parseEther('50'));
 
       try {
         await state.minter.mint(tokenSynth, amountToMint);
@@ -177,7 +177,7 @@ describe('Minter', async function() {
     });
 
     it('Should return error to mint if token minted is the same as collateral', async function() {
-      await state.minter.depositCollateral(tokenSynth, parseEther('10'));
+      await state.minter.depositCollateral(tokenSynth, parseEther('100'));
 
       try {
         await state.minter.mint(state.token.address, amountToMint);
@@ -186,11 +186,12 @@ describe('Minter', async function() {
       }
     });
 
-    it.only('Should return success when mint a synth', async function() {
+    it('Should return success when mint a synth', async function() {
       const value = BigNumber.from(parseEther('50'));
-      await state.minter.depositCollateral(tokenSynth, parseEther('100'));
-      const feed = await state.feed.price();
-      console.log(feed.toString());
+      await state.minter.depositCollateral(
+        tokenSynth,
+        BigNumber.from(parseEther('100'))
+      );
       await state.minter.mint(tokenSynth, value);
 
       expect(
