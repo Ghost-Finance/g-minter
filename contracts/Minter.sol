@@ -41,6 +41,11 @@ contract Minter {
     _;
   }
 
+  modifier isNotSender(address user) {
+    require(user != address(msg.sender), 'Sender cannot be the liquidated');
+    _;
+  }
+
   constructor(address collateralToken_, address collateralFeed_, address auctionHouse_) {
     collateralToken = GTokenERC20(collateralToken_);
     collateralFeed  = Feed(collateralFeed_);
@@ -120,7 +125,7 @@ contract Minter {
     }
   }
 
-  function flagLiquidate(address user, GTokenERC20 token) external {
+  function flagLiquidate(address user, GTokenERC20 token) external isNotSender(user) {
     require(collateralBalance[user][token] > 0 && synthDebt[user][token] > 0, 'User cannot be flagged for liquidate');
 
     uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;

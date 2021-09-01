@@ -143,7 +143,7 @@ describe('Minter', async function() {
     let tokenSynth, amountToMint;
 
     beforeEach(async function() {
-      amountToMint = BigNumber.from(parseEther('10'));
+      amountToMint = BigNumber.from(parseEther('1'));
       const feedSynth = await state.Feed.deploy(amount, 'Feed Coin');
       await state.minter.createSynth(
         'Test coin',
@@ -186,9 +186,11 @@ describe('Minter', async function() {
       }
     });
 
-    it('Should return success when mint a synth', async function() {
-      const value = BigNumber.from(parseEther('5'));
-      await state.minter.depositCollateral(tokenSynth, parseEther('10'));
+    it.only('Should return success when mint a synth', async function() {
+      const value = BigNumber.from(parseEther('50'));
+      await state.minter.depositCollateral(tokenSynth, parseEther('100'));
+      const feed = await state.feed.price();
+      console.log(feed.toString());
       await state.minter.mint(tokenSynth, value);
 
       expect(
