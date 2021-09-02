@@ -2,14 +2,17 @@ import { ethers } from 'hardhat';
 import * as chai from 'chai';
 import { BigNumber } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
-import { checkFlagLiquidateEvent } from './util/CheckEvent';
+import {
+  checkFlagLiquidateEvent,
+  checkLiquidateEvent,
+} from './util/CheckEvent';
 import setup from './util/setup';
 
 chai.use(require('chai-datetime'));
 const { expect } = chai;
 
-const amount = BigNumber.from(parseEther('500'));
-const amountToDeposit = BigNumber.from(parseEther('100'));
+const amount = BigNumber.from(parseEther('5'));
+const amountToDeposit = BigNumber.from(parseEther('10'));
 
 describe('Liquidation', async function() {
   let state, synthTokenAddress, account;
@@ -33,10 +36,7 @@ describe('Liquidation', async function() {
 
     synthTokenAddress = await state.minter.getSynth(0);
     await state.minter.depositCollateral(synthTokenAddress, amountToDeposit);
-    await state.minter.mint(
-      synthTokenAddress,
-      BigNumber.from(parseEther('50'))
-    );
+    await state.minter.mint(synthTokenAddress, BigNumber.from(parseEther('5')));
   });
 
   describe('Flag account to liquidate', async function() {
@@ -78,5 +78,39 @@ describe('Liquidation', async function() {
     });
   });
 
-  describe('Liquidate', async function() {});
+  describe('Liquidate', async function() {
+    let owner;
+
+    beforeEach(async function() {
+      owner = state.contractCreatorOwner.address;
+      await state.feed.updatePrice(BigNumber.from(parseEther('0.7')));
+      await state.minter
+        .connect(account)
+        .flagLiquidate(owner, synthTokenAddress);
+    });
+
+    it('Should revert ', async function() {});
+
+    it('Should liquidate user if is below active C-Ratio 200%', async function() {
+      const date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      await state.minter.connect(account).liquidate(owner, synthTokenAddress);
+      expect(
+        await checkLiquidateEvent(
+          state.minter,
+          state.auctionHouse,
+          owner,
+          account.address,
+          synthTokenAddress,
+          date
+        )
+      ).to.be.true;
+
+      const balance = await state.minter.balanceOfSynth(
+        account.address,
+        synthTokenAddress
+      );
+      expect(balance.toString()).to.be.equal(parseEther('0.2').toString());
+    });
+  });
 });

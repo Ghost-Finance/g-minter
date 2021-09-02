@@ -39,7 +39,7 @@ const setup = async () => {
 
   await token.approve(minter.address, amount);
   await token.approve(contractCreatorOwner.address, amount);
-  await token.approve(contractAccounts[0].address, amount);
+  await token.approve(contractAccounts[0].address, parseEther('100'));
 
   return {
     contractAccounts,

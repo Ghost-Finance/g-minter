@@ -1,8 +1,3 @@
-type TokenDetails = {
-  name: string;
-  symbol: string;
-};
-
 type AccountFlaggedForLiquidationEvent = {
   account: string;
   endFlagDate: Number;
@@ -31,15 +26,39 @@ type DepositedCollateralEvent = {
   amount: number;
 };
 
+type MintEvent = {
+  user: string;
+  amountTotal: number;
+};
+
+type LiquidateEvent = {
+  userLiquidated: string;
+  keeper: string;
+  tokenAddress: string;
+};
+
+type StartAuctionHouseEvent = {
+  token: string;
+  keeper: string;
+  collateralValue: number;
+  endDateTime: number;
+};
+
+type TokenDetails = {
+  name: string;
+  symbol: string;
+};
+
+type TransferEvent = {
+  sender: string;
+  receiver: string;
+  amount: number;
+};
+
 type WithdrawnCollateralEvent = {
   user: string;
   collateral: number;
   collateralAddress: string;
-};
-
-type MintEvent = {
-  user: string;
-  amountTotal: number;
 };
 
 export {
@@ -49,6 +68,9 @@ export {
   CreateSynthEvent,
   DepositedCollateralEvent,
   MintEvent,
+  LiquidateEvent,
+  StartAuctionHouseEvent,
   TokenDetails,
+  TransferEvent,
   WithdrawnCollateralEvent,
 };
