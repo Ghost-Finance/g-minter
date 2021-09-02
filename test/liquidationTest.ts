@@ -14,7 +14,7 @@ const { expect } = chai;
 const amount = BigNumber.from(parseEther('5'));
 const amountToDeposit = BigNumber.from(parseEther('10'));
 
-describe('Liquidation', async function() {
+describe('Liquidation tests', async function() {
   let state, synthTokenAddress, account;
 
   beforeEach(async function() {
@@ -79,37 +79,63 @@ describe('Liquidation', async function() {
   });
 
   describe('Liquidate', async function() {
-    let owner;
-
-    beforeEach(async function() {
-      owner = state.contractCreatorOwner.address;
+    it('Should revert if the account liquidated is the same calling the liquidate method', async function() {
+      const accountOne = state.contractCreatorOwner.address;
       await state.feed.updatePrice(BigNumber.from(parseEther('0.7')));
       await state.minter
         .connect(account)
-        .flagLiquidate(owner, synthTokenAddress);
+        .flagLiquidate(accountOne, synthTokenAddress);
+
+      try {
+        await state.minter.liquidate(accountOne, synthTokenAddress);
+      } catch (error) {
+        expect(error.message).to.match(/Sender cannot be the liquidated/);
+      }
     });
 
-    it('Should revert ', async function() {});
+    it('Should revert if the period of the account flagged is not end', async function() {
+      const accountOne = state.contractCreatorOwner.address;
+      await state.feed.updatePrice(BigNumber.from(parseEther('0.7')));
+      await state.minter
+        .connect(account)
+        .flagLiquidate(accountOne, synthTokenAddress);
+
+      try {
+        await state.feed.updatePrice(BigNumber.from(parseEther('1')));
+        await state.minter
+          .connect(account)
+          .liquidate(accountOne, synthTokenAddress);
+      } catch (error) {
+        expect(error.message).to.match(/above cRatio/);
+      }
+    });
 
     it('Should liquidate user if is below active C-Ratio 200%', async function() {
       const date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      const accountOne = state.contractCreatorOwner.address;
+      await state.feed.updatePrice(BigNumber.from(parseEther('0.7')));
+      await state.minter
+        .connect(account)
+        .flagLiquidate(accountOne, synthTokenAddress);
 
-      await state.minter.connect(account).liquidate(owner, synthTokenAddress);
+      await state.minter
+        .connect(account)
+        .liquidate(accountOne, synthTokenAddress);
+      const balance = await state.minter.balanceOfSynth(
+        account.address,
+        synthTokenAddress
+      );
+
       expect(
         await checkLiquidateEvent(
           state.minter,
           state.auctionHouse,
-          owner,
+          accountOne,
           account.address,
           synthTokenAddress,
           date
         )
       ).to.be.true;
-
-      const balance = await state.minter.balanceOfSynth(
-        account.address,
-        synthTokenAddress
-      );
       expect(balance.toString()).to.be.equal(parseEther('0.2').toString());
     });
   });

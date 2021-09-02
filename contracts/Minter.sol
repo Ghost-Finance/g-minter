@@ -41,7 +41,7 @@ contract Minter {
     _;
   }
 
-  modifier isNotKeeper(address user) {
+  modifier isValidKeeper(address user) {
     require(user != address(msg.sender), 'Sender cannot be the liquidated');
     _;
   }
@@ -108,7 +108,7 @@ contract Minter {
     emit Burn(msg.sender, address(token), amount);
   }
 
-  function liquidate(address user, GTokenERC20 token) external isNotKeeper(user) {
+  function liquidate(address user, GTokenERC20 token) external isValidKeeper(user) {
     Feed syntFeed = feeds[token];
     uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;
     uint256 debtValue = synthDebt[user][token] * syntFeed.price() / 1 ether;
@@ -126,7 +126,7 @@ contract Minter {
     }
   }
 
-  function flagLiquidate(address user, GTokenERC20 token) external isNotKeeper(user) {
+  function flagLiquidate(address user, GTokenERC20 token) external isValidKeeper(user) {
     require(collateralBalance[user][token] > 0 && synthDebt[user][token] > 0, 'User cannot be flagged for liquidate');
 
     uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;
