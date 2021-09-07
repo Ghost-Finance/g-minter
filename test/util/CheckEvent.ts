@@ -3,11 +3,14 @@ import { ethers } from 'hardhat';
 import { BigNumber, Contract } from 'ethers';
 import { expect } from 'chai';
 import {
+  AccountFlaggedForLiquidationEvent,
   CreateSynthEvent,
   BurnEvent,
-  ChangedFinancialContractAddressEvent,
   DepositedCollateralEvent,
   MintEvent,
+  LiquidateEvent,
+  StartAuctionHouseEvent,
+  TransferEvent,
   WithdrawnCollateralEvent,
 } from '../types/types';
 import { formatEther } from 'ethers/lib/utils';
@@ -153,16 +156,48 @@ export const checkWithdrawalEvent = async (
   return true;
 };
 
-export const checkChangedFinancialContractAddressEvent = async (
+export const checkFlagLiquidateEvent = async (
   contract: Contract,
-  address: string
+  account: string,
+  endFlagDate: Date
 ): Promise<boolean> => {
-  let changedFinancialContractAddressEvent = new Promise<
-    ChangedFinancialContractAddressEvent
-  >((resolve, reject) => {
-    contract.on('WithdrawnCollateral', newFinancialContractAddress => {
+  let accountFlaggedEvent = new Promise<AccountFlaggedForLiquidationEvent>(
+    (resolve, reject) => {
+      contract.on('AccountFlaggedForLiquidation', (account, endFlagDate) =>
+        resolve({
+          account: account,
+          endFlagDate: new Date(endFlagDate * 1000).getDate(),
+        })
+      );
+
+      setTimeout(() => {
+        reject(new Error('timeout'));
+      }, 60000);
+    }
+  );
+
+  const eventFlagLiquidate = await accountFlaggedEvent;
+  expect(eventFlagLiquidate.account).to.be.equal(account);
+  expect(eventFlagLiquidate.endFlagDate).to.be.equal(endFlagDate.getDate());
+
+  return true;
+};
+
+export const checkLiquidateEvent = async (
+  contractMinter: Contract,
+  contractAuctionHouse: Contract,
+  user: string,
+  keeper: string,
+  // amount: number,
+  token: string,
+  endDateTime: Date
+): Promise<boolean> => {
+  let liquidateEvent = new Promise<LiquidateEvent>((resolve, reject) => {
+    contractMinter.on('Liquidate', (user, keeper, token) => {
       resolve({
-        newFinancialContractAddress: newFinancialContractAddress,
+        userLiquidated: user,
+        keeper: keeper,
+        tokenAddress: token,
       });
     });
 
@@ -171,12 +206,38 @@ export const checkChangedFinancialContractAddressEvent = async (
     }, 60000);
   });
 
-  const eventChangedFinancialContractAddress = await changedFinancialContractAddressEvent;
-  expect(
-    eventChangedFinancialContractAddress.newFinancialContractAddress
-  ).to.be.equal(address);
+  let startAuctionHouseEvent = new Promise<StartAuctionHouseEvent>(
+    (resolve, reject) => {
+      contractAuctionHouse.on(
+        'Start',
+        (token, keeper, collateralValue, _, endDateTime) => {
+          resolve({
+            token: token,
+            keeper: keeper,
+            collateralValue: collateralValue,
+            endDateTime: new Date(endDateTime * 1000).getDate(),
+          });
+        }
+      );
 
-  contract.removeAllListeners();
+      setTimeout(() => {
+        reject(new Error('timeout'));
+      }, 60000);
+    }
+  );
+
+  const auctionHouseStart = await startAuctionHouseEvent;
+  expect(auctionHouseStart.token).to.be.equal(token);
+  expect(auctionHouseStart.keeper).to.be.equal(keeper);
+  expect(auctionHouseStart.endDateTime).to.be.equal(endDateTime.getDate());
+
+  const eventLiquidate = await liquidateEvent;
+  expect(eventLiquidate.userLiquidated).to.be.equal(user);
+  expect(eventLiquidate.keeper).to.be.equal(keeper);
+  expect(eventLiquidate.tokenAddress).to.be.equal(token);
+
+  contractMinter.removeAllListeners();
+  contractAuctionHouse.removeAllListeners();
 
   return true;
 };

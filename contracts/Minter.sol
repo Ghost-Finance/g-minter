@@ -29,7 +29,7 @@ contract Minter {
 
   // Events for liquidation
   event AccountFlaggedForLiquidation(address indexed account, uint256 deadline);
-  event Liquidate(address indexed accountLiquidated, address indexed accountFrom, address token, uint256 collateralValue);
+  event Liquidate(address indexed accountLiquidated, address indexed accountFrom, address token);
 
   modifier onlyOwner() {
     require(msg.sender == owner, 'unauthorized');
@@ -38,6 +38,11 @@ contract Minter {
 
   modifier isCollateral(GTokenERC20 token) {
     require(address(token) != address(collateralToken), 'invalid token');
+    _;
+  }
+
+  modifier isValidKeeper(address user) {
+    require(user != address(msg.sender), 'Sender cannot be the liquidated');
     _;
   }
 
@@ -88,7 +93,7 @@ contract Minter {
 
     uint256 collateralValue = (collateralBalance[msg.sender][token] * collateralFeed.price()) / 1 ether;
     uint256 futureDebtValue = (synthDebt[msg.sender][token] + amount) * feeds[token].price() / 1 ether;
-    require(collateralValue >= futureDebtValue * cRatiosActive[token] / 100, 'below cRatio');
+    require(collateralValue >= futureDebtValue * cRatiosActive[token] / 100, 'Below cRatio');
 
     token.approve(address(this), amount);
     synthDebt[msg.sender][token] += amount;
@@ -103,27 +108,30 @@ contract Minter {
     emit Burn(msg.sender, address(token), amount);
   }
 
-  function liquidate(address user, GTokenERC20 token) external {
+  function liquidate(address user, GTokenERC20 token) external isValidKeeper(user) {
+    Feed syntFeed = feeds[token];
     uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;
-    uint256 debtValue = synthDebt[user][token] * feeds[token].price() / 1 ether;
+    uint256 debtValue = synthDebt[user][token] * syntFeed.price() / 1 ether;
     require((collateralValue < debtValue * cRatiosActive[token] / 100) || (collateralValue < debtValue * cRatioPassive[token] / 100 && plrDelay[user][token] < block.timestamp), 'above cRatio');
 
     collateralToken.approve(address(auctionHouse), collateralValue);
-    // token.approve(address(auctionHouse), debtValue);
-    // uint256 priceReductionRatio = (1000000000 / uint256(10000000001)) * (10**27);
     {
-      auctionHouse.start(user, address(token), address(collateralToken), msg.sender, collateralValue, debtValue, (10**27), address(collateralFeed), address(feeds[token]));
-      // auctionHouse.start(address(token), msg.sender, target, collateralBalance[user][token], synthDebt[user][token], priceReductionRatio);
+      uint debtAmountTransferable =  debtValue / 10;
+      _mintPenalty(token, user, debtAmountTransferable);
+      _transferLiquidate(token, msg.sender, debtAmountTransferable);
+      auctionHouse.start(user, address(token), address(collateralToken), msg.sender, collateralValue, debtValue, (10**27), address(collateralFeed), address(syntFeed));
       collateralBalance[user][token] = 0;
 
-      emit Liquidate(user, msg.sender, address(token), collateralValue);
+      emit Liquidate(user, msg.sender, address(token));
     }
   }
 
-  function flagLiquidate(address user, GTokenERC20 token) external {
+  function flagLiquidate(address user, GTokenERC20 token) external isValidKeeper(user) {
+    require(collateralBalance[user][token] > 0 && synthDebt[user][token] > 0, 'User cannot be flagged for liquidate');
+
     uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;
     uint256 debtValue = synthDebt[user][token] * feeds[token].price() / 1 ether;
-    require(collateralValue < debtValue * cRatioPassive[token] / 100, 'above cRatioPassivo');
+    require(collateralValue < debtValue * cRatioPassive[token] / 100, "Above cRatioPassivo");
     plrDelay[user][token] = block.timestamp + 10 days;
 
     emit AccountFlaggedForLiquidation(user, plrDelay[user][token]);
@@ -143,5 +151,20 @@ contract Minter {
 
   function updateSynthFeed(uint id, Feed feed) external {
     feeds[synths[id]] = feed;
+  }
+
+  function _mintPenalty(GTokenERC20 token, address user, uint256 amount) public {
+    token.approve(address(this), amount);
+    synthDebt[address(user)][token] += amount;
+  }
+
+  // address riskReserveAddress, address liquidationVaultAddress
+  function _transferLiquidate(GTokenERC20 token, address keeper, uint256 amount) public {
+    uint keeperAmount = (amount / 100) * 40;
+    // uint restAmount = (amount / 100) * 30;
+
+    require(token.transferFrom(address(this), address(keeper), keeperAmount), 'failed transfer incentive');
+    // token.transfer(address(riskReserveAddress), restAmount);
+    // token.transfer(address(liquidationVaultAddress), restAmount);
   }
 }
