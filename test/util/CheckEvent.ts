@@ -4,13 +4,13 @@ import { BigNumber, Contract } from 'ethers';
 import { expect } from 'chai';
 import {
   AccountFlaggedForLiquidationEvent,
+  AuctionHouseTakeEvent,
   CreateSynthEvent,
   BurnEvent,
   DepositedCollateralEvent,
   MintEvent,
   LiquidateEvent,
   StartAuctionHouseEvent,
-  TransferEvent,
   WithdrawnCollateralEvent,
 } from '../types/types';
 import { formatEther } from 'ethers/lib/utils';
@@ -238,6 +238,39 @@ export const checkLiquidateEvent = async (
 
   contractMinter.removeAllListeners();
   contractAuctionHouse.removeAllListeners();
+
+  return true;
+};
+
+export const checkAuctionHouseTakeEvent = async (
+  contract: Contract,
+  keeper: string,
+  receiver: string,
+  totalAmount: BigNumber
+): Promise<boolean> => {
+  let eventAuctionHouseTake = new Promise<AuctionHouseTakeEvent>(
+    (resolve, reject) => {
+      contract.on('Take', (_, keeper, receiver, totalAmount, end) => {
+        console.log(`slice: ${totalAmount.toString()}`);
+        resolve({
+          keeper: keeper,
+          receiver: receiver,
+          totalAmount: totalAmount,
+        });
+      });
+
+      setTimeout(() => {
+        reject(new Error('timeout'));
+      }, 60000);
+    }
+  );
+
+  const auctionHouseTakeEvent = await eventAuctionHouseTake;
+  expect(auctionHouseTakeEvent.keeper).to.be.equal(keeper);
+  expect(auctionHouseTakeEvent.receiver).to.be.equal(receiver);
+  expect(auctionHouseTakeEvent.totalAmount.toString()).to.be.equal(
+    totalAmount.toString()
+  );
 
   return true;
 };

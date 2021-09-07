@@ -26,11 +26,14 @@ contract AuctionHouse {
   uint256 constant ratio = 9;
   uint256 constant buf = 1 ether;
   uint256 constant step = 90;
+  uint256 constant dust = 10 ether;
+  uint256 constant PENALTY_FEE = 11;
+  uint256 constant chost = (dust * PENALTY_FEE) / 10;
 
   Auction[] public auctions;
 
   event Start(address indexed cdp, address indexed keeper, uint amount, uint start, uint end);
-  event Take(uint indexed id, address indexed keeper, address indexed to, uint amount, uint totalAmount, uint end);
+  event Take(uint indexed id, address indexed keeper, address indexed to, uint amount, uint end);
 
   function start (
     address user_,
@@ -63,14 +66,15 @@ contract AuctionHouse {
     );
 
     emit Start(tokenAddress_, keeperAddress_, collateralBalance_, startTimestamp_, endTimestamp_);
-    require(GTokenERC20(collateralTokenAddress_).transferFrom(msg.sender, address(this), collateralValue_), "token transfer fail");
+    require(GTokenERC20(collateralTokenAddress_).transferFrom(msg.sender, address(this), collateralBalance_), "token transfer fail");
   }
 
   function take(uint256 auctionId, uint256 amount, uint256 maxCollateralPrice, address receiver) public  {
     Auction storage auction = auctions[auctionId];
     uint slice;
-    require(amount > 0);
-    require(block.timestamp > auction.startTimestamp && block.timestamp < auction.endTimestamp);
+    uint keeperAmount;
+    require(amount > 0, 'Invalid amount');
+    require(block.timestamp > auction.startTimestamp && block.timestamp < auction.endTimestamp, 'Auction period invalid');
     if (amount > auction.collateralBalance) {
       slice = auction.collateralBalance;
     } else {
@@ -79,27 +83,44 @@ contract AuctionHouse {
 
     uint initialPrice = Feed(auction.collateralFeedPrice).price();
     uint priceTimeHouse = price(initialPrice, block.timestamp - auction.startTimestamp);
-    require(priceTimeHouse < maxCollateralPrice);
+    require(priceTimeHouse <= maxCollateralPrice, 'price time house is bigger than collateral price');
 
     uint owe = mul(slice, priceTimeHouse) / WAD;
     uint liquidationTarget = calculateAmountToFixCollateral(auction.auctionTarget, (auction.collateralBalance * priceTimeHouse) / WAD);
     require(liquidationTarget > 0);
 
     if (liquidationTarget > owe) {
-      slice = owe / priceTimeHouse;
-      auction.auctionTarget = liquidationTarget - owe;
+      keeperAmount = owe;
+
+      if (auction.auctionTarget - owe >= chost) {
+        slice = radmul(owe, priceTimeHouse);
+        auction.auctionTarget -= owe;
+      } else {
+        slice = radmul((auction.auctionTarget - chost), priceTimeHouse);
+        auction.auctionTarget = chost;
+      }
     } else {
-      slice = liquidationTarget / priceTimeHouse;
+      keeperAmount = liquidationTarget;
+      slice = radmul(liquidationTarget, priceTimeHouse);
       auction.auctionTarget = 0;
     }
 
-    emit Take(auctionId, msg.sender, receiver, slice, auction.auctionTarget, auction.endTimestamp);
+    // tranfer values for keeper
+    GTokenERC20(auction.tokenAddress).approveKeeperTokensToAuction(amount * maxCollateralPrice);
+    require(GTokenERC20(auction.tokenAddress).transferFrom(msg.sender, address(this), keeperAmount), 'bring token from keeper fail');
+    require(GTokenERC20(auction.collateralTokenAddress).transfer(receiver, slice), "token transfer fail");
+
+    emit Take(auctionId, msg.sender, receiver, slice, auction.endTimestamp);
   }
 
   function calculateAmountToFixCollateral(uint256 debtBalance, uint256 collateral) public pure returns (uint) {
     uint dividend = (ratio * debtBalance) - collateral;
 
     return dividend / (ratio - 1);
+  }
+
+  function radmul(uint256 dividend, uint256 divisor) public pure returns (uint256) {
+    return div(div(dividend * RAD, divisor), RAY);
   }
 
   function getAuction(uint auctionId) public view returns (Auction memory) {

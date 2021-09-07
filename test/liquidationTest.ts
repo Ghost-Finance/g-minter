@@ -60,7 +60,7 @@ describe('Liquidation tests', async function() {
           .connect(account)
           .flagLiquidate(owner, synthTokenAddress);
       } catch (error) {
-        expect(error.message).to.match(/Abouve cRatioPassivo/);
+        expect(error.message).to.match(/Above cRatioPassivo/);
       }
     });
 
