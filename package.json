@@ -55,6 +55,7 @@
     "@walletconnect/web3-provider": "^1.4.1",
     "chai-datetime": "^1.8.0",
     "ethereum-tx-decoder": "^3.0.0",
+    "sinon": "^11.1.2",
     "web3": "^1.4.0"
   },
   "husky": {
