@@ -1,10 +1,12 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
-import * as sinon from 'sinon';
 import { BigNumber } from 'ethers';
+import * as sinonTest from 'sinon-mocha-test';
 import { parseEther } from 'ethers/lib/utils';
 import { checkAuctionHouseTakeEvent } from './util/CheckEvent';
 import setup from './util/setup';
+
+const WAD = 10 ** 18;
 
 describe('Auction House tests', async function() {
   let state, synthTokenAddress, accountOne, accountTwo, clock;
@@ -12,7 +14,6 @@ describe('Auction House tests', async function() {
   const amountToDeposit = BigNumber.from(parseEther('180.0'));
 
   beforeEach(async function() {
-    // clock = await sinon.useFakeTimers();
     state = await setup();
     accountOne = state.contractAccounts[0];
     accountTwo = state.contractAccounts[1];
@@ -72,11 +73,6 @@ describe('Auction House tests', async function() {
     );
   });
 
-  // afterEach(async function(done) {
-  //   await clock.restore();
-  //   await done();
-  // });
-
   it('validates when price of time house is bigger than collateral price', async function() {
     const id = 0;
     const amount = BigNumber.from(parseEther('190.0'));
@@ -110,7 +106,7 @@ describe('Auction House tests', async function() {
     }
   });
 
-  // it.only('validates when call take function after finish the auction time', async function(done) {
+  // it('validates when call take function after finish the auction time', async function(done) {
   //   const id = 0;
   //   const amount = BigNumber.from(parseEther('1.0'));
   //   clock.tick(11 * 24 * 60 * 60 * 1000);
@@ -161,7 +157,13 @@ describe('Auction House tests', async function() {
 
   it('Should return success when chost is bigger than owe', async function() {
     const id = 0;
+    const expectedAmount = BigNumber.from(parseEther('71.5'));
     const amount = BigNumber.from(parseEther('75.0'));
+
+    const auctionBefore = await state.auctionHouse.getAuction(id);
+    expect(auctionBefore.auctionTarget.toString()).to.be.equal(
+      BigNumber.from(parseEther('25.3'))
+    );
 
     await state.auctionHouse
       .connect(accountTwo)
@@ -171,31 +173,37 @@ describe('Auction House tests', async function() {
         state.auctionHouse,
         accountTwo.address,
         accountTwo.address,
-        BigNumber.from(parseEther('71.5'))
+        expectedAmount
       )
     ).to.be.true;
 
-    // const auction = await state.auctionHouse.getAuction(0);
-    // expect(auction.auctionTarget.toString()).to.be.equal(
-    //   BigNumber.from(parseEther('21.3'))
-    // );
+    const auctionAfter = await state.auctionHouse.getAuction(id);
+    expect(auctionAfter.auctionTarget.toString()).to.be.equal(
+      BigNumber.from(parseEther('11.0'))
+    );
 
-    // const keeperBalanceOfGHO = await state.token.balanceOf(accountTwo.address);
-    // const keeperBalanceOfGDAI = await state.minter.balanceOfSynth(
-    //   accountTwo.address,
-    //   synthTokenAddress
-    // );
-    // expect(keeperBalanceOfGHO.toString()).to.be.equal(
-    //   BigNumber.from(parseEther('20.0'))
-    // );
-    // expect(keeperBalanceOfGDAI.toString()).to.be.equal(
-    //   BigNumber.from(parseEther('20.38'))
-    // );
+    const keeperBalanceOfGHO = await state.token.balanceOf(accountTwo.address);
+    const keeperBalanceOfGDAI = await state.minter.balanceOfSynth(
+      accountTwo.address,
+      synthTokenAddress
+    );
+    expect(keeperBalanceOfGHO.toString()).to.be.equal(
+      BigNumber.from(parseEther('71.5'))
+    );
+    expect(keeperBalanceOfGDAI.toString()).to.be.equal(
+      BigNumber.from(parseEther('9.38'))
+    );
   });
 
   it('Should return success when all auction is sold', async function() {
     const id = 0;
     const amount = BigNumber.from(parseEther('190.0'));
+    const expectedAmount = BigNumber.from(parseEther('119.8125'));
+
+    const auctionBefore = await state.auctionHouse.getAuction(0);
+    expect(auctionBefore.auctionTarget.toString()).to.be.equal(
+      BigNumber.from(parseEther('25.3'))
+    );
 
     await state.auctionHouse
       .connect(accountTwo)
@@ -205,12 +213,12 @@ describe('Auction House tests', async function() {
         state.auctionHouse,
         accountTwo.address,
         accountTwo.address,
-        BigNumber.from(parseEther('119.8125'))
+        expectedAmount
       )
     ).to.be.true;
 
-    const auction = await state.auctionHouse.getAuction(0);
-    expect(auction.auctionTarget.toString()).to.be.equal(
+    const auctionAfter = await state.auctionHouse.getAuction(0);
+    expect(auctionAfter.auctionTarget.toString()).to.be.equal(
       BigNumber.from(parseEther('0'))
     );
 
@@ -219,32 +227,30 @@ describe('Auction House tests', async function() {
       accountTwo.address,
       synthTokenAddress
     );
-    expect(keeperBalanceOfGHO.toString()).to.be.equal(
-      BigNumber.from(parseEther('119.8125'))
-    );
+    expect(keeperBalanceOfGHO.toString()).to.be.equal(expectedAmount);
     expect(keeperBalanceOfGDAI.toString()).to.be.equal(
       BigNumber.from(parseEther('0.4175'))
     );
   });
 
-  // it('')
+  it.only(
+    'Should decrese price after time pass 2 days',
+    sinonTest.create({ useFakeTimers: false }, async function() {
+      let priceTimeHouse;
+      const price = BigNumber.from(parseEther('10.0'));
+      const date = new Date();
+      const dateOne = date.getTime();
+      const dateTwo = date.getTime() + 2 * 24 * 60 * 60 * 1000;
 
-  // it.only('Should decrese price in 1% when time pass 90s', async function() {
-  //   const auction = await state.auctionHouse.getAuction(0);
-  //   const startTime = auction.startTimestamp;
+      priceTimeHouse = await state.auctionHouse.price(price, dateOne / 1000);
+      expect(priceTimeHouse.toString()).to.be.equal(
+        BigNumber.from(parseEther('10.0'))
+      );
 
-  //   const priceTimeHouse = await state.auctionHouse.price(
-  //     BigNumber.from(parseEther('1')),
-  //     Date.now() - startTime
-  //   );
-
-  //   console.log(priceTimeHouse);
-
-  //   clock.tick(90);
-  //   const priceTimeHouseTwo = await state.auctionHouse.price(
-  //     BigNumber.from(parseEther('1')),
-  //     Date.now() - startTime
-  //   );
-  //   console.log(priceTimeHouseTwo);
-  // });
+      priceTimeHouse = await state.auctionHouse.price(price, dateTwo / 1000);
+      expect(priceTimeHouse.toString()).to.be.equal(
+        BigNumber.from(parseEther('10.0'))
+      );
+    })
+  );
 });

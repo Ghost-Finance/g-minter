@@ -251,7 +251,6 @@ export const checkAuctionHouseTakeEvent = async (
   let eventAuctionHouseTake = new Promise<AuctionHouseTakeEvent>(
     (resolve, reject) => {
       contract.on('Take', (_, keeper, receiver, totalAmount, end) => {
-        console.log(`slice: ${totalAmount.toString()}`);
         resolve({
           keeper: keeper,
           receiver: receiver,
