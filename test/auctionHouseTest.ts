@@ -1,15 +1,13 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
-import * as sinonTest from 'sinon-mocha-test';
 import { parseEther } from 'ethers/lib/utils';
 import { checkAuctionHouseTakeEvent } from './util/CheckEvent';
+import { delay } from './util/delay';
 import setup from './util/setup';
 
-const WAD = 10 ** 18;
-
 describe('Auction House tests', async function() {
-  let state, synthTokenAddress, accountOne, accountTwo, clock;
+  let state, synthTokenAddress, accountOne, accountTwo;
   const amount = BigNumber.from(parseEther('500.0'));
   const amountToDeposit = BigNumber.from(parseEther('180.0'));
 
@@ -106,22 +104,23 @@ describe('Auction House tests', async function() {
     }
   });
 
-  // it('validates when call take function after finish the auction time', async function(done) {
-  //   const id = 0;
-  //   const amount = BigNumber.from(parseEther('1.0'));
-  //   clock.tick(11 * 24 * 60 * 60 * 1000);
-  //   setTimeout(done, 300);
+  it('validates when call take function after finish the auction time', async function() {
+    const id = 0;
+    const amount = BigNumber.from(parseEther('1.0'));
+    const now = Date.now() + 11 * 24 * 60 * 60 * 1000;
+    await ethers.provider.send('evm_setNextBlockTimestamp', [now]);
 
-  //   try {
-  //     await state.auctionHouse
-  //       .connect(accountTwo)
-  //       .take(id, amount, amount, accountTwo.address);
-  //   } catch (error) {
-  //     expect(error.message).to.match(/'Auction period invalid'/);
-  //   }
-  // });
+    try {
+      await state.auctionHouse
+        .connect(accountTwo)
+        .take(id, amount, amount, accountTwo.address);
+    } catch (error) {
+      console.log(error.message);
+      expect(error.message).to.match(/'Auction period invalid'/);
+    }
+  });
 
-  it('Should return success when auction target is bided one part', async function() {
+  it('Should return success when bidding an auction part', async function() {
     const id = 0;
     const amount = BigNumber.from(parseEther('20.0'));
 
@@ -233,24 +232,23 @@ describe('Auction House tests', async function() {
     );
   });
 
-  it.only(
-    'Should decrese price after time pass 2 days',
-    sinonTest.create({ useFakeTimers: false }, async function() {
-      let priceTimeHouse;
-      const price = BigNumber.from(parseEther('10.0'));
-      const date = new Date();
-      const dateOne = date.getTime();
-      const dateTwo = date.getTime() + 2 * 24 * 60 * 60 * 1000;
+  // it(
+  //   'Should decrese price after time pass',
+  //   sinonTest.create({ useFakeTimers: false }, async function(sinon) {
+  //     let priceTimeHouse, now;
+  //     const price = BigNumber.from(parseEther('10.0'));
 
-      priceTimeHouse = await state.auctionHouse.price(price, dateOne / 1000);
-      expect(priceTimeHouse.toString()).to.be.equal(
-        BigNumber.from(parseEther('10.0'))
-      );
+  //     now = Date.now() + 1 * 24 * 60 * 60 * 1000;
+  //     await ethers.provider.send('evm_setNextBlockTimestamp', [now]);
 
-      priceTimeHouse = await state.auctionHouse.price(price, dateTwo / 1000);
-      expect(priceTimeHouse.toString()).to.be.equal(
-        BigNumber.from(parseEther('10.0'))
-      );
-    })
-  );
+  //     priceTimeHouse = await state.auctionHouse.price(price, now);
+  //     expect(priceTimeHouse.toString()).to.be.equal(price);
+
+  //     now = Date.now() + 2 * 24 * 60 * 60 * 1000;
+  //     await ethers.provider.send('evm_setNextBlockTimestamp', [now]);
+
+  //     priceTimeHouse = await state.auctionHouse.price(price, now);
+  //     expect(priceTimeHouse.toString()).to.be.equal(price);
+  //   })
+  // );
 });

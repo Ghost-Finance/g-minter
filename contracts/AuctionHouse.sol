@@ -3,8 +3,11 @@ pragma solidity ^0.8.0;
 
 import './GTokenERC20.sol';
 import './base/Feed.sol';
+import './base/CoreMath.sol';
+import 'hardhat/console.sol';
 
-contract AuctionHouse {
+contract AuctionHouse is CoreMath {
+
   struct Auction {
     address user;
     address tokenAddress;
@@ -19,9 +22,6 @@ contract AuctionHouse {
     uint endTimestamp;
   }
 
-  uint256 constant WAD = 10**18;
-  uint256 constant RAY = 10**27;
-  uint256 constant RAD = 10**45;
   uint256 constant PRICE_REDUCTION_RATIO = (uint256(99) * RAY) / 100;
   uint256 constant ratio = 9;
   uint256 constant buf = 1 ether;
@@ -73,6 +73,7 @@ contract AuctionHouse {
     Auction storage auction = auctions[auctionId];
     uint slice;
     uint keeperAmount;
+
     require(amount > 0, 'Invalid amount');
     require(block.timestamp > auction.startTimestamp && block.timestamp < auction.endTimestamp, 'Auction period invalid');
     if (amount > auction.collateralBalance) {
@@ -81,7 +82,7 @@ contract AuctionHouse {
       slice = amount;
     }
 
-    uint initialPrice = Feed(auction.collateralFeedPrice).price();
+    uint initialPrice = _getFeedPrice(auction.collateralFeedPrice);
     uint priceTimeHouse = price(initialPrice, block.timestamp - auction.startTimestamp);
     require(priceTimeHouse <= maxCollateralPrice, 'price time house is bigger than collateral price');
 
@@ -93,22 +94,22 @@ contract AuctionHouse {
       keeperAmount = owe;
 
       if (auction.auctionTarget - owe >= chost) {
-        slice = radmul(owe, priceTimeHouse);
+        slice = radiv(owe, priceTimeHouse);
         auction.auctionTarget -= owe;
       } else {
-        slice = radmul((auction.auctionTarget - chost), priceTimeHouse);
+        slice = radiv((auction.auctionTarget - chost), priceTimeHouse);
         auction.auctionTarget = chost;
       }
     } else {
       keeperAmount = liquidationTarget;
-      slice = radmul(liquidationTarget, priceTimeHouse);
+      slice = radiv(liquidationTarget, priceTimeHouse);
       auction.auctionTarget = 0;
     }
 
     // tranfer values for keeper
     GTokenERC20(auction.tokenAddress).approveKeeperTokensToAuction(amount * maxCollateralPrice);
-    require(GTokenERC20(auction.tokenAddress).transferFrom(msg.sender, address(this), keeperAmount), 'bring token from keeper fail');
-    require(GTokenERC20(auction.collateralTokenAddress).transfer(receiver, slice), "token transfer fail");
+    require(GTokenERC20(auction.tokenAddress).transferFrom(msg.sender, address(this), keeperAmount), 'transfer token from keeper fail');
+    require(GTokenERC20(auction.collateralTokenAddress).transfer(receiver, slice), "transfer token to keeper fail");
 
     emit Take(auctionId, msg.sender, receiver, slice, auction.endTimestamp);
   }
@@ -119,10 +120,6 @@ contract AuctionHouse {
     return dividend / (ratio - 1);
   }
 
-  function radmul(uint256 dividend, uint256 divisor) public pure returns (uint256) {
-    return div(div(dividend * RAD, divisor), RAY);
-  }
-
   function getAuction(uint auctionId) public view returns (Auction memory) {
     return auctions[auctionId];
   }
@@ -131,44 +128,7 @@ contract AuctionHouse {
     return rmul(initialPrice, rpow(PRICE_REDUCTION_RATIO, duration / step, RAY));
   }
 
-  function rmul(uint256 x, uint256 y) internal pure returns (uint256 z) {
-    z = mul(x, y);
-    require(y == 0 || z / y == x);
-    z = div(z, RAY);
-  }
-
-  function rpow(uint256 x, uint256 n, uint256 b) internal pure returns (uint256 z) {
-    assembly {
-      switch n case 0 { z := b }
-      default {
-        switch x case 0 { z := 0 }
-        default {
-          switch mod(n, 2) case 0 { z := b } default { z := x }
-          let half := div(b, 2)  // for rounding.
-          for { n := div(n, 2) } n { n := div(n,2) } {
-            let xx := mul(x, x)
-            if shr(128, x) { revert(0,0) }
-            let xxRound := add(xx, half)
-            if lt(xxRound, xx) { revert(0,0) }
-            x := div(xxRound, b)
-            if mod(n,2) {
-              let zx := mul(z, x)
-              if and(iszero(iszero(x)), iszero(eq(div(zx, x), z))) { revert(0,0) }
-              let zxRound := add(zx, half)
-              if lt(zxRound, zx) { revert(0,0) }
-              z := div(zxRound, b)
-            }
-          }
-        }
-      }
-    }
-  }
-
-  function mul(uint256 x, uint256 y) internal pure returns (uint256 z) {
-    z = x * y;
-  }
-
-  function div(uint256 x, uint256 y) internal pure returns (uint256 z) {
-    z = x / y;
+  function _getFeedPrice(address feedPrice) public returns (uint256) {
+    return Feed(feedPrice).price();
   }
 }
