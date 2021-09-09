@@ -15,7 +15,6 @@ import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { Contract, ContractFactory } from 'ethers';
 import { TokenDetails } from '../types/types';
-import { exception } from 'console';
 
 /**
  * deploys a contract for unit testing and validates every step of the deployment tx
@@ -69,7 +68,7 @@ const deployContract = async (
   }
 
   if (isValid) return contract;
-  else throw exception(contractName + ' is not valid');
+  else throw console.log(contractName + ' is not valid');
 };
 
 /**

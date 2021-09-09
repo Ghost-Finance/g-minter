@@ -19,7 +19,15 @@ task('accounts', 'Prints the list of accounts', async (args, hre) => {
 });
 
 const config: HardhatUserConfig = {
-  solidity: '0.8.0',
+  solidity: {
+    version: '0.8.0',
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
+  },
 
   networks: {
     // kovan: {
@@ -38,6 +46,7 @@ const config: HardhatUserConfig = {
     localhost: {
       chainId: 1337,
       url: 'http://127.0.0.1:9545',
+      gasPrice: 50000000000,
     },
   },
 };
