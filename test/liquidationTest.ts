@@ -89,8 +89,6 @@ describe('Liquidation tests', async function() {
           .add(10, 'days')
           .format('DD');
 
-        console.log(day);
-
         await state.minter
           .connect(accountOne)
           .flagLiquidate(accountTwo.address, synthTokenAddress);

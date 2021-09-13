@@ -10,13 +10,12 @@ import {
 } from './util/CheckEvent';
 import setup from './util/setup';
 
-const amount = BigNumber.from(parseEther('500.0'));
-
 describe('Minter', async function() {
-  let state;
+  let state, amount;
 
   beforeEach(async function() {
     state = await setup();
+    amount = BigNumber.from(parseEther('500.0'));
   });
 
   describe('Create a Synths', async function() {

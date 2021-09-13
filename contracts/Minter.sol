@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import './GTokenERC20.sol';
 import './AuctionHouse.sol';
 import './base/Feed.sol';
-import 'hardhat/console.sol';
 
 contract Minter {
   address public owner;
@@ -85,7 +84,6 @@ contract Minter {
 
   function depositCollateral(GTokenERC20 token, uint256 amount) external isCollateral(token) {
     collateralToken.approve(msg.sender, amount);
-    console.log(amount);
     require(collateralToken.transferFrom(msg.sender, address(this), amount), 'transfer failed');
     collateralBalance[msg.sender][token] += amount;
 
