@@ -2,7 +2,8 @@ import { BigNumber } from 'ethers';
 
 type AccountFlaggedForLiquidationEvent = {
   account: string;
-  endFlagDate: Number;
+  keeper: string;
+  endFlagDate: string;
 };
 
 type ApproveEvent = {
@@ -15,6 +16,7 @@ type AuctionHouseTakeEvent = {
   keeper: string;
   receiver: string;
   totalAmount: BigNumber;
+  price: BigNumber;
 };
 
 type BurnEvent = {
