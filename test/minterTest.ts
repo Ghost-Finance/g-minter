@@ -86,7 +86,7 @@ describe('Minter', async function() {
 
     beforeEach(async function() {
       accountOne = state.contractAccounts[0];
-      amountToDeposit = BigNumber.from(parseEther('100.0'));
+      amountToDeposit = BigNumber.from(parseEther('180.0'));
       const feedSynth = await state.Feed.deploy(amount, 'Feed Coin');
       await state.minter.createSynth(
         'Test coin',
@@ -148,7 +148,7 @@ describe('Minter', async function() {
 
     beforeEach(async function() {
       accountOne = state.contractAccounts[0];
-      amountToDeposit = BigNumber.from(parseEther('100.0'));
+      amountToDeposit = BigNumber.from(parseEther('180.0'));
       amountToMint = BigNumber.from(parseEther('1'));
       const feedSynth = await state.Feed.deploy(amountToMint, 'Feed Coin');
       await state.minter.createSynth(
@@ -179,7 +179,7 @@ describe('Minter', async function() {
     it('Should return error to mint if account has below cRatio', async function() {
       await state.minter
         .connect(accountOne)
-        .depositCollateral(synthTokenAddress, parseEther('100.0'));
+        .depositCollateral(synthTokenAddress, amountToDeposit);
       await state.feed.updatePrice(parseEther('50'));
 
       try {
@@ -192,10 +192,7 @@ describe('Minter', async function() {
     });
 
     it('Should return error to mint if token minted is the same as collateral', async function() {
-      await state.minter.depositCollateral(
-        synthTokenAddress,
-        parseEther('100')
-      );
+      await state.minter.depositCollateral(synthTokenAddress, amountToDeposit);
 
       try {
         await state.minter
@@ -206,21 +203,22 @@ describe('Minter', async function() {
       }
     });
 
-    it.only('Should return success when mint a synth', async function() {
-      const value = BigNumber.from(parseEther('20.0'));
+    it('Should return success when mint a synth', async function() {
       await state.minter
         .connect(accountOne)
         .depositCollateral(synthTokenAddress, amountToDeposit);
 
-      await state.minter.mint(synthTokenAddress, value);
+      await state.minter
+        .connect(accountOne)
+        .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
 
-      // expect(
-      //   await checkMintEvent(
-      //     state.minter,
-      //     state.contractCreatorOwner.address,
-      //     value
-      //   )
-      // ).to.be.true;
+      expect(
+        await checkMintEvent(
+          state.minter,
+          accountOne.address,
+          BigNumber.from(parseEther('20.0'))
+        )
+      ).to.be.true;
     });
   });
 });
