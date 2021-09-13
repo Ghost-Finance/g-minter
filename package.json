@@ -41,6 +41,7 @@
     "hardhat": "2.6.1",
     "hardhat-typechain": "^0.3.3",
     "husky": "^4.2.3",
+    "moment": "^2.29.1",
     "prettier": "^1.19.1",
     "pretty-quick": "^2.0.1",
     "ts-generator": "^0.1.1",
