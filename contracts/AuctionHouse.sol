@@ -156,7 +156,6 @@ contract AuctionHouse is CoreMath {
   }
 
   function auctionFinishCallback(uint256 id, Minter minter, address user, GTokenERC20 tokenCollateral, GTokenERC20 synthToken, uint256 collateralBalance, uint256 synthAmount) public {
-    console.log('entrouuu ak');
     minter.auctionFinish(id, user, tokenCollateral, synthToken, collateralBalance, synthAmount);
   }
 }
