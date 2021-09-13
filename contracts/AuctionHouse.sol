@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 import './GTokenERC20.sol';
+import './Minter.sol';
 import './base/Feed.sol';
 import './base/CoreMath.sol';
-import 'hardhat/console.sol';
 
 contract AuctionHouse is CoreMath {
 
@@ -15,9 +15,11 @@ contract AuctionHouse is CoreMath {
     address keeperAddress;
     uint256 collateralBalance;
     uint256 collateralValue;
+    uint256 synthAmount;
     uint auctionTarget;
     address collateralFeedPrice;
     address synthFeedPrice;
+    address minterAddress;
     uint startTimestamp;
     uint endTimestamp;
   }
@@ -33,7 +35,7 @@ contract AuctionHouse is CoreMath {
   Auction[] public auctions;
 
   event Start(address indexed cdp, address indexed keeper, uint amount, uint start, uint end);
-  event Take(uint indexed id, address indexed keeper, address indexed to, uint amount, uint end);
+  event Take(uint256 indexed id, address indexed keeper, address indexed to, uint256 amount, uint256 price, uint256 end);
 
   function start (
     address user_,
@@ -57,9 +59,11 @@ contract AuctionHouse is CoreMath {
         keeperAddress_,
         collateralBalance_,
         collateralValue_,
+        0,
         auctionTarget_,
         collateralFeedPrice_,
         synthFeedPrice_,
+        msg.sender,
         startTimestamp_,
         endTimestamp_
       )
@@ -92,18 +96,23 @@ contract AuctionHouse is CoreMath {
 
     if (liquidationTarget > owe) {
       keeperAmount = owe;
+      auction.synthAmount += keeperAmount;
 
       if (auction.auctionTarget - owe >= chost) {
         slice = radiv(owe, priceTimeHouse);
         auction.auctionTarget -= owe;
+        auction.collateralBalance -= slice;
       } else {
         slice = radiv((auction.auctionTarget - chost), priceTimeHouse);
         auction.auctionTarget = chost;
+        auction.collateralBalance -= slice;
       }
     } else {
       keeperAmount = liquidationTarget;
       slice = radiv(liquidationTarget, priceTimeHouse);
       auction.auctionTarget = 0;
+      auction.collateralBalance -= slice;
+      auction.synthAmount += keeperAmount;
     }
 
     // tranfer values for keeper
@@ -111,7 +120,21 @@ contract AuctionHouse is CoreMath {
     require(GTokenERC20(auction.tokenAddress).transferFrom(msg.sender, address(this), keeperAmount), 'transfer token from keeper fail');
     require(GTokenERC20(auction.collateralTokenAddress).transfer(receiver, slice), "transfer token to keeper fail");
 
-    emit Take(auctionId, msg.sender, receiver, slice, auction.endTimestamp);
+    if (auction.auctionTarget == 0) {
+      GTokenERC20(auction.collateralTokenAddress).approve(address(auction.minterAddress), auction.collateralBalance);
+      GTokenERC20(auction.tokenAddress).approve(address(auction.minterAddress), auction.synthAmount);
+      auctionFinishCallback(
+        auctionId,
+        Minter(auction.minterAddress),
+        address(auction.user),
+        GTokenERC20(auction.collateralTokenAddress),
+        GTokenERC20(auction.tokenAddress),
+        auction.collateralBalance,
+        auction.synthAmount
+      );
+    }
+
+    emit Take(auctionId, msg.sender, receiver, slice, priceTimeHouse, auction.endTimestamp);
   }
 
   function calculateAmountToFixCollateral(uint256 debtBalance, uint256 collateral) public pure returns (uint) {
@@ -130,5 +153,10 @@ contract AuctionHouse is CoreMath {
 
   function _getFeedPrice(address feedPrice) public returns (uint256) {
     return Feed(feedPrice).price();
+  }
+
+  function auctionFinishCallback(uint256 id, Minter minter, address user, GTokenERC20 tokenCollateral, GTokenERC20 synthToken, uint256 collateralBalance, uint256 synthAmount) public {
+    console.log('entrouuu ak');
+    minter.auctionFinish(id, user, tokenCollateral, synthToken, collateralBalance, synthAmount);
   }
 }
