@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import './GTokenERC20.sol';
 import './AuctionHouse.sol';
 import './base/Feed.sol';
+import 'hardhat/console.sol';
 
 contract Minter {
   address public owner;
