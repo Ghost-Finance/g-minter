@@ -3,7 +3,6 @@ import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
 import { checkAuctionHouseTakeEvent } from './util/CheckEvent';
-import { delay } from './util/delay';
 import setup from './util/setup';
 
 describe('Auction House tests', async function() {
@@ -60,15 +59,6 @@ describe('Auction House tests', async function() {
     await state.minter
       .connect(accountTwo)
       .liquidate(accountOne.address, synthTokenAddress);
-
-    // Total balance from keeper after receive the incentives from flag and liquidate.
-    const balanceOfDAI = await state.minter.balanceOfSynth(
-      accountTwo.address,
-      synthTokenAddress
-    );
-    expect(balanceOfDAI.toString()).to.be.equal(
-      BigNumber.from(parseEther('24.38'))
-    );
   });
 
   it('validates when price of time house is bigger than collateral price', async function() {
@@ -107,15 +97,17 @@ describe('Auction House tests', async function() {
   it('validates when call take function after finish the auction time', async function() {
     const id = 0;
     const amount = BigNumber.from(parseEther('1.0'));
+
+    // setup
     const now = Date.now() + 11 * 24 * 60 * 60 * 1000;
-    await ethers.provider.send('evm_setNextBlockTimestamp', [now]);
+    await ethers.provider.send('evm_increaseTime', [now]);
+    await ethers.provider.send('evm_mine', []);
 
     try {
       await state.auctionHouse
         .connect(accountTwo)
         .take(id, amount, amount, accountTwo.address);
     } catch (error) {
-      console.log(error.message);
       expect(error.message).to.match(/'Auction period invalid'/);
     }
   });
@@ -132,7 +124,8 @@ describe('Auction House tests', async function() {
         state.auctionHouse,
         accountTwo.address,
         accountTwo.address,
-        amount
+        amount,
+        BigNumber.from(parseEther('0.2'))
       )
     ).to.be.true;
 
@@ -154,6 +147,50 @@ describe('Auction House tests', async function() {
     );
   });
 
+  it('Should decrease price when bidding an auction part', async function() {
+    const id = 0;
+    const amount = BigNumber.from(parseEther('20.0'));
+
+    // Before 90s
+    await state.auctionHouse
+      .connect(accountTwo)
+      .take(id, amount, BigNumber.from(parseEther('1')), accountTwo.address);
+    expect(
+      await checkAuctionHouseTakeEvent(
+        state.auctionHouse,
+        accountTwo.address,
+        accountTwo.address,
+        amount,
+        BigNumber.from(parseEther('0.2'))
+      )
+    ).to.be.true;
+
+    // After 90s
+    setTimeout(() => {
+      state.auctionHouse
+        .connect(accountTwo)
+        .take(id, amount, BigNumber.from(parseEther('1')), accountTwo.address)
+        .then(_ => {
+          checkAuctionHouseTakeEvent(
+            state.auctionHouse,
+            accountTwo.address,
+            accountTwo.address,
+            amount,
+            BigNumber.from(parseEther('0.198'))
+          ).then(result => expect(result).to.be.true);
+        });
+    }, 90000);
+    // await expect(
+    //   await checkAuctionHouseTakeEvent(
+    //     state.auctionHouse,
+    //     accountTwo.address,
+    //     accountTwo.address,
+    //     amount,
+    //     BigNumber.from(parseEther('0.198'))
+    //   )
+    // ).to.be.true;
+  });
+
   it('Should return success when chost is bigger than owe', async function() {
     const id = 0;
     const expectedAmount = BigNumber.from(parseEther('71.5'));
@@ -172,7 +209,8 @@ describe('Auction House tests', async function() {
         state.auctionHouse,
         accountTwo.address,
         accountTwo.address,
-        expectedAmount
+        expectedAmount,
+        BigNumber.from(parseEther('0.2'))
       )
     ).to.be.true;
 
@@ -194,61 +232,94 @@ describe('Auction House tests', async function() {
     );
   });
 
-  it('Should return success when all auction is sold', async function() {
+  it('Should return success when all auction is sold', function(done) {
     const id = 0;
     const amount = BigNumber.from(parseEther('190.0'));
     const expectedAmount = BigNumber.from(parseEther('119.8125'));
 
-    const auctionBefore = await state.auctionHouse.getAuction(0);
-    expect(auctionBefore.auctionTarget.toString()).to.be.equal(
-      BigNumber.from(parseEther('25.3'))
-    );
-
-    await state.auctionHouse
+    state.auctionHouse
       .connect(accountTwo)
-      .take(id, amount, BigNumber.from(parseEther('1.0')), accountTwo.address);
-    expect(
-      await checkAuctionHouseTakeEvent(
-        state.auctionHouse,
-        accountTwo.address,
-        accountTwo.address,
-        expectedAmount
-      )
-    ).to.be.true;
+      .take(id, amount, BigNumber.from(parseEther('1.0')), accountTwo.address)
+      .then(_ => {
+        checkAuctionHouseTakeEvent(
+          state.auctionHouse,
+          accountTwo.address,
+          accountTwo.address,
+          expectedAmount,
+          BigNumber.from(parseEther('0.2'))
+        ).then(result => expect(result).to.be.true);
 
-    const auctionAfter = await state.auctionHouse.getAuction(0);
-    expect(auctionAfter.auctionTarget.toString()).to.be.equal(
-      BigNumber.from(parseEther('0'))
-    );
+        state.auctionHouse
+          .getAuction(0)
+          .then(auction => {
+            expect(auction.auctionTarget.toString()).to.be.equal(
+              BigNumber.from(parseEther('0'))
+            );
+          })
+          .catch(error => {
+            throw error;
+          });
 
-    const keeperBalanceOfGHO = await state.token.balanceOf(accountTwo.address);
-    const keeperBalanceOfGDAI = await state.minter.balanceOfSynth(
-      accountTwo.address,
-      synthTokenAddress
-    );
-    expect(keeperBalanceOfGHO.toString()).to.be.equal(expectedAmount);
-    expect(keeperBalanceOfGDAI.toString()).to.be.equal(
-      BigNumber.from(parseEther('0.4175'))
-    );
+        // GHO balance for accountTwo
+        state.token
+          .balanceOf(accountTwo.address)
+          .then(balance => {
+            expect(balance.toString()).to.be.equal(expectedAmount);
+          })
+          .catch(error => {
+            throw error;
+          });
+
+        // GDAI balance for accountTwo
+        state.minter
+          .balanceOfSynth(accountTwo.address, synthTokenAddress)
+          .then(balance => {
+            expect(balance).to.be.equal(BigNumber.from(parseEther('0.4175')));
+          })
+          .catch(error => {
+            throw error;
+          });
+
+        // GDAI balance for accountOne
+        state.minter
+          .balanceOfSynth(accountOne.address, synthTokenAddress)
+          .then(balance => {
+            expect(balance.toString()).to.be.equal(
+              BigNumber.from(parseEther('25.3'))
+            );
+          })
+          .catch(error => {
+            throw error;
+          });
+
+        // Collateral balance for accountOne
+        state.minter
+          .collateralBalance(accountOne.address, synthTokenAddress)
+          .then(balance => {
+            expect(balance.toString()).to.be.equal(
+              BigNumber.from(parseEther('60.1875'))
+            );
+          })
+          .catch(error => {
+            throw error;
+          });
+      })
+      .then(done);
   });
 
-  // it(
-  //   'Should decrese price after time pass',
-  //   sinonTest.create({ useFakeTimers: false }, async function(sinon) {
-  //     let priceTimeHouse, now;
-  //     const price = BigNumber.from(parseEther('10.0'));
+  it('Should decrese price after time pass', async function() {
+    let priceTimeHouse;
+    const price = BigNumber.from(parseEther('10.0'));
 
-  //     now = Date.now() + 1 * 24 * 60 * 60 * 1000;
-  //     await ethers.provider.send('evm_setNextBlockTimestamp', [now]);
+    priceTimeHouse = await state.auctionHouse.price(price, 0);
+    expect(priceTimeHouse.toString()).to.be.equal(price);
 
-  //     priceTimeHouse = await state.auctionHouse.price(price, now);
-  //     expect(priceTimeHouse.toString()).to.be.equal(price);
+    priceTimeHouse = await state.auctionHouse.price(price, 89);
+    expect(priceTimeHouse.toString()).to.be.equal(price);
 
-  //     now = Date.now() + 2 * 24 * 60 * 60 * 1000;
-  //     await ethers.provider.send('evm_setNextBlockTimestamp', [now]);
-
-  //     priceTimeHouse = await state.auctionHouse.price(price, now);
-  //     expect(priceTimeHouse.toString()).to.be.equal(price);
-  //   })
-  // );
+    priceTimeHouse = await state.auctionHouse.price(price, 90);
+    expect(priceTimeHouse.toString()).to.be.equal(
+      BigNumber.from(parseEther('9.9'))
+    );
+  });
 });
