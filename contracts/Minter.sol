@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import './GTokenERC20.sol';
 import './AuctionHouse.sol';
 import './base/Feed.sol';
+import 'hardhat/console.sol';
 
 contract Minter {
   address public owner;
@@ -32,8 +33,10 @@ contract Minter {
   event DepositedCollateral(address indexed account, address token, uint amount);
 
   // Events for liquidation
-  event AccountFlaggedForLiquidation(address indexed account, uint256 deadline);
+  event AccountFlaggedForLiquidation(address indexed account, address indexed keeper, uint256 deadline);
   event Liquidate(address indexed accountLiquidated, address indexed accountFrom, address token);
+
+  event AuctionFinish(uint256 indexed id, address user, uint256 finished_at);
 
   modifier onlyOwner() {
     require(msg.sender == owner, 'unauthorized');
@@ -42,6 +45,11 @@ contract Minter {
 
   modifier isCollateral(GTokenERC20 token) {
     require(address(token) != address(collateralToken), 'invalid token');
+    _;
+  }
+
+  modifier onlyAuctionHouse() {
+    require(address(auctionHouse) == msg.sender, 'Only auction house!');
     _;
   }
 
@@ -77,6 +85,7 @@ contract Minter {
 
   function depositCollateral(GTokenERC20 token, uint256 amount) external isCollateral(token) {
     collateralToken.approve(msg.sender, amount);
+    console.log(amount);
     require(collateralToken.transferFrom(msg.sender, address(this), amount), 'transfer failed');
     collateralBalance[msg.sender][token] += amount;
 
@@ -108,7 +117,8 @@ contract Minter {
   }
 
   function burn(GTokenERC20 token, uint256 amount) external {
-    require(token.transferFrom(msg.sender, address(0), amount), 'transfer failed');
+    require(token.transferFrom(msg.sender, address(this), amount), 'transfer failed');
+    token.burn(amount);
     synthDebt[msg.sender][token] -= amount;
 
     emit Burn(msg.sender, address(token), amount);
@@ -133,6 +143,17 @@ contract Minter {
     }
   }
 
+  function auctionFinish(uint256 auctionId, address user, GTokenERC20 collateralToken, GTokenERC20 synthToken, uint256 collateralAmount, uint256 synthAmount) public onlyAuctionHouse {
+    require(collateralToken.transferFrom(msg.sender, address(this), collateralAmount), 'transfer failed');
+    require(synthToken.transferFrom(msg.sender, address(this), synthAmount), 'transfer failed');
+    synthToken.burn(synthAmount);
+
+    collateralBalance[user][synthToken] = collateralAmount;
+    synthDebt[user][synthToken] -= synthAmount;
+
+    emit AuctionFinish(auctionId, user, block.timestamp);
+  }
+
   function flagLiquidate(address user, GTokenERC20 token) external isValidKeeper(user) {
     require(collateralBalance[user][token] > 0 && synthDebt[user][token] > 0, 'User cannot be flagged for liquidate');
 
@@ -144,7 +165,7 @@ contract Minter {
     _mintPenalty(token, user, FLAG_TIP);
     require(token.transfer(msg.sender, FLAG_TIP), 'failed transfer incentive');
 
-    emit AccountFlaggedForLiquidation(user, plrDelay[user][token]);
+    emit AccountFlaggedForLiquidation(user, msg.sender, plrDelay[user][token]);
   }
 
   function settleDebt(address user, GTokenERC20 token, uint amount) public {}
