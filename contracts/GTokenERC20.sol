@@ -17,6 +17,10 @@ contract GTokenERC20 is ERC20, Ownable, Pausable {
     _mint(receiver, amount);
   }
 
+  function burn(uint256 amount) external  {
+    _burn(msg.sender, amount);
+  }
+
   function approveKeeperTokensToAuction(uint amount) external {
     _approve(tx.origin, address(auctionHouse), amount);
   }
