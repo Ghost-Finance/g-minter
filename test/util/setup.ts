@@ -38,9 +38,6 @@ const setup = async () => {
   );
 
   await token.approve(minter.address, amount);
-  // await token.approve(contractAccounts[0].address, amount);
-  // await token.approve(contractAccounts[1].address, amount);
-  // await token.approve(contractCreatorOwner.address, amount);
   await token.transfer(
     contractAccounts[0].address,
     BigNumber.from(parseEther('180.0'))
