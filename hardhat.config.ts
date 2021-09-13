@@ -29,6 +29,10 @@ const config: HardhatUserConfig = {
     },
   },
 
+  mocha: {
+    timeout: 150000,
+  },
+
   networks: {
     // kovan: {
     //   url: `https://kovan.infura.io/v3/${INFURA_PROJECT_ID}`,

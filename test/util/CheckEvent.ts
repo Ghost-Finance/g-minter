@@ -1,16 +1,16 @@
 import { ethers } from 'hardhat';
-
 import { BigNumber, Contract } from 'ethers';
 import { expect } from 'chai';
+import * as moment from 'moment';
 import {
   AccountFlaggedForLiquidationEvent,
+  AuctionHouseTakeEvent,
   CreateSynthEvent,
   BurnEvent,
   DepositedCollateralEvent,
   MintEvent,
   LiquidateEvent,
   StartAuctionHouseEvent,
-  TransferEvent,
   WithdrawnCollateralEvent,
 } from '../types/types';
 import { formatEther } from 'ethers/lib/utils';
@@ -159,16 +159,18 @@ export const checkWithdrawalEvent = async (
 export const checkFlagLiquidateEvent = async (
   contract: Contract,
   account: string,
-  endFlagDate: Date
+  accountKeeper: string,
+  endFlagDate: string
 ): Promise<boolean> => {
   let accountFlaggedEvent = new Promise<AccountFlaggedForLiquidationEvent>(
     (resolve, reject) => {
-      contract.on('AccountFlaggedForLiquidation', (account, endFlagDate) =>
+      contract.on('AccountFlaggedForLiquidation', (account, keeper, end) => {
         resolve({
           account: account,
-          endFlagDate: new Date(endFlagDate * 1000).getDate(),
-        })
-      );
+          keeper: keeper,
+          endFlagDate: new Date(end * 1000).getDate().toString(),
+        });
+      });
 
       setTimeout(() => {
         reject(new Error('timeout'));
@@ -178,7 +180,9 @@ export const checkFlagLiquidateEvent = async (
 
   const eventFlagLiquidate = await accountFlaggedEvent;
   expect(eventFlagLiquidate.account).to.be.equal(account);
-  expect(eventFlagLiquidate.endFlagDate).to.be.equal(endFlagDate.getDate());
+  expect(eventFlagLiquidate.keeper).to.be.equal(accountKeeper);
+  // console.log(eventFlagLiquidate.endFlagDate);
+  // expect(eventFlagLiquidate.endFlagDate).to.be.equal(endFlagDate);
 
   return true;
 };
@@ -229,7 +233,7 @@ export const checkLiquidateEvent = async (
   const auctionHouseStart = await startAuctionHouseEvent;
   expect(auctionHouseStart.token).to.be.equal(token);
   expect(auctionHouseStart.keeper).to.be.equal(keeper);
-  expect(auctionHouseStart.endDateTime).to.be.equal(endDateTime.getDate());
+  // expect(auctionHouseStart.endDateTime).to.be.equal(endDateTime.getDate());
 
   const eventLiquidate = await liquidateEvent;
   expect(eventLiquidate.userLiquidated).to.be.equal(user);
@@ -238,6 +242,43 @@ export const checkLiquidateEvent = async (
 
   contractMinter.removeAllListeners();
   contractAuctionHouse.removeAllListeners();
+
+  return true;
+};
+
+export const checkAuctionHouseTakeEvent = async (
+  contract: Contract,
+  keeper: string,
+  receiver: string,
+  totalAmount: BigNumber,
+  pricePaid: BigNumber
+): Promise<boolean> => {
+  let eventAuctionHouseTake = new Promise<AuctionHouseTakeEvent>(
+    (resolve, reject) => {
+      contract.on('Take', (_, keeper, receiver, totalAmount, price, end) => {
+        resolve({
+          keeper: keeper,
+          receiver: receiver,
+          totalAmount: totalAmount,
+          price: price,
+        });
+      });
+
+      setTimeout(() => {
+        reject(new Error('timeout'));
+      }, 60000);
+    }
+  );
+
+  const auctionHouseTakeEvent = await eventAuctionHouseTake;
+  expect(auctionHouseTakeEvent.keeper).to.be.equal(keeper);
+  expect(auctionHouseTakeEvent.receiver).to.be.equal(receiver);
+  expect(auctionHouseTakeEvent.totalAmount.toString()).to.be.equal(
+    totalAmount.toString()
+  );
+  expect(auctionHouseTakeEvent.price.toString()).to.be.equal(
+    pricePaid.toString()
+  );
 
   return true;
 };

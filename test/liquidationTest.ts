@@ -1,5 +1,7 @@
 import { ethers } from 'hardhat';
-import * as chai from 'chai';
+import { expect } from 'chai';
+import * as sinonTest from 'sinon-mocha-test';
+import * as moment from 'moment';
 import { BigNumber } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
 import {
@@ -8,26 +10,24 @@ import {
 } from './util/CheckEvent';
 import setup from './util/setup';
 
-chai.use(require('chai-datetime'));
-const { expect } = chai;
-
-const amount = BigNumber.from(parseEther('5'));
-const amountToDeposit = BigNumber.from(parseEther('10'));
+const amount = BigNumber.from(parseEther('500.0'));
+const amountToDeposit = BigNumber.from(parseEther('180.0'));
 
 describe('Liquidation tests', async function() {
-  let state, synthTokenAddress, account;
+  let state, synthTokenAddress, accountOne, accountTwo;
 
   beforeEach(async function() {
     state = await setup();
-    account = state.contractAccounts[0];
+    accountOne = state.contractAccounts[0];
+    accountTwo = state.contractAccounts[1];
 
     const feedSynth = await state.Feed.deploy(
       parseEther('1'),
       'Feed Synth Coin'
     );
     await state.minter.createSynth(
-      'Test coin',
-      'COIN',
+      'GDAI',
+      'GDAI',
       amount,
       200,
       300,
@@ -35,8 +35,28 @@ describe('Liquidation tests', async function() {
     );
 
     synthTokenAddress = await state.minter.getSynth(0);
-    await state.minter.depositCollateral(synthTokenAddress, amountToDeposit);
-    await state.minter.mint(synthTokenAddress, BigNumber.from(parseEther('5')));
+    await state.token
+      .connect(accountOne)
+      .approve(state.minter.address, amountToDeposit);
+    await state.token
+      .connect(accountTwo)
+      .approve(state.minter.address, amountToDeposit);
+
+    await state.minter
+      .connect(accountOne)
+      .depositCollateral(synthTokenAddress, amountToDeposit);
+    await state.minter
+      .connect(accountOne)
+      .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+
+    await state.minter
+      .connect(accountTwo)
+      .depositCollateral(synthTokenAddress, amountToDeposit);
+    await state.minter
+      .connect(accountTwo)
+      .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+
+    await state.feed.updatePrice(BigNumber.from(parseEther('0.2')));
   });
 
   describe('Flag account to liquidate', async function() {
@@ -45,7 +65,7 @@ describe('Liquidation tests', async function() {
 
       try {
         await state.minter
-          .connect(account)
+          .connect(accountOne)
           .flagLiquidate(owner, synthTokenAddress);
       } catch (error) {
         expect(error.message).to.match(/User cannot be flagged for liquidate/);
@@ -53,58 +73,61 @@ describe('Liquidation tests', async function() {
     });
 
     it('Should revert if the account is above passive C-Ratio of 300%', async function() {
-      const owner = state.contractCreatorOwner.address;
-
       try {
         await state.minter
-          .connect(account)
-          .flagLiquidate(owner, synthTokenAddress);
+          .connect(accountOne)
+          .flagLiquidate(accountTwo.address, synthTokenAddress);
       } catch (error) {
-        expect(error.message).to.match(/Abouve cRatioPassivo/);
+        expect(error.message).to.match(/Above cRatioPassivo/);
       }
     });
 
-    it('Should return success if the account is below passive C-Ratio of 300%', async function() {
-      const date = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
-      const owner = state.contractCreatorOwner.address;
-      await state.feed.updatePrice(BigNumber.from(parseEther('0.7')));
+    it(
+      'Should return success if the account is below passive C-Ratio of 300%',
+      sinonTest.create({ useFakeTimers: false }, async function() {
+        const day = moment()
+          .add(10, 'days')
+          .format('DD');
 
-      await state.minter
-        .connect(account)
-        .flagLiquidate(owner, synthTokenAddress);
+        await state.minter
+          .connect(accountOne)
+          .flagLiquidate(accountTwo.address, synthTokenAddress);
 
-      expect(await checkFlagLiquidateEvent(state.minter, owner, date)).to.be
-        .true;
-    });
+        expect(
+          await checkFlagLiquidateEvent(
+            state.minter,
+            accountTwo.address,
+            accountOne.address,
+            day
+          )
+        ).to.be.true;
+      })
+    );
   });
 
   describe('Liquidate', async function() {
     it('Should revert if the account liquidated is the same calling the liquidate method', async function() {
-      const accountOne = state.contractCreatorOwner.address;
-      await state.feed.updatePrice(BigNumber.from(parseEther('0.7')));
       await state.minter
-        .connect(account)
-        .flagLiquidate(accountOne, synthTokenAddress);
+        .connect(accountTwo)
+        .flagLiquidate(accountOne.address, synthTokenAddress);
 
       try {
-        await state.minter.liquidate(accountOne, synthTokenAddress);
+        await state.minter.liquidate(accountOne.address, synthTokenAddress);
       } catch (error) {
         expect(error.message).to.match(/Sender cannot be the liquidated/);
       }
     });
 
     it('Should revert if the period of the account flagged is not end', async function() {
-      const accountOne = state.contractCreatorOwner.address;
-      await state.feed.updatePrice(BigNumber.from(parseEther('0.7')));
       await state.minter
-        .connect(account)
-        .flagLiquidate(accountOne, synthTokenAddress);
+        .connect(accountTwo)
+        .flagLiquidate(accountOne.address, synthTokenAddress);
 
       try {
         await state.feed.updatePrice(BigNumber.from(parseEther('1')));
         await state.minter
-          .connect(account)
-          .liquidate(accountOne, synthTokenAddress);
+          .connect(accountTwo)
+          .liquidate(accountOne.address, synthTokenAddress);
       } catch (error) {
         expect(error.message).to.match(/above cRatio/);
       }
@@ -112,17 +135,15 @@ describe('Liquidation tests', async function() {
 
     it('Should liquidate user if is below active C-Ratio 200%', async function() {
       const date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-      const accountOne = state.contractCreatorOwner.address;
-      await state.feed.updatePrice(BigNumber.from(parseEther('0.7')));
       await state.minter
-        .connect(account)
-        .flagLiquidate(accountOne, synthTokenAddress);
+        .connect(accountTwo)
+        .flagLiquidate(accountOne.address, synthTokenAddress);
 
       await state.minter
-        .connect(account)
-        .liquidate(accountOne, synthTokenAddress);
+        .connect(accountTwo)
+        .liquidate(accountOne.address, synthTokenAddress);
       const balance = await state.minter.balanceOfSynth(
-        account.address,
+        accountTwo.address,
         synthTokenAddress
       );
 
@@ -130,13 +151,13 @@ describe('Liquidation tests', async function() {
         await checkLiquidateEvent(
           state.minter,
           state.auctionHouse,
-          accountOne,
-          account.address,
+          accountOne.address,
+          accountTwo.address,
           synthTokenAddress,
           date
         )
       ).to.be.true;
-      expect(balance.toString()).to.be.equal(parseEther('0.2').toString());
+      expect(balance.toString()).to.be.equal(parseEther('24.38').toString());
     });
   });
 });
