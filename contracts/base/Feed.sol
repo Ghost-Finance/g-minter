@@ -1,9 +1,8 @@
 //SPDX-License-Identifier: MIT
+//SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import './Administration.sol';
-
-contract Feed is Administration {
+contract Feed {
   uint256 public price;
   string public name;
 
@@ -12,7 +11,7 @@ contract Feed is Administration {
     name = name_;
   }
 
-  function updatePrice(uint price_) public onlyAdmin {
+  function updatePrice(uint price_) public {
     price = price_;
   }
 }
