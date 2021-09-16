@@ -18,6 +18,8 @@
     "clean:root": "npm run clean:modules && npm run clean:contracts && npm run clean:typechain",
     "clean:fe": "cd frontend && npm run clean",
     "clean": "npm run clean:root && npm run clean:fe",
+    "console:local": "npx hardhat console --network \"localhost\"",
+    "console:rinkeby": "npx hardhat console --network \"rinkeby\"",
     "install:fe": "cd frontend && npm i",
     "install:all": "npm i && npm run install:fe",
     "fix": "npm run clean && npm run install:all",

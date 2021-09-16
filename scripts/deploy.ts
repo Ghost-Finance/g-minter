@@ -44,11 +44,21 @@ const main = async () => {
     auctionHouse.address
   );
 
+  const createGDai = await minter.createSynth(
+    'GDAI',
+    'GDAI',
+    BigNumber.from(parseEther('200000000.0')),
+    200,
+    300,
+    feedTwo.address
+  );
+
   console.log(`Feed address contract: ${feed.address}`);
   console.log(`Feed 2 address contract: ${feedTwo.address}`);
   console.log(`Token address contract: ${token.address}`);
   console.log(`AuctionHouse address contract: ${auctionHouse.address}`);
   console.log(`Minter address contract: ${minter.address}`);
+  console.log(`GDai address: ${await minter.getSynth(0)}`);
 };
 
 // const saveFrontendFiles = (
