@@ -1,7 +1,9 @@
 require('dotenv').config();
 
 import { HardhatUserConfig } from 'hardhat/types';
+import 'hardhat-deploy';
 import '@nomiclabs/hardhat-ethers';
+import '@nomiclabs/hardhat-etherscan';
 import { task } from 'hardhat/config';
 import '@nomiclabs/hardhat-waffle';
 import 'hardhat-typechain';
@@ -39,10 +41,16 @@ const config: HardhatUserConfig = {
     timeout: 150000,
   },
 
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY,
+  },
+
   networks: {
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${INFURA_PROJECT_ID}`,
       accounts: accounts,
+      live: true,
+      saveDeployments: true,
     },
     hardhat: {
       // chainId: 1337,
