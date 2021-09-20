@@ -1,17 +1,20 @@
 require('dotenv').config();
 
-import { HardhatUserConfig } from 'hardhat/types';
+import 'hardhat-deploy';
 import '@nomiclabs/hardhat-ethers';
-import { task } from 'hardhat/config';
+import '@nomiclabs/hardhat-etherscan';
 import '@nomiclabs/hardhat-waffle';
 import 'hardhat-typechain';
+import { HardhatUserConfig } from 'hardhat/types';
+import { task } from 'hardhat/config';
 
-const INFURA_PROJECT_ID =
-  process.env.INFURA_PROJECT_ID || 'ad00fd516c774c208f606b37cf984a3b';
-const MNEMONIC_SEED = process.env.MNEMONIC_SEED || '';
-const PRIVATE_KEY = process.env.PRIVATE_KEY || '';
-const SECOND_PRIVATE_KEY = process.env.SECOND_PRIVATE_KEY || '';
-const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
+const {
+  ALCHEMY_KEY,
+  INFURA_PROJECT_ID,
+  MNEMONIC_SEED,
+  PRIVATE_KEY = '',
+  SECOND_PRIVATE_KEY,
+} = process.env;
 
 const accounts =
   PRIVATE_KEY.length > 0 ? [PRIVATE_KEY, SECOND_PRIVATE_KEY] : [];
@@ -39,10 +42,16 @@ const config: HardhatUserConfig = {
     timeout: 150000,
   },
 
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY,
+  },
+
   networks: {
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${INFURA_PROJECT_ID}`,
       accounts: accounts,
+      live: true,
+      saveDeployments: true,
     },
     hardhat: {
       // chainId: 1337,
