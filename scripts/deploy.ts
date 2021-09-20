@@ -1,10 +1,9 @@
-import { artifacts, ethers, run } from 'hardhat';
-import { BigNumber, Contract, ContractFactory } from 'ethers';
+import { artifacts, ethers } from 'hardhat';
+import { BigNumber, ContractFactory } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
 import * as fs from 'fs';
 import * as fse from 'fs-extra';
 import { formatEther } from 'ethers/lib/utils';
-import { hrtime } from 'process';
 
 let minterContractLabelString: string = 'Minter';
 let tokenContractLabelString: string = 'GTokenERC20';
@@ -63,6 +62,13 @@ const main = async () => {
   console.log(`AuctionHouse address contract: ${auctionHouse.address}`);
   console.log(`Minter address contract: ${minter.address}`);
   console.log(`GDai address: ${gDaiAddress}`);
+
+  saveFrontendFiles(
+    ghoToken.address,
+    gDaiAddress,
+    auctionHouse.address,
+    minter.address
+  );
 };
 
 const deployContracts = async (contractFactory: ContractFactory, ...args) => {
@@ -72,10 +78,10 @@ const deployContracts = async (contractFactory: ContractFactory, ...args) => {
 };
 
 const saveFrontendFiles = (
-  daiContract: string,
-  phmContract: string,
-  perpetualContract: string,
-  minterContract: Contract
+  ghoContractAddress: string,
+  gDaiContractAddress: string,
+  auctionHouseContractAddress: string,
+  minterContractAddress: string
 ) => {
   const contractsDir = __dirname + '/../frontend/src/contracts';
   const typechainSrcDir = __dirname + '/../typechain';
@@ -94,10 +100,10 @@ const saveFrontendFiles = (
     contractsDir + '/contract-address.json',
     JSON.stringify(
       {
-        DAI: daiContract,
-        UBE: phmContract,
-        Minter: minterContract.address,
-        PerpetualContract: perpetualContract,
+        GHO: ghoContractAddress,
+        GDAI: gDaiContractAddress,
+        AuctionHouse: auctionHouseContractAddress,
+        Minter: minterContractAddress,
       },
       null,
       2
@@ -105,28 +111,32 @@ const saveFrontendFiles = (
   );
 
   // Copy contract abi's to /frontend/src/contracts/* directory
-  const ERC20Artifact = artifacts.readArtifactSync('ExpandedERC20');
+  const ERC20GhoArtifact = artifacts.readArtifactSync(tokenContractLabelString);
   fs.writeFileSync(
-    contractsDir + '/DAI.json',
-    JSON.stringify(ERC20Artifact, null, 2)
+    contractsDir + '/GHO.json',
+    JSON.stringify(ERC20GhoArtifact, null, 2)
   );
 
-  const IERC20Artifact = artifacts.readArtifactSync('ExpandedIERC20');
+  const ERC20GdaiArtifact = artifacts.readArtifactSync(
+    tokenContractLabelString
+  );
   fs.writeFileSync(
-    contractsDir + '/UBE.json',
-    JSON.stringify(IERC20Artifact, null, 2)
+    contractsDir + '/GDAI.json',
+    JSON.stringify(ERC20GdaiArtifact, null, 2)
   );
 
-  const MinterArtifact = artifacts.readArtifactSync('Minter');
+  const MinterArtifact = artifacts.readArtifactSync(minterContractLabelString);
   fs.writeFileSync(
     contractsDir + '/Minter.json',
     JSON.stringify(MinterArtifact, null, 2)
   );
 
-  const PerpetualArtifact = artifacts.readArtifactSync('Perpetual');
+  const AuctionHouseArtifact = artifacts.readArtifactSync(
+    auctionHouseContractLabelString
+  );
   fs.writeFileSync(
-    contractsDir + '/Perpetual.json',
-    JSON.stringify(PerpetualArtifact, null, 2)
+    contractsDir + '/AuctionHouse.json',
+    JSON.stringify(AuctionHouseArtifact, null, 2)
   );
 
   // Copy typechain to /frontend/src/typechain directory
