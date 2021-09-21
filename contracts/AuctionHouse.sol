@@ -16,9 +16,8 @@ contract AuctionHouse is CoreMath {
     uint256 collateralBalance;
     uint256 collateralValue;
     uint256 synthAmount;
-    uint auctionTarget;
-    address collateralFeedPrice;
-    address synthFeedPrice;
+    uint256 auctionTarget;
+    uint256 initialFeedPrice;
     address minterAddress;
     uint startTimestamp;
     uint endTimestamp;
@@ -45,8 +44,7 @@ contract AuctionHouse is CoreMath {
     uint256 collateralBalance_,
     uint256 collateralValue_,
     uint256 auctionTarget_,
-    address collateralFeedPrice_,
-    address synthFeedPrice_
+    uint256 initialFeedPrice_
   ) public {
     uint256 startTimestamp_ = block.timestamp;
     uint256 endTimestamp_ = startTimestamp_ + 1 weeks;
@@ -61,8 +59,7 @@ contract AuctionHouse is CoreMath {
         collateralValue_,
         0,
         auctionTarget_,
-        collateralFeedPrice_,
-        synthFeedPrice_,
+        initialFeedPrice_,
         msg.sender,
         startTimestamp_,
         endTimestamp_
@@ -86,8 +83,7 @@ contract AuctionHouse is CoreMath {
       slice = amount;
     }
 
-    uint initialPrice = _getFeedPrice(auction.collateralFeedPrice);
-    uint priceTimeHouse = price(initialPrice, block.timestamp - auction.startTimestamp);
+    uint priceTimeHouse = price(auction.initialFeedPrice, block.timestamp - auction.startTimestamp);
     require(priceTimeHouse <= maxCollateralPrice, 'price time house is bigger than collateral price');
 
     uint owe = mul(slice, priceTimeHouse) / WAD;

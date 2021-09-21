@@ -143,7 +143,7 @@ describe('Auction House tests', async function() {
       BigNumber.from(parseEther('20.0'))
     );
     expect(keeperBalanceOfGDAI.toString()).to.be.equal(
-      BigNumber.from(parseEther('20.38'))
+      BigNumber.from(parseEther('22.68'))
     );
   });
 
@@ -180,15 +180,6 @@ describe('Auction House tests', async function() {
           ).then(result => expect(result).to.be.true);
         });
     }, 90000);
-    // await expect(
-    //   await checkAuctionHouseTakeEvent(
-    //     state.auctionHouse,
-    //     accountTwo.address,
-    //     accountTwo.address,
-    //     amount,
-    //     BigNumber.from(parseEther('0.198'))
-    //   )
-    // ).to.be.true;
   });
 
   it('Should return success when chost is bigger than owe', async function() {
@@ -228,7 +219,7 @@ describe('Auction House tests', async function() {
       BigNumber.from(parseEther('71.5'))
     );
     expect(keeperBalanceOfGDAI.toString()).to.be.equal(
-      BigNumber.from(parseEther('9.38'))
+      BigNumber.from(parseEther('11.68'))
     );
   });
 
@@ -274,7 +265,7 @@ describe('Auction House tests', async function() {
         state.minter
           .balanceOfSynth(accountTwo.address, synthTokenAddress)
           .then(balance => {
-            expect(balance).to.be.equal(BigNumber.from(parseEther('0.4175')));
+            expect(balance).to.be.equal(BigNumber.from(parseEther('2.7175')));
           })
           .catch(error => {
             throw error;
@@ -285,7 +276,7 @@ describe('Auction House tests', async function() {
           .balanceOfSynth(accountOne.address, synthTokenAddress)
           .then(balance => {
             expect(balance.toString()).to.be.equal(
-              BigNumber.from(parseEther('25.3'))
+              BigNumber.from(parseEther('20.0'))
             );
           })
           .catch(error => {

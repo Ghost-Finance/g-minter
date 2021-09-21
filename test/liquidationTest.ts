@@ -89,6 +89,11 @@ describe('Liquidation tests', async function() {
           .add(10, 'days')
           .format('DD');
 
+        const balanceOfBefore = await state.minter.balanceOfSynth(
+          accountOne.address,
+          synthTokenAddress
+        );
+
         await state.minter
           .connect(accountOne)
           .flagLiquidate(accountTwo.address, synthTokenAddress);
@@ -101,6 +106,14 @@ describe('Liquidation tests', async function() {
             day
           )
         ).to.be.true;
+
+        const balanceOfAfter = await state.minter.balanceOfSynth(
+          accountOne.address,
+          synthTokenAddress
+        );
+        expect(balanceOfAfter.toString()).to.be.equal(
+          balanceOfBefore.add(BigNumber.from(parseEther('3.0')))
+        );
       })
     );
   });
@@ -135,17 +148,17 @@ describe('Liquidation tests', async function() {
 
     it('Should liquidate user if is below active C-Ratio 200%', async function() {
       const date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-      await state.minter
-        .connect(accountTwo)
-        .flagLiquidate(accountOne.address, synthTokenAddress);
-
-      await state.minter
-        .connect(accountTwo)
-        .liquidate(accountOne.address, synthTokenAddress);
-      const balance = await state.minter.balanceOfSynth(
+      const balanceOfBefore = await state.minter.balanceOfSynth(
         accountTwo.address,
         synthTokenAddress
       );
+
+      await state.minter
+        .connect(accountTwo)
+        .flagLiquidate(accountOne.address, synthTokenAddress);
+      await state.minter
+        .connect(accountTwo)
+        .liquidate(accountOne.address, synthTokenAddress);
 
       expect(
         await checkLiquidateEvent(
@@ -157,7 +170,14 @@ describe('Liquidation tests', async function() {
           date
         )
       ).to.be.true;
-      expect(balance.toString()).to.be.equal(parseEther('24.38').toString());
+
+      const balanceOfAfter = await state.minter.balanceOfSynth(
+        accountTwo.address,
+        synthTokenAddress
+      );
+      expect(balanceOfAfter.toString()).to.be.equal(
+        balanceOfBefore.add(BigNumber.from(parseEther('6.68')))
+      );
     });
   });
 });
