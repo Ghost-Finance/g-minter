@@ -7,7 +7,6 @@ import './base/Feed.sol';
 import './base/CoreMath.sol';
 
 contract AuctionHouse is CoreMath {
-
   struct Auction {
     address user;
     address tokenAddress;
@@ -75,7 +74,7 @@ contract AuctionHouse is CoreMath {
     uint slice;
     uint keeperAmount;
 
-    require(amount > 0, 'Invalid amount');
+    require(amount > 0 && auction.auctionTarget > 0, 'Invalid amount or auction finished');
     require(block.timestamp > auction.startTimestamp && block.timestamp < auction.endTimestamp, 'Auction period invalid');
     if (amount > auction.collateralBalance) {
       slice = auction.collateralBalance;
@@ -84,7 +83,7 @@ contract AuctionHouse is CoreMath {
     }
 
     uint priceTimeHouse = price(auction.initialFeedPrice, block.timestamp - auction.startTimestamp);
-    require(priceTimeHouse <= maxCollateralPrice, 'price time house is bigger than collateral price');
+    require(maxCollateralPrice >= priceTimeHouse, 'price time house is bigger than collateral price');
 
     uint owe = mul(slice, priceTimeHouse) / WAD;
     uint liquidationTarget = calculateAmountToFixCollateral(auction.auctionTarget, (auction.collateralBalance * priceTimeHouse) / WAD);
@@ -92,17 +91,19 @@ contract AuctionHouse is CoreMath {
 
     if (liquidationTarget > owe) {
       keeperAmount = owe;
-      auction.synthAmount += keeperAmount;
 
       if (auction.auctionTarget - owe >= chost) {
         slice = radiv(owe, priceTimeHouse);
         auction.auctionTarget -= owe;
         auction.collateralBalance -= slice;
       } else {
+        require(auction.auctionTarget > chost, 'No partial purchase');
         slice = radiv((auction.auctionTarget - chost), priceTimeHouse);
         auction.auctionTarget = chost;
         auction.collateralBalance -= slice;
       }
+
+      auction.synthAmount += mul(slice, priceTimeHouse) / WAD;
     } else {
       keeperAmount = liquidationTarget;
       slice = radiv(liquidationTarget, priceTimeHouse);

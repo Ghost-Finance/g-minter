@@ -5,7 +5,7 @@ import { parseEther } from 'ethers/lib/utils';
 import { checkAuctionHouseTakeEvent } from './util/CheckEvent';
 import setup from './util/setup';
 
-describe('Auction House tests', async function() {
+describe.only('Auction House tests', async function() {
   let state, synthTokenAddress, accountOne, accountTwo;
   const amount = BigNumber.from(parseEther('500.0'));
   const amountToDeposit = BigNumber.from(parseEther('180.0'));
@@ -90,7 +90,7 @@ describe('Auction House tests', async function() {
         .connect(accountTwo)
         .take(id, amount, BigNumber.from(parseEther('1')), accountTwo.address);
     } catch (error) {
-      expect(error.message).to.match(/'Invalid amount'/);
+      expect(error.message).to.match(/'Invalid amount or auction finished'/);
     }
   });
 
@@ -109,6 +109,30 @@ describe('Auction House tests', async function() {
         .take(id, amount, amount, accountTwo.address);
     } catch (error) {
       expect(error.message).to.match(/'Auction period invalid'/);
+    }
+  });
+
+  it('validates when auction finish and try to execute take again', async function() {
+    const id = 0;
+    const amount = BigNumber.from(parseEther('190.0'));
+
+    // First take
+    await state.auctionHouse
+      .connect(accountTwo)
+      .take(id, amount, BigNumber.from(parseEther('1')), accountTwo.address);
+
+    const auction = await state.auctionHouse.getAuction(id);
+    expect(auction.auctionTarget.toString()).to.be.equal(
+      BigNumber.from(parseEther('0.0'))
+    );
+
+    // Second take
+    try {
+      await state.auctionHouse
+        .connect(accountTwo)
+        .take(id, amount, BigNumber.from(parseEther('1')), accountTwo.address);
+    } catch (error) {
+      expect(error.message).to.match(/Invalid amount or auction finished/);
     }
   });
 
@@ -182,7 +206,7 @@ describe('Auction House tests', async function() {
     }, 90000);
   });
 
-  it('Should return success when chost is bigger than owe', async function() {
+  it('Should return success when Keeper buy an auction twice', async function() {
     const id = 0;
     const expectedAmount = BigNumber.from(parseEther('71.5'));
     const amount = BigNumber.from(parseEther('75.0'));
@@ -204,10 +228,23 @@ describe('Auction House tests', async function() {
         BigNumber.from(parseEther('0.2'))
       )
     ).to.be.true;
-
     const auctionAfter = await state.auctionHouse.getAuction(id);
     expect(auctionAfter.auctionTarget.toString()).to.be.equal(
       BigNumber.from(parseEther('11.0'))
+    );
+
+    await state.auctionHouse
+      .connect(accountTwo)
+      .take(
+        id,
+        BigNumber.from(parseEther('55.0')),
+        BigNumber.from(parseEther('1.0')),
+        accountTwo.address
+      );
+
+    const auctionLiquidity = await state.auctionHouse.getAuction(id);
+    expect(auctionLiquidity.auctionTarget.toString()).to.be.equal(
+      BigNumber.from(parseEther('0'))
     );
 
     const keeperBalanceOfGHO = await state.token.balanceOf(accountTwo.address);
@@ -216,10 +253,25 @@ describe('Auction House tests', async function() {
       synthTokenAddress
     );
     expect(keeperBalanceOfGHO.toString()).to.be.equal(
-      BigNumber.from(parseEther('71.5'))
+      BigNumber.from(parseEther('119.8125'))
     );
     expect(keeperBalanceOfGDAI.toString()).to.be.equal(
-      BigNumber.from(parseEther('11.68'))
+      BigNumber.from(parseEther('2.0175'))
+    );
+
+    const userCollateral = await state.minter.collateralBalance(
+      accountOne.address,
+      synthTokenAddress
+    );
+    expect(userCollateral.toString()).to.be.equal(
+      BigNumber.from(parseEther('60.1875'))
+    );
+    const userSynthDebt = await state.minter.synthDebt(
+      accountOne.address,
+      synthTokenAddress
+    );
+    expect(userSynthDebt.toString()).to.be.equal(
+      BigNumber.from(parseEther('1.3375'))
     );
   });
 
@@ -311,6 +363,21 @@ describe('Auction House tests', async function() {
     priceTimeHouse = await state.auctionHouse.price(price, 90);
     expect(priceTimeHouse.toString()).to.be.equal(
       BigNumber.from(parseEther('9.9'))
+    );
+
+    priceTimeHouse = await state.auctionHouse.price(price, 180);
+    expect(priceTimeHouse.toString()).to.be.equal(
+      BigNumber.from(parseEther('9.801'))
+    );
+
+    priceTimeHouse = await state.auctionHouse.price(price, 280);
+    expect(priceTimeHouse.toString()).to.be.equal(
+      BigNumber.from(parseEther('9.70299'))
+    );
+
+    priceTimeHouse = await state.auctionHouse.price(price, 380);
+    expect(priceTimeHouse.toString()).to.be.equal(
+      BigNumber.from(parseEther('9.6059601'))
     );
   });
 });
