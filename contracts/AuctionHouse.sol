@@ -5,6 +5,7 @@ import './GTokenERC20.sol';
 import './Minter.sol';
 import './base/Feed.sol';
 import './base/CoreMath.sol';
+import 'hardhat/console.sol';
 
 contract AuctionHouse is CoreMath {
   struct Auction {
@@ -112,20 +113,26 @@ contract AuctionHouse is CoreMath {
       auction.synthAmount += keeperAmount;
     }
 
+
+    GTokenERC20 synthToken = GTokenERC20(auction.tokenAddress);
+    GTokenERC20 collateralToken = GTokenERC20(auction.collateralTokenAddress);
+
+    require(synthToken.balanceOf(msg.sender) >= keeperAmount, 'Not allowed to purchase');
+    synthToken.approveKeeperTokensToAuction(amount * maxCollateralPrice);
     // tranfer values for keeper
-    GTokenERC20(auction.tokenAddress).approveKeeperTokensToAuction(amount * maxCollateralPrice);
-    require(GTokenERC20(auction.tokenAddress).transferFrom(msg.sender, address(this), keeperAmount), 'transfer token from keeper fail');
-    require(GTokenERC20(auction.collateralTokenAddress).transfer(receiver, slice), "transfer token to keeper fail");
+    require(synthToken.transferFrom(msg.sender, address(this), keeperAmount), 'transfer token from keeper fail');
+    require(collateralToken.transfer(receiver, slice), "transfer token to keeper fail");
 
     if (auction.auctionTarget == 0) {
-      GTokenERC20(auction.collateralTokenAddress).approve(address(auction.minterAddress), auction.collateralBalance);
-      GTokenERC20(auction.tokenAddress).approve(address(auction.minterAddress), auction.synthAmount);
+      collateralToken.approve(address(auction.minterAddress), auction.collateralBalance);
+      synthToken.approve(address(auction.minterAddress), auction.synthAmount);
+
       auctionFinishCallback(
         auctionId,
         Minter(auction.minterAddress),
         address(auction.user),
-        GTokenERC20(auction.collateralTokenAddress),
-        GTokenERC20(auction.tokenAddress),
+        collateralToken,
+        synthToken,
         auction.collateralBalance,
         auction.synthAmount
       );

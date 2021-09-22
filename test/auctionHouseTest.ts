@@ -5,7 +5,7 @@ import { parseEther } from 'ethers/lib/utils';
 import { checkAuctionHouseTakeEvent } from './util/CheckEvent';
 import setup from './util/setup';
 
-describe.only('Auction House tests', async function() {
+describe('Auction House tests', async function() {
   let state, synthTokenAddress, accountOne, accountTwo;
   const amount = BigNumber.from(parseEther('500.0'));
   const amountToDeposit = BigNumber.from(parseEther('180.0'));
@@ -133,6 +133,26 @@ describe.only('Auction House tests', async function() {
         .take(id, amount, BigNumber.from(parseEther('1')), accountTwo.address);
     } catch (error) {
       expect(error.message).to.match(/Invalid amount or auction finished/);
+    }
+  });
+
+  it("validates when keeper hasn't enough funds to purchase", async function() {
+    const id = 0;
+    const amount = BigNumber.from(parseEther('20.0'));
+    const accountWithoutFounds = state.contractAccounts[2];
+
+    try {
+      await state.auctionHouse
+        .connect(accountWithoutFounds)
+        .take(
+          id,
+          amount,
+          BigNumber.from(parseEther('1')),
+          accountWithoutFounds.address
+        );
+    } catch (error) {
+      console.log(error.message);
+      expect(error.message).to.match(/Not allowed to purchase/);
     }
   });
 
