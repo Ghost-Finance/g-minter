@@ -22,6 +22,7 @@ contract Minter {
   mapping (GTokenERC20 => uint256) public cRatioPassive;
   mapping (GTokenERC20 => Feed) public feeds;
   mapping (address => mapping (GTokenERC20 => uint256)) public synthDebt;
+  mapping (address => mapping (GTokenERC20 => uint256)) public auctionDebt;
   mapping (address => mapping (GTokenERC20 => uint256)) public plrDelay;
 
   // Events
@@ -135,8 +136,9 @@ contract Minter {
       uint debtAmountTransferable = debtValue / 10;
       _mintPenalty(token, user, msg.sender, debtAmountTransferable);
       _transferLiquidate(token, msg.sender, debtAmountTransferable);
-      uint256 auctionDebt = synthDebt[user][token] * syntFeed.price() / 1 ether;
+      auctionDebt[user][token] += synthDebt[user][token];
       uint256 collateralBalance = collateralBalance[user][token];
+      uint256 auctionDebt = (auctionDebt[user][token] * syntFeed.price()) / 1 ether;
       auctionHouse.start(user, address(token), address(collateralToken), msg.sender, collateralBalance, collateralValue, auctionDebt, priceFeed);
       updateCollateralAndSynthDebt(user, token);
 
@@ -155,7 +157,7 @@ contract Minter {
     synthToken.burn(synthAmount);
 
     collateralBalance[user][synthToken] = collateralAmount;
-    // synthDebt[user][synthToken] -= synthAmount;
+    auctionDebt[user][synthToken] -= synthAmount;
     plrDelay[user][synthToken] = 0;
 
     emit AuctionFinish(auctionId, user, block.timestamp);
