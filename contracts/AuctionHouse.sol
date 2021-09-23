@@ -5,7 +5,6 @@ import './GTokenERC20.sol';
 import './Minter.sol';
 import './base/Feed.sol';
 import './base/CoreMath.sol';
-import 'hardhat/console.sol';
 
 contract AuctionHouse is CoreMath {
   struct Auction {
@@ -117,7 +116,7 @@ contract AuctionHouse is CoreMath {
     GTokenERC20 synthToken = GTokenERC20(auction.tokenAddress);
     GTokenERC20 collateralToken = GTokenERC20(auction.collateralTokenAddress);
 
-    require(synthToken.balanceOf(msg.sender) >= keeperAmount, 'Not allowed to purchase');
+    // require(synthToken.balanceOf(msg.sender) >= keeperAmount, 'Not enough gDai balance');
     synthToken.approveKeeperTokensToAuction(amount * maxCollateralPrice);
     // tranfer values for keeper
     require(synthToken.transferFrom(msg.sender, address(this), keeperAmount), 'transfer token from keeper fail');

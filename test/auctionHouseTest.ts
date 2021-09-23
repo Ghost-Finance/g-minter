@@ -151,8 +151,7 @@ describe('Auction House tests', async function() {
           accountWithoutFounds.address
         );
     } catch (error) {
-      console.log(error.message);
-      expect(error.message).to.match(/Not allowed to purchase/);
+      expect(error.message).to.match(/ERC20: transfer amount exceeds balance/);
     }
   });
 
@@ -220,7 +219,7 @@ describe('Auction House tests', async function() {
             accountTwo.address,
             accountTwo.address,
             amount,
-            BigNumber.from(parseEther('0.198'))
+            BigNumber.from(parseEther('2.0'))
           ).then(result => expect(result).to.be.true);
         });
     }, 90000);
@@ -291,7 +290,7 @@ describe('Auction House tests', async function() {
       synthTokenAddress
     );
     expect(userSynthDebt.toString()).to.be.equal(
-      BigNumber.from(parseEther('1.3375'))
+      BigNumber.from(parseEther('0'))
     );
   });
 

@@ -132,14 +132,21 @@ contract Minter {
 
     collateralToken.approve(address(auctionHouse), collateralBalance[user][token]);
     {
-      uint debtAmountTransferable =  debtValue / 10;
+      uint debtAmountTransferable = debtValue / 10;
       _mintPenalty(token, user, msg.sender, debtAmountTransferable);
       _transferLiquidate(token, msg.sender, debtAmountTransferable);
-      auctionHouse.start(user, address(token), address(collateralToken), msg.sender, collateralBalance[user][token], collateralValue, debtValue * PENALTY_FEE / 10, priceFeed);
-      collateralBalance[user][token] = 0;
+      uint256 auctionDebt = synthDebt[user][token] * syntFeed.price() / 1 ether;
+      uint256 collateralBalance = collateralBalance[user][token];
+      auctionHouse.start(user, address(token), address(collateralToken), msg.sender, collateralBalance, collateralValue, auctionDebt, priceFeed);
+      updateCollateralAndSynthDebt(user, token);
 
       emit Liquidate(user, msg.sender, address(token));
     }
+  }
+
+  function updateCollateralAndSynthDebt(address user, GTokenERC20 token) private {
+    collateralBalance[user][token] = 0;
+    synthDebt[user][token] = 0;
   }
 
   function auctionFinish(uint256 auctionId, address user, GTokenERC20 collateralToken, GTokenERC20 synthToken, uint256 collateralAmount, uint256 synthAmount) public onlyAuctionHouse {
@@ -148,7 +155,8 @@ contract Minter {
     synthToken.burn(synthAmount);
 
     collateralBalance[user][synthToken] = collateralAmount;
-    synthDebt[user][synthToken] -= synthAmount;
+    // synthDebt[user][synthToken] -= synthAmount;
+    plrDelay[user][synthToken] = 0;
 
     emit AuctionFinish(auctionId, user, block.timestamp);
   }
