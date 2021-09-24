@@ -89,6 +89,11 @@ describe('Liquidation tests', async function() {
           .add(10, 'days')
           .format('DD');
 
+        const balanceOfBefore = await state.minter.balanceOfSynth(
+          accountOne.address,
+          synthTokenAddress
+        );
+
         await state.minter
           .connect(accountOne)
           .flagLiquidate(accountTwo.address, synthTokenAddress);
@@ -101,6 +106,14 @@ describe('Liquidation tests', async function() {
             day
           )
         ).to.be.true;
+
+        const balanceOfAfter = await state.minter.balanceOfSynth(
+          accountOne.address,
+          synthTokenAddress
+        );
+        expect(balanceOfAfter.toString()).to.be.equal(
+          balanceOfBefore.add(BigNumber.from(parseEther('3.0')))
+        );
       })
     );
   });
@@ -133,19 +146,45 @@ describe('Liquidation tests', async function() {
       }
     });
 
-    it('Should liquidate user if is below active C-Ratio 200%', async function() {
-      const date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    it('Should return success if liquidated account try to mint another value', async function() {
+      const amount = BigNumber.from(parseEther('1.7'));
+      const amountToDeposit = BigNumber.from(parseEther('80.0'));
       await state.minter
         .connect(accountTwo)
         .flagLiquidate(accountOne.address, synthTokenAddress);
-
       await state.minter
         .connect(accountTwo)
         .liquidate(accountOne.address, synthTokenAddress);
-      const balance = await state.minter.balanceOfSynth(
+
+      await state.token.transfer(accountOne.address, amountToDeposit);
+      await state.token
+        .connect(accountOne)
+        .approve(state.minter.address, amountToDeposit);
+      await state.minter
+        .connect(accountOne)
+        .depositCollateral(synthTokenAddress, amountToDeposit);
+      await state.minter.connect(accountOne).mint(synthTokenAddress, amount);
+
+      const balance = await state.minter.synthDebt(
+        accountOne.address,
+        synthTokenAddress
+      );
+      expect(balance.toString()).to.be.equal(amount);
+    });
+
+    it('Should liquidate user if is below active C-Ratio 200%', async function() {
+      const date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      const balanceOfBefore = await state.minter.balanceOfSynth(
         accountTwo.address,
         synthTokenAddress
       );
+
+      await state.minter
+        .connect(accountTwo)
+        .flagLiquidate(accountOne.address, synthTokenAddress);
+      await state.minter
+        .connect(accountTwo)
+        .liquidate(accountOne.address, synthTokenAddress);
 
       expect(
         await checkLiquidateEvent(
@@ -157,7 +196,14 @@ describe('Liquidation tests', async function() {
           date
         )
       ).to.be.true;
-      expect(balance.toString()).to.be.equal(parseEther('24.38').toString());
+
+      const balanceOfAfter = await state.minter.balanceOfSynth(
+        accountTwo.address,
+        synthTokenAddress
+      );
+      expect(balanceOfAfter.toString()).to.be.equal(
+        balanceOfBefore.add(BigNumber.from(parseEther('6.68')))
+      );
     });
   });
 });

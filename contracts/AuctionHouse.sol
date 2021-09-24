@@ -7,7 +7,6 @@ import './base/Feed.sol';
 import './base/CoreMath.sol';
 
 contract AuctionHouse is CoreMath {
-
   struct Auction {
     address user;
     address tokenAddress;
@@ -16,9 +15,8 @@ contract AuctionHouse is CoreMath {
     uint256 collateralBalance;
     uint256 collateralValue;
     uint256 synthAmount;
-    uint auctionTarget;
-    address collateralFeedPrice;
-    address synthFeedPrice;
+    uint256 auctionTarget;
+    uint256 initialFeedPrice;
     address minterAddress;
     uint startTimestamp;
     uint endTimestamp;
@@ -45,8 +43,7 @@ contract AuctionHouse is CoreMath {
     uint256 collateralBalance_,
     uint256 collateralValue_,
     uint256 auctionTarget_,
-    address collateralFeedPrice_,
-    address synthFeedPrice_
+    uint256 initialFeedPrice_
   ) public {
     uint256 startTimestamp_ = block.timestamp;
     uint256 endTimestamp_ = startTimestamp_ + 1 weeks;
@@ -61,8 +58,7 @@ contract AuctionHouse is CoreMath {
         collateralValue_,
         0,
         auctionTarget_,
-        collateralFeedPrice_,
-        synthFeedPrice_,
+        initialFeedPrice_,
         msg.sender,
         startTimestamp_,
         endTimestamp_
@@ -78,7 +74,7 @@ contract AuctionHouse is CoreMath {
     uint slice;
     uint keeperAmount;
 
-    require(amount > 0, 'Invalid amount');
+    require(amount > 0 && auction.auctionTarget > 0, 'Invalid amount or auction finished');
     require(block.timestamp > auction.startTimestamp && block.timestamp < auction.endTimestamp, 'Auction period invalid');
     if (amount > auction.collateralBalance) {
       slice = auction.collateralBalance;
@@ -86,9 +82,8 @@ contract AuctionHouse is CoreMath {
       slice = amount;
     }
 
-    uint initialPrice = _getFeedPrice(auction.collateralFeedPrice);
-    uint priceTimeHouse = price(initialPrice, block.timestamp - auction.startTimestamp);
-    require(priceTimeHouse <= maxCollateralPrice, 'price time house is bigger than collateral price');
+    uint priceTimeHouse = price(auction.initialFeedPrice, block.timestamp - auction.startTimestamp);
+    require(maxCollateralPrice >= priceTimeHouse, 'price time house is bigger than collateral price');
 
     uint owe = mul(slice, priceTimeHouse) / WAD;
     uint liquidationTarget = calculateAmountToFixCollateral(auction.auctionTarget, (auction.collateralBalance * priceTimeHouse) / WAD);
@@ -96,17 +91,19 @@ contract AuctionHouse is CoreMath {
 
     if (liquidationTarget > owe) {
       keeperAmount = owe;
-      auction.synthAmount += keeperAmount;
 
       if (auction.auctionTarget - owe >= chost) {
         slice = radiv(owe, priceTimeHouse);
         auction.auctionTarget -= owe;
         auction.collateralBalance -= slice;
       } else {
+        require(auction.auctionTarget > chost, 'No partial purchase');
         slice = radiv((auction.auctionTarget - chost), priceTimeHouse);
         auction.auctionTarget = chost;
         auction.collateralBalance -= slice;
       }
+
+      auction.synthAmount += mul(slice, priceTimeHouse) / WAD;
     } else {
       keeperAmount = liquidationTarget;
       slice = radiv(liquidationTarget, priceTimeHouse);
@@ -115,20 +112,26 @@ contract AuctionHouse is CoreMath {
       auction.synthAmount += keeperAmount;
     }
 
+
+    GTokenERC20 synthToken = GTokenERC20(auction.tokenAddress);
+    GTokenERC20 collateralToken = GTokenERC20(auction.collateralTokenAddress);
+
+    // require(synthToken.balanceOf(msg.sender) >= keeperAmount, 'Not enough gDai balance');
+    synthToken.approveKeeperTokensToAuction(amount * maxCollateralPrice);
     // tranfer values for keeper
-    GTokenERC20(auction.tokenAddress).approveKeeperTokensToAuction(amount * maxCollateralPrice);
-    require(GTokenERC20(auction.tokenAddress).transferFrom(msg.sender, address(this), keeperAmount), 'transfer token from keeper fail');
-    require(GTokenERC20(auction.collateralTokenAddress).transfer(receiver, slice), "transfer token to keeper fail");
+    require(synthToken.transferFrom(msg.sender, address(this), keeperAmount), 'transfer token from keeper fail');
+    require(collateralToken.transfer(receiver, slice), "transfer token to keeper fail");
 
     if (auction.auctionTarget == 0) {
-      GTokenERC20(auction.collateralTokenAddress).approve(address(auction.minterAddress), auction.collateralBalance);
-      GTokenERC20(auction.tokenAddress).approve(address(auction.minterAddress), auction.synthAmount);
+      collateralToken.approve(address(auction.minterAddress), auction.collateralBalance);
+      synthToken.approve(address(auction.minterAddress), auction.synthAmount);
+
       auctionFinishCallback(
         auctionId,
         Minter(auction.minterAddress),
         address(auction.user),
-        GTokenERC20(auction.collateralTokenAddress),
-        GTokenERC20(auction.tokenAddress),
+        collateralToken,
+        synthToken,
         auction.collateralBalance,
         auction.synthAmount
       );

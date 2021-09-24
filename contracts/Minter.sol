@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import './GTokenERC20.sol';
 import './AuctionHouse.sol';
 import './base/Feed.sol';
-import 'hardhat/console.sol';
 
 contract Minter {
   address public owner;
@@ -23,6 +22,7 @@ contract Minter {
   mapping (GTokenERC20 => uint256) public cRatioPassive;
   mapping (GTokenERC20 => Feed) public feeds;
   mapping (address => mapping (GTokenERC20 => uint256)) public synthDebt;
+  mapping (address => mapping (GTokenERC20 => uint256)) public auctionDebt;
   mapping (address => mapping (GTokenERC20 => uint256)) public plrDelay;
 
   // Events
@@ -126,20 +126,29 @@ contract Minter {
   function liquidate(address user, GTokenERC20 token) external isValidKeeper(user) {
     require(plrDelay[user][token] > 0);
     Feed syntFeed = feeds[token];
-    uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;
+    uint256 priceFeed = collateralFeed.price();
+    uint256 collateralValue = (collateralBalance[user][token] * priceFeed) / 1 ether;
     uint256 debtValue = synthDebt[user][token] * syntFeed.price() / 1 ether;
     require((collateralValue < debtValue * cRatiosActive[token] / 100) || (collateralValue < debtValue * cRatioPassive[token] / 100 && plrDelay[user][token] < block.timestamp), 'above cRatio');
 
     collateralToken.approve(address(auctionHouse), collateralBalance[user][token]);
     {
-      uint debtAmountTransferable =  debtValue / 10;
-      _mintPenalty(token, user, debtAmountTransferable);
+      uint debtAmountTransferable = debtValue / 10;
+      _mintPenalty(token, user, msg.sender, debtAmountTransferable);
       _transferLiquidate(token, msg.sender, debtAmountTransferable);
-      auctionHouse.start(user, address(token), address(collateralToken), msg.sender, collateralBalance[user][token], collateralValue, debtValue * PENALTY_FEE / 10, address(collateralFeed), address(syntFeed));
-      collateralBalance[user][token] = 0;
+      auctionDebt[user][token] += synthDebt[user][token];
+      uint256 collateralBalance = collateralBalance[user][token];
+      uint256 auctionDebt = (auctionDebt[user][token] * syntFeed.price()) / 1 ether;
+      auctionHouse.start(user, address(token), address(collateralToken), msg.sender, collateralBalance, collateralValue, auctionDebt, priceFeed);
+      updateCollateralAndSynthDebt(user, token);
 
       emit Liquidate(user, msg.sender, address(token));
     }
+  }
+
+  function updateCollateralAndSynthDebt(address user, GTokenERC20 token) private {
+    collateralBalance[user][token] = 0;
+    synthDebt[user][token] = 0;
   }
 
   function auctionFinish(uint256 auctionId, address user, GTokenERC20 collateralToken, GTokenERC20 synthToken, uint256 collateralAmount, uint256 synthAmount) public onlyAuctionHouse {
@@ -148,12 +157,14 @@ contract Minter {
     synthToken.burn(synthAmount);
 
     collateralBalance[user][synthToken] = collateralAmount;
-    synthDebt[user][synthToken] -= synthAmount;
+    auctionDebt[user][synthToken] -= synthAmount;
+    plrDelay[user][synthToken] = 0;
 
     emit AuctionFinish(auctionId, user, block.timestamp);
   }
 
   function flagLiquidate(address user, GTokenERC20 token) external isValidKeeper(user) {
+    require(plrDelay[user][token] < block.timestamp);
     require(collateralBalance[user][token] > 0 && synthDebt[user][token] > 0, 'User cannot be flagged for liquidate');
 
     uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;
@@ -161,8 +172,7 @@ contract Minter {
     require(collateralValue < debtValue * cRatioPassive[token] / 100, "Above cRatioPassivo");
     plrDelay[user][token] = block.timestamp + 10 days;
 
-    _mintPenalty(token, user, FLAG_TIP);
-    require(token.transfer(msg.sender, FLAG_TIP), 'failed transfer incentive');
+    _mintPenalty(token, user, msg.sender, FLAG_TIP);
 
     emit AccountFlaggedForLiquidation(user, msg.sender, plrDelay[user][token]);
   }
@@ -183,8 +193,8 @@ contract Minter {
     feeds[synths[id]] = feed;
   }
 
-  function _mintPenalty(GTokenERC20 token, address user, uint256 amount) public {
-    token.mint(address(user), amount);
+  function _mintPenalty(GTokenERC20 token, address user, address keeper, uint256 amount) public {
+    token.mint(address(keeper), amount);
     synthDebt[address(user)][token] += amount;
   }
 
@@ -192,7 +202,6 @@ contract Minter {
   function _transferLiquidate(GTokenERC20 token, address keeper, uint256 amount) public {
     uint keeperAmount = (amount / 100) * 60;
     // uint restAmount = (amount / 100) * 20;
-
     require(token.transfer(address(keeper), keeperAmount), 'failed transfer incentive');
     // token.transfer(address(riskReserveAddress), restAmount);
     // token.transfer(address(liquidationVaultAddress), restAmount);

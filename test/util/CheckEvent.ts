@@ -181,8 +181,6 @@ export const checkFlagLiquidateEvent = async (
   const eventFlagLiquidate = await accountFlaggedEvent;
   expect(eventFlagLiquidate.account).to.be.equal(account);
   expect(eventFlagLiquidate.keeper).to.be.equal(accountKeeper);
-  // console.log(eventFlagLiquidate.endFlagDate);
-  // expect(eventFlagLiquidate.endFlagDate).to.be.equal(endFlagDate);
 
   return true;
 };
