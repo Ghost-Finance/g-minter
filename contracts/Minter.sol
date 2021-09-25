@@ -48,11 +48,6 @@ contract Minter {
     _;
   }
 
-  modifier onlyAuctionHouse() {
-    require(address(auctionHouse) == msg.sender, 'Only auction house!');
-    _;
-  }
-
   modifier isValidKeeper(address user) {
     require(user != address(msg.sender), 'Sender cannot be the liquidated');
     _;
@@ -78,7 +73,6 @@ contract Minter {
     cRatiosActive[synths[id]] = cRatioActive_;
     cRatioPassive[synths[id]] = cRatioPassive_;
     feeds[synths[id]] = feed;
-    token.setAuctionHouse(address(auctionHouse));
 
     emit CreateSynth(name, symbol, address(feed));
   }
@@ -151,7 +145,8 @@ contract Minter {
     synthDebt[user][token] = 0;
   }
 
-  function auctionFinish(uint256 auctionId, address user, GTokenERC20 collateralToken, GTokenERC20 synthToken, uint256 collateralAmount, uint256 synthAmount) public onlyAuctionHouse {
+  function auctionFinish(uint256 auctionId, address user, GTokenERC20 collateralToken, GTokenERC20 synthToken, uint256 collateralAmount, uint256 synthAmount) public {
+    require(address(auctionHouse) == msg.sender, 'Only auction house!');
     require(collateralToken.transferFrom(msg.sender, address(this), collateralAmount), 'transfer failed');
     require(synthToken.transferFrom(msg.sender, address(this), synthAmount), 'transfer failed');
     synthToken.burn(synthAmount);
