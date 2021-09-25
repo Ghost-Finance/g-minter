@@ -5,6 +5,7 @@ import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-etherscan';
 import '@nomiclabs/hardhat-waffle';
 import 'hardhat-typechain';
+import 'solidity-coverage';
 import { HardhatUserConfig } from 'hardhat/types';
 import { task } from 'hardhat/config';
 
@@ -14,6 +15,7 @@ const {
   MNEMONIC_SEED,
   PRIVATE_KEY = '',
   SECOND_PRIVATE_KEY,
+  ETHERSCAN_API_KEY,
 } = process.env;
 
 const accounts =
@@ -43,15 +45,19 @@ const config: HardhatUserConfig = {
   },
 
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: ETHERSCAN_API_KEY,
   },
 
   networks: {
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${INFURA_PROJECT_ID}`,
+      // url:
+      //   'https://eth-rinkeby.alchemyapi.io/v2/I3n9-yYF98CHuv4s36G0rjfJeW6rwfDI',
       accounts: accounts,
       live: true,
       saveDeployments: true,
+      gas: 12500000,
+      gasPrice: 1100000026,
     },
     hardhat: {
       // chainId: 1337,
@@ -60,7 +66,7 @@ const config: HardhatUserConfig = {
       // },
     },
     localhost: {
-      chainId: 8545,
+      chainId: 1337,
       url: 'http://127.0.0.1:8545',
       gasPrice: 50000000000,
     },

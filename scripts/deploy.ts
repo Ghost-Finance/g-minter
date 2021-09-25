@@ -12,8 +12,8 @@ let auctionHouseContractLabelString: string = 'AuctionHouse';
 
 const ghoArgs = ['GHO', 'GHO', BigNumber.from(parseEther('200000000.0'))];
 const gDaiArgs = [
-  'GHO',
-  'GHO',
+  'GDAI',
+  'GDAI',
   BigNumber.from(parseEther('200000000.0')),
   200,
   300,
@@ -54,14 +54,19 @@ const main = async () => {
   // Generate synths
   const synthArgs = [].concat(gDaiArgs, feedGdai.address);
   await minter.createSynth(...synthArgs);
-  const gDaiAddress = await minter.getSynth(0);
+  console.log(`Minter address contract: ${minter.address}`);
+  let gDaiAddress;
+  minter
+    .getSynth(0)
+    .then(data => (gDaiAddress = data))
+    .catch(error => console.log(error.message));
 
   console.log(`Feed address contract: ${feedGho.address}`);
   console.log(`Feed 2 address contract: ${feedGdai.address}`);
   console.log(`Token address contract: ${ghoToken.address}`);
   console.log(`AuctionHouse address contract: ${auctionHouse.address}`);
   console.log(`Minter address contract: ${minter.address}`);
-  console.log(`GDai address: ${gDaiAddress}`);
+  // console.log(`GDai address: ${gDaiAddress}`);
 
   saveFrontendFiles(
     ghoToken.address,
