@@ -117,6 +117,13 @@ contract Minter {
     emit Burn(msg.sender, address(token), amount);
   }
 
+  function getCRatio(GTokenERC20 token) external view returns (uint256) {
+    uint256 collateralValue = collateralBalance[msg.sender][token] * collateralFeed.price() / 1 ether;
+    uint256 debtValue = synthDebt[msg.sender][token] * feeds[token].price() / 1 ether;
+
+    return (collateralValue / debtValue) * 1 ether;
+  }
+
   function liquidate(address user, GTokenERC20 token) external isValidKeeper(user) {
     require(plrDelay[user][token] > 0);
     Feed syntFeed = feeds[token];
