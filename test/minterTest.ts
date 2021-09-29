@@ -4,6 +4,7 @@ import { BigNumber } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { parseEther } from 'ethers/lib/utils';
 import {
+  checkBurnEvent,
   checkCreateSynthEvent,
   checkDepositEvent,
   checkMintEvent,
@@ -143,7 +144,7 @@ describe('Minter', async function() {
     });
   });
 
-  describe('Mint a token', async function() {
+  describe('Mint/Burn a token', async function() {
     let synthTokenAddress, amountToMint, amountToDeposit, accountOne;
 
     beforeEach(async function() {
@@ -166,59 +167,170 @@ describe('Minter', async function() {
         .approve(state.minter.address, amountToDeposit);
     });
 
-    it("Should return error to mint if account hasn't the collateral balance", async function() {
-      try {
+    describe('Minter', async function() {
+      it("Should return error to mint if account hasn't the collateral balance", async function() {
+        try {
+          await state.minter
+            .connect(accountOne)
+            .mint(synthTokenAddress, amountToMint);
+        } catch (error) {
+          expect(error.message).to.match(/Without collateral deposit/);
+        }
+      });
+
+      it('Should return error to mint if account has below cRatio', async function() {
         await state.minter
           .connect(accountOne)
-          .mint(synthTokenAddress, amountToMint);
-      } catch (error) {
-        expect(error.message).to.match(/Without collateral deposit/);
-      }
-    });
+          .depositCollateral(synthTokenAddress, amountToDeposit);
+        await state.feed.updatePrice(parseEther('50'));
 
-    it('Should return error to mint if account has below cRatio', async function() {
-      await state.minter
-        .connect(accountOne)
-        .depositCollateral(synthTokenAddress, amountToDeposit);
-      await state.feed.updatePrice(parseEther('50'));
+        try {
+          await state.minter
+            .connect(accountOne)
+            .mint(synthTokenAddress, amountToMint);
+        } catch (error) {
+          expect(error.message).to.match(/Below cRatio/);
+        }
+      });
 
-      try {
+      it('Should return error to mint if token minted is the same as collateral', async function() {
+        await state.minter.depositCollateral(
+          synthTokenAddress,
+          amountToDeposit
+        );
+
+        try {
+          await state.minter
+            .connect(accountOne)
+            .mint(state.token.address, amountToMint);
+        } catch (error) {
+          expect(error.message).to.match(/invalid token/);
+        }
+      });
+
+      it('Should return success when mint a synth', async function() {
         await state.minter
           .connect(accountOne)
-          .mint(synthTokenAddress, amountToMint);
-      } catch (error) {
-        expect(error.message).to.match(/Below cRatio/);
-      }
-    });
+          .depositCollateral(synthTokenAddress, amountToDeposit);
 
-    it('Should return error to mint if token minted is the same as collateral', async function() {
-      await state.minter.depositCollateral(synthTokenAddress, amountToDeposit);
-
-      try {
         await state.minter
           .connect(accountOne)
-          .mint(state.token.address, amountToMint);
-      } catch (error) {
-        expect(error.message).to.match(/invalid token/);
-      }
+          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+
+        expect(
+          await checkMintEvent(
+            state.minter,
+            accountOne.address,
+            BigNumber.from(parseEther('20.0'))
+          )
+        ).to.be.true;
+      });
     });
 
-    it('Should return success when mint a synth', async function() {
-      await state.minter
-        .connect(accountOne)
-        .depositCollateral(synthTokenAddress, amountToDeposit);
+    describe('Burn', async function() {
+      it('validates when try to burn before mint gDai', async function() {
+        try {
+          await state.minter
+            .connect(accountOne)
+            .burn(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+        } catch (error) {
+          expect(error.message).to.match(
+            /ERC20: transfer amount exceeds balance/
+          );
+        }
+      });
 
-      await state.minter
-        .connect(accountOne)
-        .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+      it('validates when try to burn an amount exceeds the balance', async function() {
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(synthTokenAddress, amountToDeposit);
+        await state.minter
+          .connect(accountOne)
+          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
 
-      expect(
-        await checkMintEvent(
-          state.minter,
-          accountOne.address,
-          BigNumber.from(parseEther('20.0'))
-        )
-      ).to.be.true;
+        try {
+          await state.minter
+            .connect(accountOne)
+            .burn(synthTokenAddress, BigNumber.from(parseEther('200.0')));
+        } catch (error) {
+          expect(error.message).to.match(
+            /ERC20: transfer amount exceeds balance/
+          );
+        }
+      });
+
+      it('Should burn with success when collateral price going down', async function() {
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(synthTokenAddress, amountToDeposit);
+        await state.minter
+          .connect(accountOne)
+          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+        const amountRatioBefore = await state.minter
+          .connect(accountOne)
+          .getCRatio(synthTokenAddress);
+
+        expect(amountRatioBefore.toString()).to.be.equal(
+          BigNumber.from(parseEther('9.0'))
+        );
+
+        // GHO price go down to 50% c-Ratio is 400%
+        await state.feed.updatePrice(BigNumber.from(parseEther('0.5')));
+        const amountRatioAfterPriceDown = await state.minter
+          .connect(accountOne)
+          .getCRatio(synthTokenAddress);
+
+        expect(amountRatioAfterPriceDown.toString()).to.be.equal(
+          BigNumber.from(parseEther('4.0'))
+        );
+
+        // Burn 10 gDai to readjust for 900%
+        await state.Token.attach(synthTokenAddress)
+          .connect(accountOne)
+          .approve(state.minter.address, BigNumber.from(parseEther('10.0')));
+        await state.minter
+          .connect(accountOne)
+          .burn(synthTokenAddress, BigNumber.from(parseEther('10.0')));
+        const amountRatioAfter = await state.minter
+          .connect(accountOne)
+          .getCRatio(synthTokenAddress);
+
+        expect(amountRatioAfter.toString()).to.be.equal(
+          BigNumber.from(parseEther('9.0'))
+        );
+      });
+
+      it('Should return success when burn a small part of gDai', async function() {
+        const burnAmount = BigNumber.from(parseEther('5.0'));
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(synthTokenAddress, amountToDeposit);
+        await state.minter
+          .connect(accountOne)
+          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+
+        await state.Token.attach(synthTokenAddress)
+          .connect(accountOne)
+          .approve(state.minter.address, burnAmount);
+        await state.minter
+          .connect(accountOne)
+          .burn(synthTokenAddress, burnAmount);
+        const amountRatio = await state.minter
+          .connect(accountOne)
+          .getCRatio(synthTokenAddress);
+
+        expect(
+          await checkBurnEvent(
+            state.minter,
+            accountOne.address,
+            synthTokenAddress,
+            burnAmount
+          )
+        ).to.be.true;
+        expect(amountRatio.toString()).to.be.equal(
+          BigNumber.from(parseEther('12.0'))
+        );
+      });
     });
   });
 });

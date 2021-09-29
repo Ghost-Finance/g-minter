@@ -21,6 +21,7 @@ type AuctionHouseTakeEvent = {
 
 type BurnEvent = {
   user: string;
+  token: string;
   value: number;
 };
 

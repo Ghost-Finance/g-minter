@@ -102,6 +102,34 @@ export const checkMintEvent = async (
   return true;
 };
 
+export const checkBurnEvent = async (
+  contract: Contract,
+  user: string,
+  token: string,
+  value: BigNumber
+): Promise<boolean> => {
+  let burnEvent = new Promise<BurnEvent>((resolve, reject) => {
+    contract.on('Burn', (sender, token, value) => {
+      resolve({
+        user: sender,
+        token: token,
+        value: value,
+      });
+    });
+
+    setTimeout(() => {
+      reject(new Error('timeout'));
+    }, 60000);
+  });
+
+  const eventBurn = await burnEvent;
+  expect(eventBurn.user).to.be.equal(user);
+  expect(eventBurn.token).to.be.equal(token);
+  expect(eventBurn.value).to.be.equal(value);
+
+  return true;
+};
+
 export const checkWithdrawalEvent = async (
   contract: Contract,
   sender: string,
@@ -129,9 +157,10 @@ export const checkWithdrawalEvent = async (
   );
 
   const burnEvent = new Promise<BurnEvent>((resolve, reject) => {
-    contract.on('Burn', (user, value) => {
+    contract.on('Burn', (user, token, value) => {
       resolve({
         user: user,
+        token: token,
         value: value,
       });
     });
