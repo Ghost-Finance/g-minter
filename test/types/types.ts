@@ -21,6 +21,7 @@ type AuctionHouseTakeEvent = {
 
 type BurnEvent = {
   user: string;
+  token: string;
   value: number;
 };
 
@@ -66,9 +67,9 @@ type TransferEvent = {
 };
 
 type WithdrawnCollateralEvent = {
-  user: string;
-  collateral: number;
-  collateralAddress: string;
+  account: string;
+  token: string;
+  amount: BigNumber;
 };
 
 export {

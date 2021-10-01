@@ -18,7 +18,7 @@ contract Minter {
   uint public ratio = 9 ether;
 
   mapping (address => mapping (GTokenERC20 => uint256)) public collateralBalance;
-  mapping (GTokenERC20 => uint256) public cRatiosActive;
+  mapping (GTokenERC20 => uint256) public cRatioActive;
   mapping (GTokenERC20 => uint256) public cRatioPassive;
   mapping (GTokenERC20 => Feed) public feeds;
   mapping (address => mapping (GTokenERC20 => uint256)) public synthDebt;
@@ -48,11 +48,6 @@ contract Minter {
     _;
   }
 
-  modifier onlyAuctionHouse() {
-    require(address(auctionHouse) == msg.sender, 'Only auction house!');
-    _;
-  }
-
   modifier isValidKeeper(address user) {
     require(user != address(msg.sender), 'Sender cannot be the liquidated');
     _;
@@ -75,10 +70,9 @@ contract Minter {
     uint id = synths.length;
     GTokenERC20 token = new GTokenERC20(name, symbol, initialSupply);
     synths.push(token);
-    cRatiosActive[synths[id]] = cRatioActive_;
+    cRatioActive[synths[id]] = cRatioActive_;
     cRatioPassive[synths[id]] = cRatioPassive_;
     feeds[synths[id]] = feed;
-    token.setAuctionHouse(address(auctionHouse));
 
     emit CreateSynth(name, symbol, address(feed));
   }
@@ -91,10 +85,11 @@ contract Minter {
     emit DepositedCollateral(msg.sender, address(token), amount);
   }
 
-  function withdrawnCollateral(uint256 amount, GTokenERC20 token) external {
+  function withdrawnCollateral(GTokenERC20 token, uint256 amount) external {
+    require(collateralBalance[msg.sender][token] >= amount, 'Insufficient quantity');
     uint256 futureCollateralValue = (collateralBalance[msg.sender][token] - amount) * collateralFeed.price() / 1 ether;
     uint256 debtValue = synthDebt[msg.sender][token] * feeds[token].price() / 1 ether;
-    require(futureCollateralValue >= debtValue * cRatiosActive[token] / 100, 'below cRatio');
+    require(futureCollateralValue >= debtValue * cRatioActive[token] / 100, 'below cRatio');
 
     collateralBalance[msg.sender][token] -= amount;
     collateralToken.transfer(msg.sender, amount);
@@ -123,13 +118,20 @@ contract Minter {
     emit Burn(msg.sender, address(token), amount);
   }
 
+  function getCRatio(GTokenERC20 token) external view returns (uint256) {
+    uint256 collateralValue = collateralBalance[msg.sender][token] * collateralFeed.price() / 1 ether;
+    uint256 debtValue = synthDebt[msg.sender][token] * feeds[token].price() / 1 ether;
+
+    return (collateralValue / debtValue) * 1 ether;
+  }
+
   function liquidate(address user, GTokenERC20 token) external isValidKeeper(user) {
     require(plrDelay[user][token] > 0);
     Feed syntFeed = feeds[token];
     uint256 priceFeed = collateralFeed.price();
     uint256 collateralValue = (collateralBalance[user][token] * priceFeed) / 1 ether;
     uint256 debtValue = synthDebt[user][token] * syntFeed.price() / 1 ether;
-    require((collateralValue < debtValue * cRatiosActive[token] / 100) || (collateralValue < debtValue * cRatioPassive[token] / 100 && plrDelay[user][token] < block.timestamp), 'above cRatio');
+    require((collateralValue < debtValue * cRatioActive[token] / 100) || (collateralValue < debtValue * cRatioPassive[token] / 100 && plrDelay[user][token] < block.timestamp), 'above cRatio');
 
     collateralToken.approve(address(auctionHouse), collateralBalance[user][token]);
     {
@@ -151,7 +153,8 @@ contract Minter {
     synthDebt[user][token] = 0;
   }
 
-  function auctionFinish(uint256 auctionId, address user, GTokenERC20 collateralToken, GTokenERC20 synthToken, uint256 collateralAmount, uint256 synthAmount) public onlyAuctionHouse {
+  function auctionFinish(uint256 auctionId, address user, GTokenERC20 collateralToken, GTokenERC20 synthToken, uint256 collateralAmount, uint256 synthAmount) public {
+    require(address(auctionHouse) == msg.sender, 'Only auction house!');
     require(collateralToken.transferFrom(msg.sender, address(this), collateralAmount), 'transfer failed');
     require(synthToken.transferFrom(msg.sender, address(this), synthAmount), 'transfer failed');
     synthToken.burn(synthAmount);
@@ -183,14 +186,10 @@ contract Minter {
     return token.balanceOf(from);
   }
 
-  function updateSynthCRatio(uint id, uint256 cRatio, uint256 cRatioPassivo_) external onlyOwner {
-    require(cRatioPassivo_ > cRatio, 'invalid cRatio');
-    cRatiosActive[synths[id]] = cRatio;
-    cRatioPassive[synths[id]] = cRatioPassivo_;
-  }
-
-  function updateSynthFeed(uint id, Feed feed) external {
-    feeds[synths[id]] = feed;
+  function updateSynthCRatio(GTokenERC20 token, uint256 cRatio_, uint256 cRatioPassivo_) external onlyOwner {
+    require(cRatioPassivo_ > cRatio_, 'invalid cRatio');
+    cRatioActive[token] = cRatio_;
+    cRatioPassive[token] = cRatioPassivo_;
   }
 
   function _mintPenalty(GTokenERC20 token, address user, address keeper, uint256 amount) public {

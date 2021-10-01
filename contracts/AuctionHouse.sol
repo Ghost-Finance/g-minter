@@ -116,9 +116,6 @@ contract AuctionHouse is CoreMath {
     GTokenERC20 synthToken = GTokenERC20(auction.tokenAddress);
     GTokenERC20 collateralToken = GTokenERC20(auction.collateralTokenAddress);
 
-    // require(synthToken.balanceOf(msg.sender) >= keeperAmount, 'Not enough gDai balance');
-    synthToken.approveKeeperTokensToAuction(amount * maxCollateralPrice);
-    // tranfer values for keeper
     require(synthToken.transferFrom(msg.sender, address(this), keeperAmount), 'transfer token from keeper fail');
     require(collateralToken.transfer(receiver, slice), "transfer token to keeper fail");
 
@@ -152,10 +149,6 @@ contract AuctionHouse is CoreMath {
 
   function price(uint256 initialPrice, uint256 duration) public pure returns (uint256) {
     return rmul(initialPrice, rpow(PRICE_REDUCTION_RATIO, duration / step, RAY));
-  }
-
-  function _getFeedPrice(address feedPrice) public returns (uint256) {
-    return Feed(feedPrice).price();
   }
 
   function auctionFinishCallback(uint256 id, Minter minter, address user, GTokenERC20 tokenCollateral, GTokenERC20 synthToken, uint256 collateralBalance, uint256 synthAmount) public {

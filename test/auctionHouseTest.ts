@@ -6,7 +6,7 @@ import { checkAuctionHouseTakeEvent } from './util/CheckEvent';
 import setup from './util/setup';
 
 describe('Auction House tests', async function() {
-  let state, synthTokenAddress, accountOne, accountTwo;
+  let state, synthTokenAddress, accountOne, accountTwo, gDai;
   const amount = BigNumber.from(parseEther('500.0'));
   const amountToDeposit = BigNumber.from(parseEther('180.0'));
 
@@ -29,6 +29,9 @@ describe('Auction House tests', async function() {
     );
 
     synthTokenAddress = await state.minter.getSynth(0);
+    const GDAI = await ethers.getContractFactory('GTokenERC20');
+    gDai = await GDAI.attach(synthTokenAddress);
+
     await state.token
       .connect(accountOne)
       .approve(state.minter.address, amountToDeposit);
@@ -116,6 +119,10 @@ describe('Auction House tests', async function() {
     const id = 0;
     const amount = BigNumber.from(parseEther('190.0'));
 
+    await gDai
+      .connect(accountTwo)
+      .approve(state.auctionHouse.address, BigNumber.from(parseEther('100.0')));
+
     // First take
     await state.auctionHouse
       .connect(accountTwo)
@@ -159,6 +166,10 @@ describe('Auction House tests', async function() {
     const id = 0;
     const amount = BigNumber.from(parseEther('20.0'));
 
+    await gDai
+      .connect(accountTwo)
+      .approve(state.auctionHouse.address, BigNumber.from(parseEther('100.0')));
+
     await state.auctionHouse
       .connect(accountTwo)
       .take(id, amount, BigNumber.from(parseEther('1')), accountTwo.address);
@@ -193,6 +204,10 @@ describe('Auction House tests', async function() {
   it('Should decrease price when bidding an auction part', async function() {
     const id = 0;
     const amount = BigNumber.from(parseEther('20.0'));
+
+    await gDai
+      .connect(accountTwo)
+      .approve(state.auctionHouse.address, BigNumber.from(parseEther('100.0')));
 
     // Before 90s
     await state.auctionHouse
@@ -234,6 +249,9 @@ describe('Auction House tests', async function() {
     expect(auctionBefore.auctionTarget.toString()).to.be.equal(
       BigNumber.from(parseEther('25.3'))
     );
+    await gDai
+      .connect(accountTwo)
+      .approve(state.auctionHouse.address, BigNumber.from(parseEther('100.0')));
 
     await state.auctionHouse
       .connect(accountTwo)
@@ -298,6 +316,10 @@ describe('Auction House tests', async function() {
     const id = 0;
     const amount = BigNumber.from(parseEther('190.0'));
     const expectedAmount = BigNumber.from(parseEther('119.8125'));
+
+    gDai
+      .connect(accountTwo)
+      .approve(state.auctionHouse.address, BigNumber.from(parseEther('100.0')));
 
     state.auctionHouse
       .connect(accountTwo)
