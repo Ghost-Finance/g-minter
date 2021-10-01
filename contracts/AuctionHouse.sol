@@ -151,10 +151,6 @@ contract AuctionHouse is CoreMath {
     return rmul(initialPrice, rpow(PRICE_REDUCTION_RATIO, duration / step, RAY));
   }
 
-  function _getFeedPrice(address feedPrice) public returns (uint256) {
-    return Feed(feedPrice).price();
-  }
-
   function auctionFinishCallback(uint256 id, Minter minter, address user, GTokenERC20 tokenCollateral, GTokenERC20 synthToken, uint256 collateralBalance, uint256 synthAmount) public {
     minter.auctionFinish(id, user, tokenCollateral, synthToken, collateralBalance, synthAmount);
   }

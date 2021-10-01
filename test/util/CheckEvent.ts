@@ -98,6 +98,7 @@ export const checkMintEvent = async (
   const eventMint = await mintEvent;
   expect(eventMint.user).to.be.equal(sender);
   expect(eventMint.amountTotal).to.be.equal(amount);
+  contract.removeAllListeners();
 
   return true;
 };
@@ -126,29 +127,26 @@ export const checkBurnEvent = async (
   expect(eventBurn.user).to.be.equal(user);
   expect(eventBurn.token).to.be.equal(token);
   expect(eventBurn.value).to.be.equal(value);
+  contract.removeAllListeners();
 
   return true;
 };
 
 export const checkWithdrawalEvent = async (
   contract: Contract,
-  sender: string,
-  address: string,
-  collateralValue: BigNumber,
-  tokenToBurn: BigNumber
+  account: string,
+  tokenAddress: string,
+  amount: BigNumber
 ): Promise<boolean> => {
   let withdrawalEvent = new Promise<WithdrawnCollateralEvent>(
     (resolve, reject) => {
-      contract.on(
-        'WithdrawnCollateral',
-        (user, collateral, collateralAddress) => {
-          resolve({
-            user: user,
-            collateral: collateral,
-            collateralAddress: collateralAddress,
-          });
-        }
-      );
+      contract.on('WithdrawnCollateral', (account, token, amount) => {
+        resolve({
+          account: account,
+          token: token,
+          amount: amount,
+        });
+      });
 
       setTimeout(() => {
         reject(new Error('timeout'));
@@ -156,30 +154,10 @@ export const checkWithdrawalEvent = async (
     }
   );
 
-  const burnEvent = new Promise<BurnEvent>((resolve, reject) => {
-    contract.on('Burn', (user, token, value) => {
-      resolve({
-        user: user,
-        token: token,
-        value: value,
-      });
-    });
-
-    setTimeout(() => {
-      reject(new Error('timeout'));
-    }, 60000);
-  });
-
-  const eventBurn = await burnEvent;
-  console.log('Tokens burned: ', formatEther(eventBurn.value));
-  expect(eventBurn.user).to.be.equal(sender);
-  expect(eventBurn.value).to.be.equal(tokenToBurn);
-
   const eventWithdrawal = await withdrawalEvent;
-  console.log('Collateral: ', formatEther(eventWithdrawal.collateral));
-  expect(eventWithdrawal.user).to.be.equal(sender);
-  expect(eventWithdrawal.collateral).to.be.equal(collateralValue);
-  expect(eventWithdrawal.collateralAddress).to.be.equal(address);
+  expect(eventWithdrawal.account).to.be.equal(account);
+  expect(eventWithdrawal.token).to.be.equal(tokenAddress);
+  expect(eventWithdrawal.amount).to.be.equal(amount);
   contract.removeAllListeners();
 
   return true;
@@ -210,6 +188,7 @@ export const checkFlagLiquidateEvent = async (
   const eventFlagLiquidate = await accountFlaggedEvent;
   expect(eventFlagLiquidate.account).to.be.equal(account);
   expect(eventFlagLiquidate.keeper).to.be.equal(accountKeeper);
+  contract.removeAllListeners();
 
   return true;
 };
@@ -306,6 +285,7 @@ export const checkAuctionHouseTakeEvent = async (
   expect(auctionHouseTakeEvent.price.toString()).to.be.equal(
     pricePaid.toString()
   );
+  contract.removeAllListeners();
 
   return true;
 };

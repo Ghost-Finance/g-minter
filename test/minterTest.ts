@@ -1,13 +1,13 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { parseEther } from 'ethers/lib/utils';
 import {
   checkBurnEvent,
   checkCreateSynthEvent,
   checkDepositEvent,
   checkMintEvent,
+  checkWithdrawalEvent,
 } from './util/CheckEvent';
 import setup from './util/setup';
 
@@ -145,10 +145,15 @@ describe('Minter', async function() {
   });
 
   describe('Mint/Burn a token', async function() {
-    let synthTokenAddress, amountToMint, amountToDeposit, accountOne;
+    let synthTokenAddress,
+      amountToMint,
+      amountToDeposit,
+      accountOne,
+      accountTwo;
 
     beforeEach(async function() {
       accountOne = state.contractAccounts[0];
+      accountTwo = state.contractAccounts[1];
       amountToDeposit = BigNumber.from(parseEther('180.0'));
       amountToMint = BigNumber.from(parseEther('1'));
       const feedSynth = await state.Feed.deploy(amountToMint, 'Feed Coin');
@@ -165,6 +170,37 @@ describe('Minter', async function() {
       await state.token
         .connect(accountOne)
         .approve(state.minter.address, amountToDeposit);
+    });
+
+    describe('Smoke tests', async function() {
+      it('validates when is not the owner to update', async function() {
+        try {
+          await state.minter
+            .connect(accountOne)
+            .updateSynthCRatio(synthTokenAddress, 200, 300);
+        } catch (error) {
+          expect(error.message).to.match(/unauthorized/);
+        }
+      });
+
+      it('validates active c-Ratio is bigger than passive c-Ratio', async function() {
+        try {
+          await state.minter.updateSynthCRatio(synthTokenAddress, 400, 300);
+        } catch (error) {
+          expect(error.message).to.match(/invalid cRatio/);
+        }
+      });
+
+      it('Should return success when update cRatios', async function() {
+        await state.minter.updateSynthCRatio(synthTokenAddress, 300, 400);
+
+        expect(await state.minter.cRatioActive(synthTokenAddress)).to.be.equal(
+          300
+        );
+        expect(await state.minter.cRatioPassive(synthTokenAddress)).to.be.equal(
+          400
+        );
+      });
     });
 
     describe('Minter', async function() {
@@ -329,6 +365,104 @@ describe('Minter', async function() {
         ).to.be.true;
         expect(amountRatio.toString()).to.be.equal(
           BigNumber.from(parseEther('12.0'))
+        );
+      });
+    });
+
+    describe('Withdrawn Collateral', async function() {
+      it('validates account when insufficient amount', async function() {
+        try {
+          await state.minter
+            .connect(accountTwo)
+            .withdrawnCollateral(
+              synthTokenAddress,
+              BigNumber.from(parseEther('100.0'))
+            );
+        } catch (error) {
+          expect(error.message).to.match(/Insufficient quantity/);
+        }
+      });
+
+      it('validates account when amount exceeds allowance', async function() {
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(synthTokenAddress, amountToDeposit);
+        await state.minter
+          .connect(accountOne)
+          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+
+        try {
+          await state.minter
+            .connect(accountOne)
+            .withdrawnCollateral(
+              synthTokenAddress,
+              BigNumber.from(parseEther('100.0'))
+            );
+        } catch (error) {
+          expect(error.message).to.match(
+            /ERC20: transfer amount exceeds allowance/
+          );
+        }
+      });
+
+      it('validates withdraw collateral is below C-Ratio', async function() {
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(
+            synthTokenAddress,
+            BigNumber.from(parseEther('100.0'))
+          );
+        await state.minter
+          .connect(accountOne)
+          .mint(synthTokenAddress, BigNumber.from(parseEther('10.0')));
+
+        try {
+          await state.feed.updatePrice(BigNumber.from(parseEther('0.2')));
+          await state.minter
+            .connect(accountOne)
+            .withdrawnCollateral(
+              synthTokenAddress,
+              BigNumber.from(parseEther('10.0'))
+            );
+        } catch (error) {
+          expect(error.message).to.match(/below cRatio/);
+        }
+      });
+
+      it('Should return success when try to withdraw GHO', async function() {
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(synthTokenAddress, amountToDeposit);
+        await state.minter
+          .connect(accountOne)
+          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+
+        await state.minter
+          .connect(accountOne)
+          .withdrawnCollateral(
+            synthTokenAddress,
+            BigNumber.from(parseEther('10.0'))
+          );
+        const collateralAmount = await state.token.balanceOf(
+          accountOne.address
+        );
+        const collateralBalanceGdai = await state.minter
+          .connect(accountOne)
+          .collateralBalance(accountOne.address, synthTokenAddress);
+
+        expect(
+          await checkWithdrawalEvent(
+            state.minter,
+            accountOne.address,
+            synthTokenAddress,
+            BigNumber.from(parseEther('10.0'))
+          )
+        ).to.be.true;
+        expect(collateralAmount.toString()).to.be.equal(
+          BigNumber.from(parseEther('10.0'))
+        );
+        expect(collateralBalanceGdai.toString()).to.be.equal(
+          BigNumber.from(parseEther('170.0'))
         );
       });
     });
