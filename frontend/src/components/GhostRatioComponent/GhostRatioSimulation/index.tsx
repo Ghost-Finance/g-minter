@@ -1,14 +1,9 @@
 import React from 'react';
-import { Box, makeStyles, Theme } from '@material-ui/core';
+import { Box } from '@material-ui/core';
 import ListSynths from '../../ListSynths';
-import Token from '../../Token';
-import {
-  GhostIcon,
-  DaiIcon,
-  SynthsIcon,
-  SpaceXIcon,
-  EtherIcon,
-} from '../../Icons';
+import TokenLight from '../../TokenLight';
+import TokenBorderLight from '../../TokenBorderLight';
+import { GhostIcon, DaiIcon } from '../../Icons';
 import CRatio from '../../CRatio';
 import useStyles from './styles';
 import theme from '../../../theme';
@@ -27,6 +22,19 @@ const GhostRatioSimulation = () => {
             errorColorStroke="#F44336"
           />
         </div>
+
+        <ListSynths label="Position">
+          <TokenLight icon={<DaiIcon />} label="gDAI" valueNumber={15.25} />
+          <TokenLight icon={<GhostIcon />} label="GHO" valueNumber={100.22} />
+        </ListSynths>
+
+        <ListSynths label="Wallet">
+          <TokenBorderLight
+            icon={<GhostIcon />}
+            label="GHO"
+            valueNumber={100.22}
+          />
+        </ListSynths>
       </div>
     </Box>
   );

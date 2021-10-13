@@ -48,5 +48,8 @@ export const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       justifyContent: 'flex-end',
     },
+    marginLogo: {
+      marginLeft: '70px',
+    },
   })
 );

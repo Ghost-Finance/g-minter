@@ -11,9 +11,9 @@ export default makeStyles(theme => ({
     justifyContent: 'center',
     alignItems: 'center',
     textTransform: 'none',
-    backgroundColor: theme.brand.main,
+    backgroundColor: theme?.brand.main,
     '&:hover': {
-      backgroundColor: theme.brand.main,
+      backgroundColor: theme?.brand.main,
     },
   },
 }));
