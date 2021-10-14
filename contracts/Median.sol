@@ -53,7 +53,7 @@ contract Median is Ownable {
     return (feedValue, feedValue > 0);
   }
 
-  function recover(uint256 feedValue_, uint256 feedTimestamp_, uint8 v, bytes32 r, bytes32 s) internal pure returns (address) {
+  function recover(uint256 feedValue_, uint256 feedTimestamp_, uint8 v, bytes32 r, bytes32 s) external pure returns (address) {
     return ecrecover(
       keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encodePacked(feedValue_, feedTimestamp_, feedType)))),
       v, r, s
