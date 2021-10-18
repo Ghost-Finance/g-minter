@@ -25,7 +25,7 @@ contract Median is Ownable {
 
   uint128        feedValue;
   uint32  public feedCreatedAt;
-  bytes32 public constant feedType = "spacex";
+  bytes32 public constant feedType = "xDai";
   uint256 public bar = 3; // numero de respostas para cada feed
 
   // Authorized oracles, set by an auth
@@ -53,7 +53,7 @@ contract Median is Ownable {
     return (feedValue, feedValue > 0);
   }
 
-  function recover(uint256 feedValue_, uint256 feedTimestamp_, uint8 v, bytes32 r, bytes32 s) external pure returns (address) {
+  function recover(uint256 feedValue_, uint256 feedTimestamp_, uint8 v, bytes32 r, bytes32 s) public pure returns (address) {
     return ecrecover(
       keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encodePacked(feedValue_, feedTimestamp_, feedType)))),
       v, r, s
@@ -68,6 +68,8 @@ contract Median is Ownable {
     uint256 zzz = feedCreatedAt;
 
     for (uint i = 0; i < data.length; i++) {
+      uint8 sl;
+
       // Validate the values were signed by an authorized oracle
       address signer = recover(data[i].value, data[i].timestamp, data[i].v, data[i].r, data[i].s);
       // Check that signer is an oracle
@@ -78,8 +80,9 @@ contract Median is Ownable {
       require(data[i].value >= last, "Median/messages-not-in-order");
       last = data[i].value;
       // Bloom filter for signer uniqueness
-      // TODO
-      uint8 sl = uint8(uint256(bytes32(bytes20(signer))) >> 152);
+       assembly {
+        sl := shr(152, signer)
+      }
       require((bloom >> sl) % 2 == 0, "Median/oracle-already-signed");
       bloom += uint256(2) ** sl;
     }
