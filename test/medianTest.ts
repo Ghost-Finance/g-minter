@@ -3,10 +3,10 @@ import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
 
-let medianContractLabel: string = 'Median';
+let medianContractLabel: string = 'MedianSpacex';
 let signerContractLabel: string = 'Signature';
 
-describe('#Median', async function() {
+describe('#MedianSpacex', async function() {
   let Median,
     Signature,
     median,
@@ -38,22 +38,21 @@ describe('#Median', async function() {
     const accountAddress = await accountOne.address;
     const hash = await ethers.utils.keccak256(accountAddress);
     const signature = await accountOne.signMessage(ethers.utils.arrayify(hash));
-    const publicKey = ethers.utils.recoverPrivateKey(hash, signature);
-    console.log(publicKey);
-    const [r, s, v] = await signer.extractRSV(publicKey);
-    console.log(r);
-    console.log(s);
-    console.log(v);
+    const [v, r, s] = await signer.split(signature);
 
     const timestamp = new Date().getTime();
     const expectedSignatureHash = ethers.utils.solidityKeccak256(
       ['string', 'string', 'string'],
-      [BigNumber.from(parseEther('120.0')), timestamp, 'spacex']
+      [BigNumber.from(parseEther('120.0')), timestamp, 'SPACEX']
     );
 
-    const signatureAccountOne = await median
-      .connect(accountOne)
-      .recover(BigNumber.from(parseEther('120.0')), timestamp, v, r, s);
+    const signatureAccountOne = await median.recover(
+      BigNumber.from(parseEther('120.0')),
+      timestamp,
+      v,
+      r,
+      s
+    );
 
     console.log(signatureAccountOne);
   });
