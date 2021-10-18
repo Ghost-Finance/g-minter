@@ -3,19 +3,15 @@ pragma solidity ^0.8.0;
 
 contract Signature {
 
-  function extractRSV(bytes memory sig) public pure returns (uint32, uint32, uint8) {
-    uint32 r;
-    uint32 s;
-    uint8 v;
+  function split(bytes memory sig) public pure returns (uint8 v, uint32 r, uint32 s) {
+    require(sig.length == 65);
 
     assembly {
       r := mload(add(sig, 32))
       s := mload(add(sig, 64))
-      v := and(mload(add(sig, 65)), 255)
+      v := byte(0, mload(add(sig, 96)))
     }
 
-    if (v < 27) v += 27;
-
-    return (r, s, v);
+    return (v, r, s);
   }
 }

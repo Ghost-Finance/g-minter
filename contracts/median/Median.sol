@@ -25,7 +25,7 @@ contract Median is Ownable {
 
   uint128        feedValue;
   uint32  public feedCreatedAt;
-  bytes32 public constant feedType = "xDai";
+  bytes32 public feedType = "dai";
   uint256 public bar = 3; // numero de respostas para cada feed
 
   // Authorized oracles, set by an auth
@@ -41,6 +41,8 @@ contract Median is Ownable {
 
   event LogMedianPrice(uint256 val, uint256 age);
 
+  constructor() {}
+
   function read() external view toll returns (uint256) {
     (uint256 price, bool valid) = peek();
     require(valid, "Median/invalid-price-feed");
@@ -53,7 +55,7 @@ contract Median is Ownable {
     return (feedValue, feedValue > 0);
   }
 
-  function recover(uint256 feedValue_, uint256 feedTimestamp_, uint8 v, bytes32 r, bytes32 s) public pure returns (address) {
+  function recover(uint256 feedValue_, uint256 feedTimestamp_, uint8 v, bytes32 r, bytes32 s) virtual public view returns (address) {
     return ecrecover(
       keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encodePacked(feedValue_, feedTimestamp_, feedType)))),
       v, r, s
@@ -69,7 +71,6 @@ contract Median is Ownable {
 
     for (uint i = 0; i < data.length; i++) {
       uint8 sl;
-
       // Validate the values were signed by an authorized oracle
       address signer = recover(data[i].value, data[i].timestamp, data[i].v, data[i].r, data[i].s);
       // Check that signer is an oracle
