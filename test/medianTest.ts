@@ -11,8 +11,6 @@ describe('#MedianSpacex', async function() {
     Signature,
     median,
     signer,
-    mnemonic,
-    mnemonicWallet,
     owner,
     accountOne,
     accountTwo,
@@ -28,32 +26,43 @@ describe('#MedianSpacex', async function() {
     Signature = await ethers.getContractFactory(signerContractLabel);
     median = await Median.deploy();
     signer = await Signature.deploy();
-
-    mnemonic =
-      'radar blur cabbage chef fix engine embark joy scheme fiction master release';
-    mnemonicWallet = ethers.Wallet.fromMnemonic(mnemonic);
   });
 
-  it.only('#recovery', async function() {
+  it('#recovery', async function() {
+    const timestamp = new Date().getTime();
     const accountAddress = await accountOne.address;
-    const hash = await ethers.utils.keccak256(accountAddress);
-    const signature = await accountOne.signMessage(ethers.utils.arrayify(hash));
+    const hash = await ethers.utils.keccak256(
+      ethers.utils.defaultAbiCoder.encode(
+        ['string', 'string', 'string'],
+        ['12', timestamp.toString(), 'SPACEX']
+      )
+    );
+    const signature = await accountOne.signMessage(
+      '\x19Ethereum Signed Message:\n32',
+      hash,
+      accountAddress
+    );
     const [v, r, s] = await signer.split(signature);
 
-    const timestamp = new Date().getTime();
-    const expectedSignatureHash = ethers.utils.solidityKeccak256(
-      ['string', 'string', 'string'],
-      [BigNumber.from(parseEther('120.0')), timestamp, 'SPACEX']
-    );
+    // const keccakFirstLevel = ethers.utils.solidityKeccak256(
+    //   ['string', 'string', 'string'],
+    //   [BigNumber.from(parseEther('120.0')), timestamp, 'SPACEX']
+    // );
+    // console.log(keccakFirstLevel);
+    // const keccakSecondLevel = ethers.utils.solidityKeccak256(
+    //   ['string', 'string'],
+    //   [
+    //     ethers.utils.defaultAbiCoder.encode(
+    //       ['string'],
+    //       ['\x19Ethereum Signed Message:\n32']
+    //     ),
+    //     keccakFirstLevel,
+    //   ]
+    // );
+    // console.log(keccakSecondLevel);
 
-    const signatureAccountOne = await median.recover(
-      BigNumber.from(parseEther('120.0')),
-      timestamp,
-      v,
-      r,
-      s
-    );
-
+    const signatureAccountOne = await median.recover('12', timestamp, v, r, s);
     console.log(signatureAccountOne);
+    expect(accountOne.address).to.be.equal(signatureAccountOne);
   });
 });

@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 contract Signature {
 
-  function split(bytes memory sig) public pure returns (uint8 v, uint32 r, uint32 s) {
+  function split(bytes memory sig) public pure returns (uint8 v, bytes32 r, bytes32 s) {
     require(sig.length == 65);
 
     assembly {
