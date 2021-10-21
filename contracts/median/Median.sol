@@ -3,18 +3,10 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "hardhat/console.sol";
 
 contract Median is Ownable {
 
-  // --- Auth ---
-  // mapping (address => uint) public owner;
-  // function rely(address usr) external auth { owner[usr] = 1; }
-  // function deny(address usr) external auth { owner[usr] = 0; }
-
-  // modifier auth {
-  //   require(owner[msg.sender] == 1, "Median/not-authorized");
-  //   _;
-  // }
   struct FeedData {
     uint256 value;
     uint timestamp;
@@ -25,7 +17,7 @@ contract Median is Ownable {
 
   uint128        feedValue;
   uint32  public feedCreatedAt;
-  bytes32 public feedType = "dai";
+  bytes32 public feedType = "DAI";
   uint256 public bar = 3; // numero de respostas para cada feed
 
   // Authorized oracles, set by an auth
@@ -63,7 +55,9 @@ contract Median is Ownable {
   }
 
   function poke(FeedData[] memory data) external {
-    require(data.length == bar, "Median/bar-too-low");
+    console.logString("entrouuuu na funcao");
+    require(data.length == bar, "Invalid number of answers of Oracles");
+    // console.log(data);
 
     uint256 bloom = 0;
     uint256 last = 0;
@@ -72,8 +66,15 @@ contract Median is Ownable {
     for (uint i = 0; i < data.length; i++) {
       uint8 sl;
       // Validate the values were signed by an authorized oracle
+      // console.logString("Median for:");
+      // console.logUint(data[i].value);
+      // console.logUint(data[i].timestamp);
+      // console.logUint(data[i].v);
+      // console.logBytes32(data[i].r);
+      // console.logBytes32(data[i].s);
       address signer = recover(data[i].value, data[i].timestamp, data[i].v, data[i].r, data[i].s);
       // Check that signer is an oracle
+      console.logAddress(signer);
       require(oracle[signer] == 1, "Median/invalid-oracle");
       // Price feed age greater than last medianizer age
       require(data[i].timestamp > zzz, "Median/stale-message");
@@ -81,7 +82,7 @@ contract Median is Ownable {
       require(data[i].value >= last, "Median/messages-not-in-order");
       last = data[i].value;
       // Bloom filter for signer uniqueness
-       assembly {
+      assembly {
         sl := shr(152, signer)
       }
       require((bloom >> sl) % 2 == 0, "Median/oracle-already-signed");
@@ -90,7 +91,7 @@ contract Median is Ownable {
 
     feedValue = uint128(data[data.length >> 1].value);
     feedCreatedAt = uint32(block.timestamp);
-
+    console.log(feedValue);
     emit LogMedianPrice(feedValue, feedCreatedAt);
   }
 
