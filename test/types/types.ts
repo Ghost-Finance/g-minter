@@ -48,11 +48,6 @@ type LiquidateEvent = {
   tokenAddress: string;
 };
 
-type LogMedianPriceEvent = {
-  feedValue: number;
-  feedTimestamp: string;
-};
-
 type StartAuctionHouseEvent = {
   token: string;
   keeper: string;
@@ -86,7 +81,6 @@ export {
   DepositedCollateralEvent,
   MintEvent,
   LiquidateEvent,
-  LogMedianPriceEvent,
   StartAuctionHouseEvent,
   TokenDetails,
   TransferEvent,

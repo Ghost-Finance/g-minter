@@ -10,7 +10,6 @@ import {
   DepositedCollateralEvent,
   MintEvent,
   LiquidateEvent,
-  LogMedianPriceEvent,
   StartAuctionHouseEvent,
   WithdrawnCollateralEvent,
 } from '../types/types';
@@ -287,36 +286,6 @@ export const checkAuctionHouseTakeEvent = async (
     pricePaid.toString()
   );
   contract.removeAllListeners();
-
-  return true;
-};
-
-export const checkLogMedianPriceEvent = async (
-  contract: Contract,
-  value: BigNumber,
-  timestamp: string
-): Promise<boolean> => {
-  console.log('entrou check event');
-  let logMedianPriceEvent = new Promise<LogMedianPriceEvent>(
-    (resolve, reject) => {
-      contract.on('LogMedianPrice', (value, timestamp) => {
-        console.log(value);
-        console.log(timestamp);
-        resolve({
-          feedValue: value,
-          feedTimestamp: timestamp.toString(),
-        });
-      });
-
-      setTimeout(() => {
-        reject(new Error('timeout'));
-      }, 100000);
-    }
-  );
-
-  const eventLogMedianPrice = await logMedianPriceEvent;
-  expect(eventLogMedianPrice.feedValue).to.be.equal(value);
-  expect(eventLogMedianPrice.feedTimestamp).to.be.equal(timestamp);
 
   return true;
 };

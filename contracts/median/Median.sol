@@ -55,7 +55,6 @@ contract Median is Ownable {
   }
 
   function poke(FeedData[] memory data) external {
-    console.logString("entrouuuu na funcao");
     require(data.length == bar, "Invalid number of answers of Oracles");
     // console.log(data);
 
@@ -66,16 +65,9 @@ contract Median is Ownable {
     for (uint i = 0; i < data.length; i++) {
       uint8 sl;
       // Validate the values were signed by an authorized oracle
-      // console.logString("Median for:");
-      // console.logUint(data[i].value);
-      // console.logUint(data[i].timestamp);
-      // console.logUint(data[i].v);
-      // console.logBytes32(data[i].r);
-      // console.logBytes32(data[i].s);
       address signer = recover(data[i].value, data[i].timestamp, data[i].v, data[i].r, data[i].s);
       // Check that signer is an oracle
-      console.logAddress(signer);
-      require(oracle[signer] == 1, "Median/invalid-oracle");
+      require(oracle[signer] == 1, "Not authorized oracle signer");
       // Price feed age greater than last medianizer age
       require(data[i].timestamp > zzz, "Median/stale-message");
       // Check for ordered values

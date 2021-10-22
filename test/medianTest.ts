@@ -2,7 +2,6 @@ import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { set, reset } from 'mockdate';
 import { BigNumber } from 'ethers';
-import { checkLogMedianPriceEvent } from './util/CheckEvent';
 import { parseEther } from 'ethers/lib/utils';
 import { signerMessage } from './util/FeedSigners';
 
@@ -58,9 +57,113 @@ describe('#MedianSpacex', async function() {
     expect(await median.oracle(wallet.address)).to.be.equal(1);
   });
 
-  // it.only('#poke validates feed', async function() {});
+  it('#poke validates if answers is present', async function() {
+    try {
+      await median.poke([]);
+    } catch (error) {
+      expect(error.message).to.match(/Invalid number of answers of Oracles/);
+    }
+  });
 
-  it.only('#poke should return ', async function() {
+  it('#poke validates if the number of answers excited the limit', async function() {
+    const timestamp = date.getTime();
+    const sigOne = await signerMessage(accountOne, {
+      value: BigNumber.from(parseEther('11')),
+      timestamp: timestamp,
+      type: 'SPACEX',
+    });
+
+    try {
+      await median.poke(
+        Array(4).fill({
+          value: BigNumber.from(parseEther('11')),
+          timestamp: timestamp.toString(),
+          v: sigOne.v,
+          r: sigOne.r,
+          s: sigOne.s,
+        })
+      );
+    } catch (error) {
+      expect(error.message).to.match(/Invalid number of answers of Oracles/);
+    }
+  });
+
+  it('#poke validates if answers is shorted than permitted', async function() {
+    const timestamp = date.getTime();
+    const sigOne = await signerMessage(accountOne, {
+      value: BigNumber.from(parseEther('11')),
+      timestamp: timestamp,
+      type: 'SPACEX',
+    });
+
+    try {
+      await median.poke([
+        {
+          value: BigNumber.from(parseEther('11')),
+          timestamp: timestamp.toString(),
+          v: sigOne.v,
+          r: sigOne.r,
+          s: sigOne.s,
+        },
+      ]);
+    } catch (error) {
+      expect(error.message).to.match(/Invalid number of answers of Oracles/);
+    }
+  });
+
+  it('#poke validates signer is a permitted oracle', async function() {
+    [accountOne.address, accountTwo.address].map(
+      async address => await median.addOracle(address)
+    );
+
+    const timestamp = date.getTime();
+    const sigOne = await signerMessage(accountOne, {
+      value: BigNumber.from(parseEther('11')),
+      timestamp: timestamp,
+      type: 'SPACEX',
+    });
+    const sigTwo = await signerMessage(accountTwo, {
+      value: BigNumber.from(parseEther('12')),
+      timestamp: timestamp,
+      type: 'SPACEX',
+    });
+    const sigThree = await signerMessage(accountThree, {
+      value: BigNumber.from(parseEther('13')),
+      timestamp: timestamp,
+      type: 'SPACEX',
+    });
+    const feedData = [
+      {
+        value: BigNumber.from(parseEther('11')),
+        timestamp: timestamp.toString(),
+        v: sigOne.v,
+        r: sigOne.r,
+        s: sigOne.s,
+      },
+      {
+        value: BigNumber.from(parseEther('12')),
+        timestamp: timestamp.toString(),
+        v: sigTwo.v,
+        r: sigTwo.r,
+        s: sigTwo.s,
+      },
+      {
+        value: BigNumber.from(parseEther('13')),
+        timestamp: timestamp.toString(),
+        v: sigThree.v,
+        r: sigThree.r,
+        s: sigThree.s,
+      },
+    ];
+
+    try {
+      await median.poke(feedData);
+    } catch (error) {
+      expect(error.message).to.match(/Not authorized oracle signer/);
+    }
+  });
+
+  it('#poke should return success when data is correct', async function() {
     [accountOne.address, accountTwo.address, accountThree.address].map(
       async address => await median.addOracle(address)
     );
@@ -104,15 +207,13 @@ describe('#MedianSpacex', async function() {
       },
     ];
 
-    let tx = await median.poke(feedData);
-    let receipt = await tx.wait();
-
-    // Check event
+    const poke = await median.poke(feedData);
+    const receipt = await poke.wait();
     const block = await median.provider.getBlock(receipt.blockHash);
-    expect(feedData[1].value.toString()).to.be.equal(
-      receipt.events[0].args.val.toString()
-    );
-    expect(block.timestamp).to.be.equal(receipt.events[0].args.age.toNumber());
+
+    const { args } = receipt.events[0];
+    expect(feedData[1].value.toString()).to.be.equal(args.val.toString());
+    expect(block.timestamp).to.be.equal(args.age.toNumber());
   });
 
   it('#recovery Should return signer addreess', async function() {
