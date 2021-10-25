@@ -3,7 +3,6 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "hardhat/console.sol";
 
 contract Median is Ownable {
 
@@ -56,7 +55,6 @@ contract Median is Ownable {
 
   function poke(FeedData[] memory data) external {
     require(data.length == bar, "Invalid number of answers of Oracles");
-    // console.log(data);
 
     uint256 bloom = 0;
     uint256 last = 0;
@@ -69,21 +67,20 @@ contract Median is Ownable {
       // Check that signer is an oracle
       require(oracle[signer] == 1, "Not authorized oracle signer");
       // Price feed age greater than last medianizer age
-      require(data[i].timestamp > zzz, "Median/stale-message");
+      require(data[i].timestamp > zzz, "Signer oracle message expired");
       // Check for ordered values
-      require(data[i].value >= last, "Median/messages-not-in-order");
+      require(data[i].value >= last, "Message is not in the order");
       last = data[i].value;
       // Bloom filter for signer uniqueness
       assembly {
         sl := shr(152, signer)
       }
-      require((bloom >> sl) % 2 == 0, "Median/oracle-already-signed");
+      require((bloom >> sl) % 2 == 0, "Signer oracle already sended");
       bloom += uint256(2) ** sl;
     }
 
     feedValue = uint128(data[data.length >> 1].value);
     feedCreatedAt = uint32(block.timestamp);
-    console.log(feedValue);
     emit LogMedianPrice(feedValue, feedCreatedAt);
   }
 
