@@ -18,9 +18,12 @@ describe('#MedianSpacex', async function() {
     accountThree,
     accounts,
     others,
+    provider,
     wallet;
 
   const date = new Date('2020-10-19T09:00:11.451Z');
+
+  const url = 'http://localhost:8545';
 
   beforeEach(async function() {
     set(date);
@@ -30,6 +33,7 @@ describe('#MedianSpacex', async function() {
     Median = await ethers.getContractFactory(medianContractLabel);
     median = await Median.deploy();
 
+    provider = new ethers.providers.JsonRpcProvider(url);
     mnemonic =
       'radar blur cabbage chef fix engine embark joy scheme fiction master release';
     wallet = ethers.Wallet.fromMnemonic(mnemonic);
@@ -358,7 +362,7 @@ describe('#MedianSpacex', async function() {
 
     const poke = await median.poke(feedData);
     const receipt = await poke.wait();
-    const block = await median.provider.getBlock(receipt.blockHash);
+    // const block = await median.provider.getBlock(receipt.blockHash);
 
     const { args } = receipt.events[0];
     expect(feedData[1].value.toString()).to.be.equal(args.val.toString());
