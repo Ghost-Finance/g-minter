@@ -60,10 +60,10 @@ const config: HardhatUserConfig = {
       gasPrice: 1100000026,
     },
     hardhat: {
-      // chainId: 1337,
-      // accounts: {
-      //   mnemonic: MNEMONIC_SEED,
-      // },
+      chainId: 1337,
+      accounts: {
+        mnemonic: MNEMONIC_SEED,
+      },
     },
     localhost: {
       chainId: 1337,

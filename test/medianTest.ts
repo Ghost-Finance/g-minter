@@ -6,9 +6,8 @@ import { parseEther } from 'ethers/lib/utils';
 import { signerMessage } from './util/FeedSigners';
 
 let medianContractLabel: string = 'MedianSpacex';
-let signerContractLabel: string = 'Signature';
 
-describe('#MedianSpacex', async function() {
+describe.only('#MedianSpacex', async function() {
   let Median,
     median,
     mnemonic,
