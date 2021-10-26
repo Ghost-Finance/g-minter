@@ -7,10 +7,9 @@ import { signerMessage } from './util/FeedSigners';
 
 let medianContractLabel: string = 'MedianSpacex';
 
-describe.only('#MedianSpacex', async function() {
+describe('#MedianSpacex', async function() {
   let Median,
     median,
-    mnemonic,
     owner,
     accountOne,
     accountTwo,
@@ -18,7 +17,9 @@ describe.only('#MedianSpacex', async function() {
     accounts,
     others,
     provider,
-    wallet;
+    wallet,
+    walletTwo,
+    walletThree;
 
   const date = new Date('2020-10-19T09:00:11.451Z');
 
@@ -32,10 +33,16 @@ describe.only('#MedianSpacex', async function() {
     Median = await ethers.getContractFactory(medianContractLabel);
     median = await Median.deploy();
 
-    provider = new ethers.providers.JsonRpcProvider(url);
-    mnemonic =
+    provider = ethers.getDefaultProvider(url);
+    let mnemonic =
       'radar blur cabbage chef fix engine embark joy scheme fiction master release';
     wallet = ethers.Wallet.fromMnemonic(mnemonic);
+    let mnemonicTwo =
+      'west view blame skirt entry fashion oxygen area pistol kitten pride august';
+    walletTwo = ethers.Wallet.fromMnemonic(mnemonicTwo);
+    let mnemonicThree =
+      'soft magnet brick indoor turkey twin unknown base fee summer motor birth';
+    walletThree = ethers.Wallet.fromMnemonic(mnemonicThree);
   });
 
   afterEach(async function() {
@@ -66,7 +73,7 @@ describe.only('#MedianSpacex', async function() {
 
   it('#poke validates if the number of answers excited the limit', async function() {
     const timestamp = date.getTime();
-    const sigOne = await signerMessage(accountOne, {
+    const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
       timestamp: timestamp,
       type: 'SPACEX',
@@ -89,7 +96,7 @@ describe.only('#MedianSpacex', async function() {
 
   it('#poke validates if answers is shorted than permitted', async function() {
     const timestamp = date.getTime();
-    const sigOne = await signerMessage(accountOne, {
+    const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
       timestamp: timestamp,
       type: 'SPACEX',
@@ -111,22 +118,22 @@ describe.only('#MedianSpacex', async function() {
   });
 
   it('#poke validates signer is a permitted oracle', async function() {
-    [accountOne.address, accountTwo.address].map(
+    [wallet.address, walletTwo.address].map(
       async address => await median.addOracle(address)
     );
 
     const timestamp = date.getTime();
-    const sigOne = await signerMessage(accountOne, {
+    const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
       timestamp: timestamp,
       type: 'SPACEX',
     });
-    const sigTwo = await signerMessage(accountTwo, {
+    const sigTwo = await signerMessage(walletTwo, {
       value: BigNumber.from(parseEther('12')),
       timestamp: timestamp,
       type: 'SPACEX',
     });
-    const sigThree = await signerMessage(accountThree, {
+    const sigThree = await signerMessage(walletThree, {
       value: BigNumber.from(parseEther('13')),
       timestamp: timestamp,
       type: 'SPACEX',
@@ -163,17 +170,17 @@ describe.only('#MedianSpacex', async function() {
   });
 
   it('#poke validates if oracle send a duplicate data', async function() {
-    [accountOne.address, accountTwo.address].map(
+    [wallet.address, walletTwo.address].map(
       async address => await median.addOracle(address)
     );
 
     const timestamp = date.getTime();
-    const sigOne = await signerMessage(accountOne, {
+    const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
       timestamp: timestamp,
       type: 'SPACEX',
     });
-    const sigTwo = await signerMessage(accountTwo, {
+    const sigTwo = await signerMessage(walletTwo, {
       value: BigNumber.from(parseEther('12')),
       timestamp: timestamp,
       type: 'SPACEX',
@@ -211,23 +218,23 @@ describe.only('#MedianSpacex', async function() {
   });
 
   it('#poke validates if oracle message was expired at', async function() {
-    [accountOne.address, accountTwo.address, accountThree.address].map(
+    [wallet.address, walletTwo.address, walletThree.address].map(
       async address => await median.addOracle(address)
     );
 
     let newDate = new Date();
     const timestamp = newDate.setTime(newDate.getTime() - 24 * 60 * 60 * 1000);
-    const sigOne = await signerMessage(accountOne, {
+    const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
       timestamp: timestamp,
       type: 'SPACEX',
     });
-    const sigTwo = await signerMessage(accountTwo, {
+    const sigTwo = await signerMessage(walletTwo, {
       value: BigNumber.from(parseEther('12')),
       timestamp: timestamp,
       type: 'SPACEX',
     });
-    const sigThree = await signerMessage(accountThree, {
+    const sigThree = await signerMessage(walletThree, {
       value: BigNumber.from(parseEther('13')),
       timestamp: timestamp,
       type: 'SPACEX',
@@ -265,21 +272,21 @@ describe.only('#MedianSpacex', async function() {
   });
 
   it('#poke validates if data is in desc order', async function() {
-    [accountOne.address, accountTwo.address, accountThree.address].map(
+    [wallet.address, walletTwo.address, walletThree.address].map(
       async address => await median.addOracle(address)
     );
     const timestamp = date.getTime();
-    const sigOne = await signerMessage(accountOne, {
+    const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
       timestamp: timestamp,
       type: 'SPACEX',
     });
-    const sigTwo = await signerMessage(accountTwo, {
+    const sigTwo = await signerMessage(walletTwo, {
       value: BigNumber.from(parseEther('13')),
       timestamp: timestamp,
       type: 'SPACEX',
     });
-    const sigThree = await signerMessage(accountThree, {
+    const sigThree = await signerMessage(walletThree, {
       value: BigNumber.from(parseEther('12')),
       timestamp: timestamp,
       type: 'SPACEX',
@@ -316,21 +323,21 @@ describe.only('#MedianSpacex', async function() {
   });
 
   it('#poke should return success when data is correct', async function() {
-    [accountOne.address, accountTwo.address, accountThree.address].map(
+    [wallet.address, walletTwo.address, walletThree.address].map(
       async address => await median.addOracle(address)
     );
     const timestamp = date.getTime();
-    const sigOne = await signerMessage(accountOne, {
+    const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
       timestamp: timestamp,
       type: 'SPACEX',
     });
-    const sigTwo = await signerMessage(accountTwo, {
+    const sigTwo = await signerMessage(walletTwo, {
       value: BigNumber.from(parseEther('12')),
       timestamp: timestamp,
       type: 'SPACEX',
     });
-    const sigThree = await signerMessage(accountThree, {
+    const sigThree = await signerMessage(walletThree, {
       value: BigNumber.from(parseEther('13')),
       timestamp: timestamp,
       type: 'SPACEX',
