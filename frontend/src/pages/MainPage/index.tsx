@@ -60,7 +60,7 @@ const MainPage = ({ account, networkName }: Props) => {
         ></div>
       )}
       <NavElement styleWithBackgound={rootPage}>
-        <div className={classes.marginLogo}>
+        <div>
           <LogoIcon />
         </div>
         {rootPage ? (
@@ -79,7 +79,7 @@ const MainPage = ({ account, networkName }: Props) => {
             justify="flex-end"
             alignItems="center"
           >
-            <Grid item>
+            <Grid item style={{ marginTop: 40, marginRight: 30 }}>
               <ConnectWallet />
             </Grid>
 

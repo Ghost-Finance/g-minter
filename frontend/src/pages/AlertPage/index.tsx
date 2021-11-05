@@ -5,19 +5,26 @@ import useStyle from './style';
 import ButtonForm from '../../components/Button/ButtonForm';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import DoneIcon from '@material-ui/icons/Done';
+import { useSelector } from '../../redux/hooks';
 
 const AlertPage = () => {
   const classes = useStyle();
   const [confirmed, setConfirmed] = useState(false);
+
+  const app = useSelector(state => state.app);
+  const { txSuccess } = app;
 
   return (
     <div className="modal">
       <Grid container direction="column" className={classes.root}>
         <Grid className={classes.paperContent} item>
           <div className={classes.cardForm}>
-            {!confirmed ? (
+            {!txSuccess ? (
               <div>
-                <div className={classes.icon}>
+                <div
+                  className={classes.icon}
+                  onClick={() => setConfirmed(!confirmed)}
+                >
                   <ArrowForwardIcon style={{ fontSize: '2.8rem' }} />
                 </div>
 
@@ -41,7 +48,10 @@ const AlertPage = () => {
               </div>
             ) : (
               <div>
-                <div className={classes.icon}>
+                <div
+                  className={classes.icon}
+                  onClick={() => setConfirmed(!confirmed)}
+                >
                   <DoneIcon style={{ fontSize: '2.8rem', color: '#EEFF00' }} />
                 </div>
 

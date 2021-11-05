@@ -1,5 +1,5 @@
 import '@material-ui/core/styles';
-import { createMuiTheme } from '@material-ui/core';
+import { createTheme } from '@material-ui/core';
 
 import {
   TOKEN_BRAND_COLOR_PRIMARY_DARK,
@@ -33,7 +33,7 @@ declare module '@material-ui/core/styles/createTheme' {
   }
 }
 
-const theme = createMuiTheme({
+const theme = createTheme({
   brand: {
     main: TOKEN_BRAND_COLOR_PRIMARY_PURE,
     dark: TOKEN_BRAND_COLOR_PRIMARY_DARK,

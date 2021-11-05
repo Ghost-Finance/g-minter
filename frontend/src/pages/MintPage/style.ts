@@ -62,6 +62,16 @@ const useStyle = makeStyles((theme: Theme) =>
         marginBottom: '54px',
       },
     },
+    buttonMintGrey: {
+      width: '325px !important',
+      maxWidth: '325px',
+      fontWeight: 'bold',
+      marginBottom: '90px',
+      [theme.breakpoints.down(1800)]: {
+        marginBottom: '54px',
+      },
+      backgroundColor: `${theme.palette.secondary.dark} !important`,
+    },
     container: {
       display: 'flex',
       flexDirection: 'column',
@@ -116,8 +126,14 @@ const useStyle = makeStyles((theme: Theme) =>
     bottomBox: {
       margin: '0 auto',
       width: '100% !important',
-      height: '3px',
+      height: '4px',
       backgroundColor: theme.brand.main,
+    },
+    bottomBoxGrey: {
+      margin: '0 auto',
+      width: '100% !important',
+      height: '4px',
+      backgroundColor: theme.palette.secondary.dark,
     },
   })
 );

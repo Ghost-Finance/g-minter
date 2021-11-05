@@ -110,6 +110,11 @@ const useStyle = makeStyles((theme: Theme) =>
     textYellow: {
       color: theme.palette.warning.main,
     },
+    textYellowC: {
+      color: theme.palette.warning.main,
+      cursor: 'pointer',
+      marginTop: 30,
+    },
   })
 );
 
