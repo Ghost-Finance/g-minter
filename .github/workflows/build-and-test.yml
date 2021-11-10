@@ -11,8 +11,8 @@ jobs:
         with:
           node-version: 14.15.0
       - name: Compile & test contracts
-        run: npm i && npm run compile && npm test
-      - name: Run node & deploy contracts
-        run: npm run node & npm run deploy:local
-      - name: Test & build frontend
-        run: cd frontend && npm i && CI=true npm test && npm run build
+        run: npm i && npm run compile && npm run test
+      # # - name: Run node & deploy contracts
+      # #   run: npm run node & npm run deploy:local
+      # - name: Test & build frontend
+      #   run: cd frontend && npm i && CI=true npm test && npm run build

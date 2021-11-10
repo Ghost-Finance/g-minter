@@ -1,40 +1,88 @@
-type TokenDetails = {
-  name: string
-  symbol: string
-  decimals: string
-}
+import { BigNumber } from 'ethers';
 
-type DepositedCollateralEvent = {
-  user: string
-  collateral: number
-  collateralAddress: string
-}
+type AccountFlaggedForLiquidationEvent = {
+  account: string;
+  keeper: string;
+  endFlagDate: string;
+};
 
-type WithdrawnCollateralEvent = {
-  user: string
-  collateral: number
-  collateralAddress: string
-}
+type ApproveEvent = {
+  to: string;
+  from: string;
+  amount: number;
+};
 
-type MintEvent = {
-  user: string
-  value: number
-}
+type AuctionHouseTakeEvent = {
+  keeper: string;
+  receiver: string;
+  totalAmount: BigNumber;
+  price: BigNumber;
+};
 
 type BurnEvent = {
-  user: string
-  value: number
-}
+  user: string;
+  token: string;
+  value: number;
+};
 
-type ChangedFinancialContractAddressEvent = {
-  newFinancialContractAddress: string
-}
+type CreateSynthEvent = {
+  name: string;
+  symbol: string;
+  feed: string;
+};
 
-export type {
-  TokenDetails,
-  DepositedCollateralEvent,
-  WithdrawnCollateralEvent,
-  MintEvent,
+type DepositedCollateralEvent = {
+  user: string;
+  tokenCollateral: string;
+  amount: number;
+};
+
+type MintEvent = {
+  user: string;
+  amountTotal: number;
+};
+
+type LiquidateEvent = {
+  userLiquidated: string;
+  keeper: string;
+  tokenAddress: string;
+};
+
+type StartAuctionHouseEvent = {
+  token: string;
+  keeper: string;
+  collateralValue: number;
+  endDateTime: number;
+};
+
+type TokenDetails = {
+  name: string;
+  symbol: string;
+};
+
+type TransferEvent = {
+  sender: string;
+  receiver: string;
+  amount: number;
+};
+
+type WithdrawnCollateralEvent = {
+  account: string;
+  token: string;
+  amount: BigNumber;
+};
+
+export {
+  AccountFlaggedForLiquidationEvent,
+  ApproveEvent,
+  AuctionHouseTakeEvent,
   BurnEvent,
-  ChangedFinancialContractAddressEvent
-}
+  CreateSynthEvent,
+  DepositedCollateralEvent,
+  MintEvent,
+  LiquidateEvent,
+  StartAuctionHouseEvent,
+  TokenDetails,
+  TransferEvent,
+  WithdrawnCollateralEvent,
+};

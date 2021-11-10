@@ -1,378 +1,208 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/math/SafeMath.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import './uma/common/SyntheticToken.sol';
-import './uma/expiring-multiparty/ExpiringMultiParty.sol';
+import './GTokenERC20.sol';
+import './AuctionHouse.sol';
+import './base/Feed.sol';
 
-contract Minter is Lockable {
-  using SafeMath for uint256;
-  using FixedPoint for FixedPoint.Unsigned;
-  using SafeERC20 for IERC20;
-  using SafeERC20 for ExpandedIERC20;
+contract Minter {
+  address public owner;
 
-  bool private initialized;
-  address private _phmAddress;
-  address private _contractCreator;
-  address public _financialContractAddress;
+  GTokenERC20 public collateralToken;
+  Feed public  collateralFeed;
+  AuctionHouse auctionHouse;
+  GTokenERC20[] public synths;
 
-  // EMP Contract reference
-  ExpiringMultiParty emp;
+  uint256 public constant PENALTY_FEE = 11;
+  uint256 public constant FLAG_TIP = 3 ether;
+  uint public ratio = 9 ether;
 
-  // PHM/ UBE token reference
-  SyntheticToken phmToken;
+  mapping (address => mapping (GTokenERC20 => uint256)) public collateralBalance;
+  mapping (GTokenERC20 => uint256) public cRatioActive;
+  mapping (GTokenERC20 => uint256) public cRatioPassive;
+  mapping (GTokenERC20 => Feed) public feeds;
+  mapping (address => mapping (GTokenERC20 => uint256)) public synthDebt;
+  mapping (address => mapping (GTokenERC20 => uint256)) public auctionDebt;
+  mapping (address => mapping (GTokenERC20 => uint256)) public plrDelay;
 
-  // Enables the dApp to send upto 2 decimal points
-  FixedPoint.Unsigned decimalPadding = FixedPoint.fromUnscaledUint(100);
-  uint256 private constant FP_SCALING_FACTOR = 10**18;
+  // Events
+  event CreateSynth(string name, string symbol, address feed);
+  event Mint(address indexed account, uint256 totalAmount);
+  event Burn(address indexed account, address token, uint256 amount);
+  event WithdrawnCollateral(address indexed account, address token, uint amount);
+  event DepositedCollateral(address indexed account, address token, uint amount);
 
-  // map collateralAddress balance to user
-  mapping(address => mapping(address => CollateralPositions)) collateralBalances;
+  // Events for liquidation
+  event AccountFlaggedForLiquidation(address indexed account, address indexed keeper, uint256 deadline);
+  event Liquidate(address indexed accountLiquidated, address indexed accountFrom, address token);
 
-  // stores the diff collateral types that can mint synthetics
-  address[] private collateralAddresses;
+  event AuctionFinish(uint256 indexed id, address user, uint256 finished_at);
 
-  // This struct acts as bookkeeping for how much of that collateral is allocated to each sponsor and how much tokens was minted by that sponsor
-  struct CollateralPositions {
-    FixedPoint.Unsigned totalTokensMinted;
-    FixedPoint.Unsigned totalCollateralAmount;
-  }
-
-  /****************************************
-   *                EVENTS                *
-   ****************************************/
-  event DepositedCollateral(
-    address indexed user,
-    uint256 collateral,
-    address collateralAddress
-  );
-  event WithdrawnCollateral(
-    address indexed user,
-    uint256 collateral,
-    address collateralAddress
-  );
-  event Mint(address indexed user, uint256 value);
-  event Burn(address indexed user, uint256 value);
-  event ChangedFinancialContractAddress(
-    address indexed newFinancialContractAddress,
-    address indexed oldFinancialContractAddress
-  );
-
-  /****************************************
-   *               MODIFIERS              *
-   ****************************************/
-
-  modifier isInitialized() {
-    _isInitialized();
+  modifier onlyOwner() {
+    require(msg.sender == owner, 'unauthorized');
     _;
   }
 
-  modifier isAdmin() {
-    _isAdmin();
+  modifier isCollateral(GTokenERC20 token) {
+    require(address(token) != address(collateralToken), 'invalid token');
     _;
   }
 
-  /****************************************
-   *           PUBLIC FUNCTIONS           *
-   ****************************************/
-
-  constructor(address phmAddress, address payable empContractAddress)
-    public
-    nonReentrant()
-  {
-    _phmAddress = phmAddress;
-    _financialContractAddress = empContractAddress;
-    _contractCreator = msg.sender;
-    emp = ExpiringMultiParty(empContractAddress);
-    phmToken = SyntheticToken(_phmAddress);
+  modifier isValidKeeper(address user) {
+    require(user != address(msg.sender), 'Sender cannot be the liquidated');
+    _;
   }
 
-  function initialize() public nonReentrant() {
-    initialized = true;
+  constructor(address collateralToken_, address collateralFeed_, address auctionHouse_) {
+    collateralToken = GTokenERC20(collateralToken_);
+    collateralFeed  = Feed(collateralFeed_);
+    auctionHouse  = AuctionHouse(auctionHouse_);
+    owner = msg.sender;
   }
 
-  function depositByCollateralAddress(
-    uint256 _collateralAmount,
-    uint256 _numTokens,
-    address _collateralAddress
-  ) public isInitialized() nonReentrant() {
-    // Check if collateral amount is greater than 0
-    require(_collateralAmount > 0, 'Invalid collateral amount.');
-
-    // Check if collateral is whitelisted
-    require(
-      isWhitelisted(_collateralAddress) == true,
-      'This is not allowed as collateral.'
-    );
-
-    // Collateral token
-    IERC20 collateralToken = ExpandedIERC20(_collateralAddress);
-
-    // Convert uint256 values from parameters to FixedPoint.Unsigned
-    // FixedPoint.fromUnscaledUint converts ether value to wei
-    FixedPoint.Unsigned memory collateral =
-      FixedPoint.fromUnscaledUint(_collateralAmount).divCeil(decimalPadding);
-
-    FixedPoint.Unsigned memory tokens =
-      FixedPoint.fromUnscaledUint(_numTokens).divCeil(decimalPadding);
-
-    // Check if user has enough balance
-    require(
-      collateralToken.balanceOf(msg.sender) >= collateral.rawValue,
-      'Not enough collateral amount'
-    );
-
-    // Transfer collateral from user to this contract
-    collateralToken.transferFrom(
-      msg.sender,
-      address(this),
-      collateral.rawValue
-    );
-
-    // Emit successful deposit event
-    emit DepositedCollateral(
-      msg.sender,
-      collateral.rawValue,
-      _collateralAddress
-    );
-
-    collateralToken.approve(_financialContractAddress, collateral.rawValue);
-    emp.create(collateral, tokens);
-
-    phmToken.approve(address(this), tokens.rawValue);
-    phmToken.transfer(msg.sender, tokens.rawValue);
-
-    // Update collateral balance deposited in this contract
-    _addCollateralBalances(collateral, tokens, _collateralAddress);
-    // emit Mint event
-    emit Mint(msg.sender, tokens.rawValue);
+  function getSynth(uint256 index) public view returns (GTokenERC20) {
+    return synths[index];
   }
 
-  function redeemByCollateralAddress(
-    uint256 _tokenAmount,
-    address _collateralAddress
-  ) public payable isInitialized() nonReentrant() {
-    // Check if collateral is whitelisted
-    require(
-      isWhitelisted(_collateralAddress) == true,
-      'This is not allowed as collateral.'
-    );
+  function createSynth(string calldata name, string calldata symbol, uint initialSupply, uint256 cRatioActive_, uint256 cRatioPassive_, Feed feed) external onlyOwner {
+    require(cRatioPassive_ > cRatioActive_, 'Invalid cRatioActive');
 
-    // Convert uint256 values from parameters to FixedPoint.Unsigned
-    // FixedPoint.fromUnscaledUint converts ether value to wei
-    FixedPoint.Unsigned memory tokenAmount =
-      FixedPoint.fromUnscaledUint(_tokenAmount).divCeil(decimalPadding);
-    IERC20 collateralToken = ExpandedIERC20(_collateralAddress);
+    uint id = synths.length;
+    GTokenERC20 token = new GTokenERC20(name, symbol, initialSupply);
+    synths.push(token);
+    cRatioActive[synths[id]] = cRatioActive_;
+    cRatioPassive[synths[id]] = cRatioPassive_;
+    feeds[synths[id]] = feed;
 
-    // Approve financial contract to transfer synthetic from minter to emp for burning
-    phmToken.approve(_financialContractAddress, tokenAmount.rawValue);
-
-    // Transfer phm/ube tokens from user to minter contract
-    phmToken.transferFrom(msg.sender, address(this), tokenAmount.rawValue);
-
-    require(
-      phmToken.balanceOf(address(this)) >= tokenAmount.rawValue,
-      'Not enough tokens'
-    );
-
-    // Redeem collateral and burn synthetic token
-    FixedPoint.Unsigned memory redeemedCollateral = emp.redeem(tokenAmount);
-
-    // Burn event
-    emit Burn(msg.sender, tokenAmount.rawValue);
-
-    // Transfer withdrawn collateral to user
-    collateralToken.transfer(msg.sender, redeemedCollateral.rawValue);
-
-    //update balances
-    _removeCollateralBalances(
-      redeemedCollateral,
-      tokenAmount,
-      _collateralAddress
-    );
-
-    emit WithdrawnCollateral(
-      msg.sender,
-      redeemedCollateral.rawValue,
-      _collateralAddress
-    );
+    emit CreateSynth(name, symbol, address(feed));
   }
 
-  /**
-   * Returns total collateral in contract
-   */
-  function getTotalCollateralByCollateralAddress(address _collateralAddress)
-    public
-    view
-    returns (uint256)
-  {
-    require(
-      isWhitelisted(_collateralAddress) == true,
-      'Collateral address is not whitelisted.'
-    );
+  function depositCollateral(GTokenERC20 token, uint256 amount) external isCollateral(token) {
+    collateralToken.approve(msg.sender, amount);
+    require(collateralToken.transferFrom(msg.sender, address(this), amount), 'transfer failed');
+    collateralBalance[msg.sender][token] += amount;
 
-    return emp.totalPositionCollateral().rawValue;
+    emit DepositedCollateral(msg.sender, address(token), amount);
   }
 
-  /**
-   * Returns total user collateral in the contract
-   */
+  function withdrawnCollateral(GTokenERC20 token, uint256 amount) external {
+    require(collateralBalance[msg.sender][token] >= amount, 'Insufficient quantity');
+    uint256 futureCollateralValue = (collateralBalance[msg.sender][token] - amount) * collateralFeed.price() / 1 ether;
+    uint256 debtValue = synthDebt[msg.sender][token] * feeds[token].price() / 1 ether;
+    require(futureCollateralValue >= debtValue * cRatioActive[token] / 100, 'below cRatio');
 
-  function getUserCollateralByCollateralAddress(address _collateralAddress)
-    public
-    view
-    returns (uint256)
-  {
-    require(
-      isWhitelisted(_collateralAddress) == true,
-      'Collateral address is not whitelisted.'
-    );
+    collateralBalance[msg.sender][token] -= amount;
+    collateralToken.transfer(msg.sender, amount);
 
-    CollateralPositions storage position =
-      collateralBalances[msg.sender][_collateralAddress];
-    return position.totalCollateralAmount.rawValue;
+    emit WithdrawnCollateral(msg.sender, address(token), amount);
   }
 
-  /**
-   * Returns total user minted tokens from Minter
-   */
-  function getUserTotalMintedTokensByCollateralAddress(
-    address _collateralAddress
-  ) public view returns (uint256) {
-    require(
-      isWhitelisted(_collateralAddress) == true,
-      'Collateral address is not whitelisted.'
-    );
+  function mint(GTokenERC20 token, uint256 amount) external isCollateral(token) {
+    require(collateralBalance[msg.sender][token] > 0, 'Without collateral deposit');
 
-    CollateralPositions storage position =
-      collateralBalances[msg.sender][_collateralAddress];
+    uint256 futureCollateralValue = collateralBalance[msg.sender][token] * collateralFeed.price() / 1 ether;
+    uint256 futureDebtValue = (synthDebt[msg.sender][token] + amount) * feeds[token].price() / 1 ether;
+    require((futureCollateralValue / futureDebtValue) * 1 ether >= ratio, 'Above max amount');
 
-    return position.totalTokensMinted.rawValue;
+    token.mint(msg.sender, amount);
+    synthDebt[msg.sender][token] += amount;
+
+    emit Mint(msg.sender, synthDebt[msg.sender][token]);
   }
 
-  /**
-   * Returns the latest GCR
-   */
-  function getGCR() public view returns (uint256) {
-    return _getGCRValue().rawValue;
+  function burn(GTokenERC20 token, uint256 amount) external {
+    require(token.transferFrom(msg.sender, address(this), amount), 'transfer failed');
+    token.burn(amount);
+    synthDebt[msg.sender][token] -= amount;
+
+    emit Burn(msg.sender, address(token), amount);
   }
 
-  /**
-   * Returns the financial contract address (EMP/Perpetual)
-   */
-  function getFinancialContractAddress() public view returns (address) {
-    return _financialContractAddress;
+  function getCRatio(GTokenERC20 token) external view returns (uint256) {
+    uint256 collateralValue = collateralBalance[msg.sender][token] * collateralFeed.price() / 1 ether;
+    uint256 debtValue = synthDebt[msg.sender][token] * feeds[token].price() / 1 ether;
+
+    return (collateralValue / debtValue) * 1 ether;
   }
 
-  /**
-   * Sets the financial contract if you are the admin (contract creator)
-   */
-  function setFinancialContractAddress(address payable contractAddress)
-    public
-    nonReentrant()
-    isAdmin()
-  {
-    address oldContractAddress = _financialContractAddress;
-    _financialContractAddress = contractAddress;
-    emit ChangedFinancialContractAddress(contractAddress, oldContractAddress);
-  }
+  function liquidate(address user, GTokenERC20 token) external isValidKeeper(user) {
+    require(plrDelay[user][token] > 0);
+    Feed syntFeed = feeds[token];
+    uint256 priceFeed = collateralFeed.price();
+    uint256 collateralValue = (collateralBalance[user][token] * priceFeed) / 1 ether;
+    uint256 debtValue = synthDebt[user][token] * syntFeed.price() / 1 ether;
+    require((collateralValue < debtValue * cRatioActive[token] / 100) || (collateralValue < debtValue * cRatioPassive[token] / 100 && plrDelay[user][token] < block.timestamp), 'above cRatio');
 
-  /**
-   * Whitelist collateral in the minter contract (this doesnt whitelist it on the uma contracts)
-   */
-  function addCollateralAddress(address _collateralAddress)
-    public
-    isInitialized()
-    nonReentrant()
-  {
-    if (isWhitelisted(_collateralAddress) == false) {
-      collateralAddresses.push(_collateralAddress);
-      IERC20 token = ExpandedIERC20(_collateralAddress);
+    collateralToken.approve(address(auctionHouse), collateralBalance[user][token]);
+    {
+      uint debtAmountTransferable = debtValue / 10;
+      _mintPenalty(token, user, msg.sender, debtAmountTransferable);
+      _transferLiquidate(token, msg.sender, debtAmountTransferable);
+      auctionDebt[user][token] += synthDebt[user][token];
+      uint256 collateralBalance = collateralBalance[user][token];
+      uint256 auctionDebt = (auctionDebt[user][token] * syntFeed.price()) / 1 ether;
+      auctionHouse.start(user, address(token), address(collateralToken), msg.sender, collateralBalance, collateralValue, auctionDebt, priceFeed);
+      updateCollateralAndSynthDebt(user, token);
+
+      emit Liquidate(user, msg.sender, address(token));
     }
   }
 
-  /**
-   * Remove whitelisted collateral in the minter contract (this doesnt remove whitelist on the uma contracts)
-   */
-  function removeCollateralAddress(address _collateralAddress)
-    public
-    isInitialized()
-    nonReentrant()
-  {
-    uint256 i;
-
-    for (i = 0; i < collateralAddresses.length; i++) {
-      if (collateralAddresses[i] == _collateralAddress) {
-        delete collateralAddresses[i];
-      }
-    }
+  function updateCollateralAndSynthDebt(address user, GTokenERC20 token) private {
+    collateralBalance[user][token] = 0;
+    synthDebt[user][token] = 0;
   }
 
-  /**
-   * Check if contract address is a whitelisted collateral in the minter contract (this doesnt check whitelisted collaterals on the UMA contracts)
-   */
-  function isWhitelisted(address _collateralAddress)
-    public
-    view
-    returns (bool)
-  {
-    uint256 i;
+  function auctionFinish(uint256 auctionId, address user, GTokenERC20 collateralToken, GTokenERC20 synthToken, uint256 collateralAmount, uint256 synthAmount) public {
+    require(address(auctionHouse) == msg.sender, 'Only auction house!');
+    require(collateralToken.transferFrom(msg.sender, address(this), collateralAmount), 'transfer failed');
+    require(synthToken.transferFrom(msg.sender, address(this), synthAmount), 'transfer failed');
+    synthToken.burn(synthAmount);
 
-    for (i = 0; i < collateralAddresses.length; i++) {
-      if (collateralAddresses[i] == _collateralAddress) {
-        return true;
-      }
-    }
+    collateralBalance[user][synthToken] = collateralAmount;
+    auctionDebt[user][synthToken] -= synthAmount;
+    plrDelay[user][synthToken] = 0;
 
-    if (i >= collateralAddresses.length) {
-      return false;
-    }
+    emit AuctionFinish(auctionId, user, block.timestamp);
   }
 
-  /****************************************
-   *          INTERNAL FUNCTIONS          *
-   ****************************************/
+  function flagLiquidate(address user, GTokenERC20 token) external isValidKeeper(user) {
+    require(plrDelay[user][token] < block.timestamp);
+    require(collateralBalance[user][token] > 0 && synthDebt[user][token] > 0, 'User cannot be flagged for liquidate');
 
-  function _isInitialized() internal view {
-    require(initialized, 'Uninitialized contract');
+    uint256 collateralValue = (collateralBalance[user][token] * collateralFeed.price()) / 1 ether;
+    uint256 debtValue = synthDebt[user][token] * feeds[token].price() / 1 ether;
+    require(collateralValue < debtValue * cRatioPassive[token] / 100, "Above cRatioPassivo");
+    plrDelay[user][token] = block.timestamp + 10 days;
+
+    _mintPenalty(token, user, msg.sender, FLAG_TIP);
+
+    emit AccountFlaggedForLiquidation(user, msg.sender, plrDelay[user][token]);
   }
 
-  function _isAdmin() internal view returns (bool) {
-    require(msg.sender == _contractCreator, 'You are not the contract owner.');
+  function settleDebt(address user, GTokenERC20 token, uint amount) public {}
+
+  function balanceOfSynth(address from, GTokenERC20 token) external view returns (uint) {
+    return token.balanceOf(from);
   }
 
-  function _addCollateralBalances(
-    FixedPoint.Unsigned memory value,
-    FixedPoint.Unsigned memory numTokens,
-    address _collateralAddress
-  ) internal {
-    CollateralPositions storage position =
-      collateralBalances[msg.sender][_collateralAddress];
-
-    position.totalCollateralAmount = position.totalCollateralAmount.add(value);
-    position.totalTokensMinted = position.totalTokensMinted.add(numTokens);
+  function updateSynthCRatio(GTokenERC20 token, uint256 cRatio_, uint256 cRatioPassivo_) external onlyOwner {
+    require(cRatioPassivo_ > cRatio_, 'invalid cRatio');
+    cRatioActive[token] = cRatio_;
+    cRatioPassive[token] = cRatioPassivo_;
   }
 
-  function _removeCollateralBalances(
-    FixedPoint.Unsigned memory value,
-    FixedPoint.Unsigned memory numTokens,
-    address _collateralAddress
-  ) internal {
-    CollateralPositions storage position =
-      collateralBalances[msg.sender][_collateralAddress];
-
-    position.totalCollateralAmount = position.totalCollateralAmount.sub(value);
-    position.totalTokensMinted = position.totalTokensMinted.sub(numTokens);
+  function _mintPenalty(GTokenERC20 token, address user, address keeper, uint256 amount) public {
+    token.mint(address(keeper), amount);
+    synthDebt[address(user)][token] += amount;
   }
 
-  function _getGCRValue() internal view returns (FixedPoint.Unsigned memory) {
-    FixedPoint.Unsigned memory gcrValue =
-      emp.totalPositionCollateral().mul(FP_SCALING_FACTOR).div(
-        emp.totalTokensOutstanding()
-      );
-
-    return gcrValue;
+  // address riskReserveAddress, address liquidationVaultAddress
+  function _transferLiquidate(GTokenERC20 token, address keeper, uint256 amount) public {
+    uint keeperAmount = (amount / 100) * 60;
+    // uint restAmount = (amount / 100) * 20;
+    require(token.transfer(address(keeper), keeperAmount), 'failed transfer incentive');
+    // token.transfer(address(riskReserveAddress), restAmount);
+    // token.transfer(address(liquidationVaultAddress), restAmount);
   }
 }
