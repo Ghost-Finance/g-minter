@@ -48,7 +48,8 @@ const deployContract = async (
   if (tokenDetails) {
     contract = await contractFactory.deploy(
       tokenDetails.name,
-      tokenDetails.symbol
+      tokenDetails.symbol,
+      tokenDetails.decimals
     );
   } else {
     contract = await contractFactory.deploy();
@@ -68,7 +69,7 @@ const deployContract = async (
   }
 
   if (isValid) return contract;
-  else throw console.log(contractName + ' is not valid');
+  else throw console.error(contractName + ' is not valid');
 };
 
 /**
@@ -95,6 +96,10 @@ const isValidERC20 = async (
   expect(await contract.symbol()).to.be.equal(
     tokenDetails.symbol,
     contractName + ' symbol not as expected'
+  );
+  expect((await contract.decimals()).toString()).to.be.equal(
+    tokenDetails.decimals,
+    contractName + ' decimals not as expected'
   );
 
   return true;
