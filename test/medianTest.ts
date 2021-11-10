@@ -401,4 +401,73 @@ describe('#MedianSpacex', async function() {
 
     expect(wallet.address).to.be.equal(signatureAccountOne);
   });
+
+  it('#read validates oracle is permitted to read', async function() {
+    try {
+      await median.connect(accountOne).read();
+    } catch (error) {
+      expect(error.message).to.match(/Contract not permitted to read/);
+    }
+  });
+
+  it('#read validates if price is not bigger than zero', async function() {
+    await median.addContract(accountOne.address);
+
+    try {
+      await median.connect(accountOne).read();
+    } catch (error) {
+      expect(error.message).to.match(/Invalid price to read/);
+    }
+  });
+
+  it('#read Should return price when price is bigger than zero', async function() {
+    await median.addContract(accountOne.address);
+    [wallet.address, walletTwo.address, walletThree.address].map(
+      async address => await median.addOracle(address)
+    );
+    const timestamp = date.getTime();
+    const sigOne = await signerMessage(wallet, {
+      value: BigNumber.from(parseEther('11')),
+      timestamp: timestamp,
+      type: 'SPACEX',
+    });
+    const sigTwo = await signerMessage(walletTwo, {
+      value: BigNumber.from(parseEther('12')),
+      timestamp: timestamp,
+      type: 'SPACEX',
+    });
+    const sigThree = await signerMessage(walletThree, {
+      value: BigNumber.from(parseEther('13')),
+      timestamp: timestamp,
+      type: 'SPACEX',
+    });
+    const feedData = [
+      {
+        value: BigNumber.from(parseEther('11')),
+        timestamp: timestamp.toString(),
+        v: sigOne.v,
+        r: sigOne.r,
+        s: sigOne.s,
+      },
+      {
+        value: BigNumber.from(parseEther('12')),
+        timestamp: timestamp.toString(),
+        v: sigTwo.v,
+        r: sigTwo.r,
+        s: sigTwo.s,
+      },
+      {
+        value: BigNumber.from(parseEther('13')),
+        timestamp: timestamp.toString(),
+        v: sigThree.v,
+        r: sigThree.r,
+        s: sigThree.s,
+      },
+    ];
+
+    await median.poke(feedData);
+    const price = await median.connect(accountOne).read();
+
+    expect(price.toString()).to.be.equal(BigNumber.from(parseEther('12')));
+  });
 });

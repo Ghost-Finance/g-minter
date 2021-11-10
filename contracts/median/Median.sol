@@ -28,7 +28,7 @@ contract Median is Ownable {
   // Mapping for at most 256 oracles
   mapping (uint8 => address) public slot;
 
-  modifier toll { require(bud[msg.sender] == 1, "Median/contract-not-whitelisted"); _;}
+  modifier toll { require(bud[msg.sender] == 1, "Contract not permitted to read"); _;}
 
   event LogMedianPrice(uint256 val, uint256 age);
 
@@ -36,7 +36,7 @@ contract Median is Ownable {
 
   function read() external view toll returns (uint256) {
     (uint256 price, bool valid) = peek();
-    require(valid, "Median/invalid-price-feed");
+    require(valid, "Invalid price to read");
 
     return price;
   }
@@ -86,5 +86,9 @@ contract Median is Ownable {
 
   function addOracle(address newOracle) external onlyOwner {
     oracle[newOracle] = 1;
+  }
+
+  function addContract(address contractAddress) external onlyOwner {
+    bud[contractAddress] = 1;
   }
 }
