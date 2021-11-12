@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import { set, reset } from 'mockdate';
 import { BigNumber } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
+import { checkChangeEvent } from './util/CheckEvent';
 
 let ssmContractLabel: string = 'Ssm';
 let gValueTestContractLabel = 'GValueTest';
@@ -10,10 +11,11 @@ let gValueTestContractLabel = 'GValueTest';
 const date = new Date('2020-10-19T09:00:11.451Z');
 
 describe('SSM', async function() {
+  set(date);
   let Ssm, GValue, ssm, gValue, owner, accountOne, accounts, others;
 
   beforeEach(async function() {
-    // set(date);
+    set(date);
     [owner, ...accounts] = await ethers.getSigners();
     [accountOne, ...others] = accounts;
 
@@ -30,7 +32,11 @@ describe('SSM', async function() {
     ]);
   });
 
-  it('#change validates admin', async function() {
+  afterEach(async function() {
+    reset();
+  });
+
+  it('#change validates account has the admin role', async function() {
     let account = others[0].address;
 
     try {
@@ -43,21 +49,59 @@ describe('SSM', async function() {
     }
   });
 
-  it.only('#poke', async function() {
-    await gValue.poke(BigNumber.from(parseEther('3')));
+  it('#change Should return success if the admin change medianizer contract', async function() {
+    const address = others[0].address;
 
-    await ssm.poke();
+    ssm.change(address).then(_ =>
+      checkChangeEvent(ssm, owner.address, address).then(data => {
+        expect(data).to.be.true;
+      })
+    );
+  });
+
+  it('#poke validates if can execute with the method was stopped', async function() {
+    await ssm.void();
+
+    try {
+      await gValue.poke(BigNumber.from(parseEther('3')));
+      await ssm.connect(accountOne).poke();
+    } catch (error) {
+      expect(error.message).to.match(/Method stopped for ADMIN_ROLE/);
+    }
+  });
+
+  it('#poke validates one hour pass before add a new price', async function() {
+    await gValue.poke(BigNumber.from(parseEther('3')));
+    await ssm.connect(accountOne).poke();
     const [nextPrice, valid] = await ssm.connect(accountOne).peep();
     expect(nextPrice.toString()).to.be.equal(BigNumber.from(parseEther('3')));
     expect(valid).to.be.true;
 
-    // 3599
+    // Save new price
+    await gValue.poke(BigNumber.from(parseEther('2')));
+    try {
+      await ssm.connect(accountOne).poke();
+    } catch (error) {
+      expect(error.message).to.match(/Waiting for one hour/);
+    }
+  });
+
+  // it('#poke validates ', async function() {});
+
+  it('#poke Should return success when one hour pass to add next price', async function() {
+    await gValue.poke(BigNumber.from(parseEther('3')));
+    await ssm.connect(accountOne).poke();
+    const [nextPrice, valid] = await ssm.connect(accountOne).peep();
+    expect(nextPrice.toString()).to.be.equal(BigNumber.from(parseEther('3')));
+    expect(valid).to.be.true;
+
+    // Update timestamp in block
     await gValue.poke(BigNumber.from(parseEther('2')));
     await network.provider.send('evm_setNextBlockTimestamp', [
       (await ssm.zzz()).toNumber() + 3600,
     ]);
 
-    await ssm.poke();
+    await ssm.connect(accountOne).poke();
     const [nextPriceTwo, validTwo] = await ssm.connect(accountOne).peep();
     expect(nextPriceTwo.toString()).to.be.equal(
       BigNumber.from(parseEther('2'))

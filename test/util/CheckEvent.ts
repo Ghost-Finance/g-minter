@@ -4,7 +4,9 @@ import { expect } from 'chai';
 import * as moment from 'moment';
 import {
   AccountFlaggedForLiquidationEvent,
+  AddPriceEvent,
   AuctionHouseTakeEvent,
+  ChangeMedianEvent,
   CreateSynthEvent,
   BurnEvent,
   DepositedCollateralEvent,
@@ -13,7 +15,6 @@ import {
   StartAuctionHouseEvent,
   WithdrawnCollateralEvent,
 } from '../types/types';
-import { formatEther } from 'ethers/lib/utils';
 
 export const checkCreateSynthEvent = async (
   contract: Contract,
@@ -285,6 +286,35 @@ export const checkAuctionHouseTakeEvent = async (
   expect(auctionHouseTakeEvent.price.toString()).to.be.equal(
     pricePaid.toString()
   );
+  contract.removeAllListeners();
+
+  return true;
+};
+
+export const checkChangeEvent = async (
+  contract: Contract,
+  sender: string,
+  contractAddress: string
+): Promise<boolean> => {
+  let changeEvent = new Promise<ChangeMedianEvent>((resolve, reject) => {
+    console.log(contract);
+    contract.on('ChangeMedian', (sender, contractAddress) => {
+      console.log('entrouuuuuuu ahahaha');
+      resolve({
+        sender: sender,
+        contractAddress: contractAddress,
+      });
+    });
+
+    setTimeout(() => {
+      console.log('entrouuuu ak');
+      reject(new Error('timeout'));
+    }, 100000);
+  });
+
+  const eventBurn = await changeEvent;
+  expect(eventBurn.sender).to.be.equal(sender);
+  expect(eventBurn.contractAddress).to.be.equal(contractAddress);
   contract.removeAllListeners();
 
   return true;
