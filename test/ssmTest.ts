@@ -11,7 +11,6 @@ let gValueTestContractLabel = 'GValueTest';
 const date = new Date('2020-10-19T09:00:11.451Z');
 
 describe('SSM', async function() {
-  set(date);
   let Ssm, GValue, ssm, gValue, owner, accountOne, accounts, others;
 
   beforeEach(async function() {
@@ -26,10 +25,6 @@ describe('SSM', async function() {
     ssm = await Ssm.deploy(gValue.address);
 
     await ssm.grantRole(await ssm.READER_ROLE(), accountOne.address);
-
-    await network.provider.send('evm_setNextBlockTimestamp', [
-      new Date().getTime(),
-    ]);
   });
 
   afterEach(async function() {
@@ -42,7 +37,6 @@ describe('SSM', async function() {
     try {
       await ssm.connect(accountOne).change(account);
     } catch (error) {
-      console.log(error.message);
       expect(error.message).to.match(
         /0x0000000000000000000000000000000000000000000000000000000000000000/
       );

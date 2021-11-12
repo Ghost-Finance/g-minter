@@ -297,9 +297,7 @@ export const checkChangeEvent = async (
   contractAddress: string
 ): Promise<boolean> => {
   let changeEvent = new Promise<ChangeMedianEvent>((resolve, reject) => {
-    console.log(contract);
     contract.on('ChangeMedian', (sender, contractAddress) => {
-      console.log('entrouuuuuuu ahahaha');
       resolve({
         sender: sender,
         contractAddress: contractAddress,
@@ -307,7 +305,6 @@ export const checkChangeEvent = async (
     });
 
     setTimeout(() => {
-      console.log('entrouuuu ak');
       reject(new Error('timeout'));
     }, 100000);
   });
