@@ -1,7 +1,6 @@
 import { ethers } from 'hardhat';
 import { BigNumber, Contract } from 'ethers';
 import { expect } from 'chai';
-import * as moment from 'moment';
 import {
   AccountFlaggedForLiquidationEvent,
   AddPriceEvent,
@@ -291,6 +290,32 @@ export const checkAuctionHouseTakeEvent = async (
   return true;
 };
 
+export const checkAddPriceEvent = async (
+  contract: Contract,
+  sender: string,
+  price: BigNumber
+): Promise<boolean> => {
+  let addPriceEvent = new Promise<AddPriceEvent>((resolve, reject) => {
+    contract.on('AddPrice', (sender, price) => {
+      console.log(sender);
+      resolve({
+        sender: sender,
+        price: price,
+      });
+    });
+
+    setTimeout(() => {
+      reject(new Error('timeout'));
+    }, 100000);
+  });
+
+  let eventAddPrice = await addPriceEvent;
+  expect(eventAddPrice.sender).to.be.equal(sender);
+  expect(eventAddPrice.price.toString()).to.be.equal(price.toString());
+
+  return true;
+};
+
 export const checkChangeEvent = async (
   contract: Contract,
   sender: string,
@@ -306,7 +331,7 @@ export const checkChangeEvent = async (
 
     setTimeout(() => {
       reject(new Error('timeout'));
-    }, 100000);
+    }, 60000);
   });
 
   const eventBurn = await changeEvent;
