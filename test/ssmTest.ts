@@ -8,13 +8,10 @@ import { checkAddPriceEvent, checkChangeEvent } from './util/CheckEvent';
 let ssmContractLabel: string = 'Ssm';
 let gValueTestContractLabel = 'GValueTest';
 
-// const date = new Date('2020-10-19T09:00:11.451Z');
-
 describe('SSM', async function() {
   let Ssm, GValue, ssm, gValue, owner, accountOne, accounts, others;
 
   beforeEach(async function() {
-    // set(date);
     [owner, ...accounts] = await ethers.getSigners();
     [accountOne, ...others] = accounts;
 
@@ -25,6 +22,79 @@ describe('SSM', async function() {
     ssm = await Ssm.deploy(gValue.address);
 
     await ssm.grantRole(await ssm.READER_ROLE(), accountOne.address);
+  });
+
+  it('#stop validates account has the admin role', async function() {
+    try {
+      await ssm.connect(accountOne).stop();
+    } catch (error) {
+      expect(error.message).to.match(
+        /0x0000000000000000000000000000000000000000000000000000000000000000/
+      );
+    }
+  });
+
+  it('#stop Should stop method poke', async function() {
+    await ssm.stop();
+
+    expect(await ssm.stopped()).to.be.equal(1);
+    try {
+      await ssm.poke();
+    } catch (error) {
+      expect(error.message).to.match(/Method stopped for ADMIN_ROLE/);
+    }
+  });
+
+  it('#start validates account has the admin role', async function() {
+    try {
+      await ssm.connect(accountOne).start();
+    } catch (error) {
+      expect(error.message).to.match(
+        /0x0000000000000000000000000000000000000000000000000000000000000000/
+      );
+    }
+  });
+
+  it('#start Should start method poke', async function() {
+    await ssm.stop();
+    expect(await ssm.stopped()).to.be.equal(1);
+
+    await ssm.start();
+    expect(await ssm.stopped()).to.be.equal(0);
+
+    ssm
+      .poke()
+      .then(_ =>
+        checkAddPriceEvent(
+          ssm,
+          accountOne.address,
+          BigNumber.from(parseEther('3'))
+        ).then(isValid => expect(isValid).to.be.true)
+      );
+  });
+
+  it('#step validates account has the admin role', async function() {
+    try {
+      await ssm.connect(accountOne).step(3600);
+    } catch (error) {
+      expect(error.message).to.match(
+        /0x0000000000000000000000000000000000000000000000000000000000000000/
+      );
+    }
+  });
+
+  it('#step validates if the new time value is bigger than zero', async function() {
+    try {
+      await ssm.step(0);
+    } catch (error) {
+      expect(error.message).to.match(/Can't be zero!/);
+    }
+  });
+
+  it('#step should save new time value if the admin change the value', async function() {
+    await ssm.step(7200);
+
+    expect(await ssm.hop()).to.be.equal(7200);
   });
 
   it('#change validates account has the admin role', async function() {
@@ -47,6 +117,14 @@ describe('SSM', async function() {
         expect(data).to.be.true;
       })
     );
+  });
+
+  it('#peek validates account has the admin role', async function() {
+    try {
+      await ssm.connect(accounts[1]).peek();
+    } catch (error) {
+      expect(error.message).to.match(/AccessControl: account/);
+    }
   });
 
   it('#poke validates if can execute with the method was stopped', async function() {
@@ -76,8 +154,6 @@ describe('SSM', async function() {
     }
   });
 
-  it('#poke validates when try to save price before ', async function() {});
-
   it('#poke Should return success when one hour pass to add next price', async function() {
     await gValue.poke(BigNumber.from(parseEther('3')));
     ssm
@@ -91,6 +167,10 @@ describe('SSM', async function() {
         ).then(isValid => expect(isValid).to.be.true);
       })
       .catch(error => new Error(error.message));
+
+    const [priceOne, validOne] = await ssm.connect(accountOne).peek();
+    expect(priceOne.toString()).to.be.equal(BigNumber.from(parseEther('0')));
+    expect(validOne).to.false;
 
     const [nextPrice, valid] = await ssm.connect(accountOne).peep();
     expect(nextPrice.toString()).to.be.equal(BigNumber.from(parseEther('3')));
@@ -115,11 +195,11 @@ describe('SSM', async function() {
       })
       .catch(error => new Error(error.message));
 
-    const [nextPriceTwo, validTwo] = await ssm.connect(accountOne).peep();
+    const [nextPriceTwo, nextValid] = await ssm.connect(accountOne).peep();
     expect(nextPriceTwo.toString()).to.be.equal(
       BigNumber.from(parseEther('2'))
     );
-    expect(validTwo).to.be.true;
+    expect(nextValid).to.be.true;
 
     const [currentPrice, validThree] = await ssm.connect(accountOne).peek();
     expect(currentPrice.toString()).to.be.equal(

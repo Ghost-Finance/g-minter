@@ -35,6 +35,7 @@ contract Ssm is AccessControl {
   function stop() external onlyRole(DEFAULT_ADMIN_ROLE) {
     stopped = 1;
   }
+
   function start() external onlyRole(DEFAULT_ADMIN_ROLE) {
     stopped = 0;
   }
@@ -49,14 +50,14 @@ contract Ssm is AccessControl {
     return block.timestamp;
   }
 
-  function prev(uint ts) internal view returns (uint64) {
+  function prev(uint time) internal view returns (uint64) {
     require(hop != 0, "OSM/hop-is-zero");
-    return uint64(ts - (ts % hop));
+    return uint64(time - (time % hop));
   }
 
-  function step(uint16 ts) external onlyRole(DEFAULT_ADMIN_ROLE) {
-    require(ts > 0, "OSM/ts-is-zero");
-    hop = ts;
+  function step(uint16 time) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    require(time > 0, "Can't be zero!");
+    hop = time;
   }
 
   function void() external onlyRole(DEFAULT_ADMIN_ROLE) {
