@@ -7,18 +7,26 @@ import hooks from '../../hooks/walletConnect';
 import ButtonForm from '../../components/Button/ButtonForm';
 import InputContainer from '../../components/InputContainer';
 import { GhostIcon } from '../../components/Icons';
-import { useMinter } from '../../hooks/useContract';
+import { useMinter, useERC20 } from '../../hooks/useContract';
 import { useDispatch, useSelector } from '../../redux/hooks';
-import { mint, depositCollateral, cMaxDai, cMaxGho } from '../../utils/calls';
-import { setTxSucces } from '../../redux/app/actions';
+import {
+  mint,
+  depositCollateral,
+  balanceOf,
+  simulateMint,
+} from '../../utils/calls';
+import { setTxSucces, setCRatioSimulateMint } from '../../redux/app/actions';
 import ConnectWallet from '../../components/Button/ConnectWallet';
+import { gDaiAddress, ghoAddress } from '../../utils/constants';
 
 const MintPage = () => {
   const classes = useStyle();
   const minterContract = useMinter();
+  const ghoContract = useERC20(ghoAddress);
+  const gDaiContract = useERC20(gDaiAddress);
+
   const dispatch = useDispatch();
-  const wallet = useSelector(state => state.wallet);
-  const { account } = wallet;
+  const { account } = useSelector(state => state.wallet);
 
   const [redirect, setRedirect] = useState(false);
   const [redirectHome, setRedirectHome] = useState(false);
@@ -29,36 +37,30 @@ const MintPage = () => {
     if (validateForm()) {
       setRedirect(true);
       dispatch(setTxSucces(false));
-      // await depositCollateral('token', ghoValue, minterContract, account as string);
-      // await mint('token', gdaiValue, minterContract, account as string);
+      await depositCollateral(
+        gDaiAddress,
+        ghoValue,
+        minterContract,
+        account as string
+      );
+      await mint(gDaiAddress, gdaiValue, minterContract, account as string);
       setTimeout(() => dispatch(setTxSucces(true)), 5000);
-      setTimeout(() => setRedirectHome(true), 6000);
     }
   }
 
-  async function handleMaxDAI() {
-    let res = await cMaxDai(
-      'token',
-      ghoValue,
-      minterContract,
-      account as string
-    );
-    setGdaiValue(res);
+  async function handleMaxGHO() {
+    let res = await balanceOf(ghoContract, account as string);
+    setGhoValue(res);
   }
 
-  async function handleMaxGHO() {
-    let res = await cMaxGho(
-      'token',
-      ghoValue,
-      minterContract,
-      account as string
-    );
-    setGhoValue(res);
+  async function handleMaxDAI() {
+    let res = await balanceOf(gDaiContract, account as string);
+    setGdaiValue(res);
   }
 
   function validateForm() {
     if (gdaiValue === '0' || ghoValue === '0') {
-      return true;
+      return false;
     }
     return true;
   }
@@ -68,6 +70,17 @@ const MintPage = () => {
       return true;
     }
     return false;
+  }
+
+  async function simulateCRatio() {
+    let cRatio = await simulateMint(
+      minterContract,
+      ghoAddress,
+      ghoValue ? ghoValue : '0',
+      gdaiValue ? gdaiValue : '0',
+      account as string
+    );
+    dispatch(setCRatioSimulateMint(cRatio));
   }
 
   return (
@@ -89,13 +102,7 @@ const MintPage = () => {
       ) : null}
 
       <Grid container direction="column" className={classes.root}>
-        <div
-          style={{
-            display: 'flex',
-            width: '63%',
-            justifyContent: 'space-between',
-          }}
-        >
+        <div className={classes.containerTop}>
           <Grid item>
             <Link to="/" className={classes.link}>
               <ButtonForm text="Cancel" className={classes.buttonCancel} />
@@ -125,7 +132,10 @@ const MintPage = () => {
                     className={classes.input}
                     type="text"
                     value={gdaiValue}
-                    onChange={e => setGdaiValue(e.target.value)}
+                    onChange={e => {
+                      setGdaiValue(e.target.value);
+                      simulateCRatio();
+                    }}
                   />
 
                   <div onClick={() => handleMaxDAI()}>
@@ -141,7 +151,10 @@ const MintPage = () => {
                     className={classes.input}
                     type="text"
                     value={ghoValue}
-                    onChange={e => setGhoValue(e.target.value)}
+                    onChange={e => {
+                      setGhoValue(e.target.value);
+                      simulateCRatio();
+                    }}
                   />
 
                   <div onClick={() => handleMaxGHO()}>

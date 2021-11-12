@@ -135,6 +135,11 @@ const useStyle = makeStyles((theme: Theme) =>
       height: '4px',
       backgroundColor: theme.palette.secondary.dark,
     },
+    containerTop: {
+      display: 'flex',
+      width: '63%',
+      justifyContent: 'space-between',
+    },
   })
 );
 

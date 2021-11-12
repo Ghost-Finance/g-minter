@@ -2,7 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { Switch, Route, useLocation } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
-import { LogoIcon } from '../../components/Icons';
+import { useDispatch } from 'react-redux';
+import BigNumber from 'bignumber.js';
+import { LogoIcon, SynthCardIcon } from '../../components/Icons';
 import { useStyles } from './style';
 import AppMenu from '../AppMenu';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -14,13 +16,19 @@ import StakePage from '../StakePage';
 import AlertPage from '../AlertPage';
 import GcardLink from '../../components/GcardLink';
 import GhostRatio from '../../components/GhostRatioComponent/GhostRatio';
-import SwapCard from '../../components/SwapCard';
-import GhostRatioSimulation from '../../components/GhostRatioComponent/GhostRatioSimulation';
+import LinkCard from '../../components/LinkCard';
+import InfoCard from '../../components/InfoCard';
+import GhostRatioMint from '../../components/GhostRatioComponent/GhostRatioMint';
 import cardsData from './cardsData';
 import './style.css';
 import WalletConnectPage from '../WalletConnectPage';
 import ConnectWallet from '../../components/Button/ConnectWallet';
 import AlertLeftBar from '../../components/AlertLeftBar';
+import { balanceOf, getCRatio } from '../../utils/calls';
+import { useERC20, useMinter } from '../../hooks/useContract';
+import { setBalanceOfGHO, setCRatio } from '../../redux/app/actions';
+import { ghoAddress } from '../../utils/constants';
+import { useSelector } from '../../redux/hooks';
 
 interface Props {
   account?: string;
@@ -32,9 +40,49 @@ const MainPage = ({ account, networkName }: Props) => {
   const classes = useStyles();
   const location = useLocation();
   const [rootPage, setRootPageChanged] = useState(true);
+  const [cardsDataArray, setCardsDataArray] = useState(cardsData);
+  const minterContract = useMinter();
+  const ghoContract = useERC20(ghoAddress);
+  const { balanceOfGDAI } = useSelector(state => state.app);
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     setRootPageChanged(location.pathname === '/');
+
+    function organizeCardsData() {
+      if (balanceOfGDAI !== '0') {
+        let cardsDataArrayAfterMint = cardsData.filter(
+          card => card.to !== '/mint' && card.to !== '/stake'
+        );
+        cardsDataArrayAfterMint.unshift({
+          to: '/stake',
+          title: 'Stake Synths',
+          image: <SynthCardIcon />,
+        });
+        setCardsDataArray(cardsDataArrayAfterMint);
+      }
+    }
+
+    async function fetchData() {
+      let cRatioValue = await getCRatio(
+        minterContract,
+        ghoAddress,
+        account as string
+      );
+      dispatch(setCRatio(cRatioValue));
+
+      let balanceOfGHOValue = await balanceOf(ghoContract, ghoAddress);
+      dispatch(
+        setBalanceOfGHO(
+          new BigNumber(balanceOfGHOValue)
+            .dividedBy(new BigNumber(10).pow(18))
+            .toString()
+        )
+      );
+    }
+    fetchData();
+    organizeCardsData();
   }, [rootPage, location]);
 
   return (
@@ -68,7 +116,7 @@ const MainPage = ({ account, networkName }: Props) => {
         ) : location.pathname === pathNameAlert ? (
           <AlertLeftBar />
         ) : (
-          <GhostRatioSimulation />
+          <GhostRatioMint />
         )}
       </NavElement>
       {rootPage && (
@@ -84,8 +132,28 @@ const MainPage = ({ account, networkName }: Props) => {
             </Grid>
 
             <Grid item className={classes.columnFixed} justify-xs-center="true">
+              <LinkCard
+                title="🦄 Swap GHO"
+                text="into your wallet"
+                link={`https://app.uniswap.org/#/swap?outputCurrency=${ghoAddress}`}
+              />
+
+              <InfoCard
+                title="Don’t forget, we are"
+                subTitle="on xDAI network"
+                type="error"
+                link={`https://app.uniswap.org/#/swap?outputCurrency=${ghoAddress}`}
+              />
+
+              <InfoCard
+                title="Don’t forget, we are"
+                subTitle="on xDAI network"
+                type="success"
+                link={`https://app.uniswap.org/#/swap?outputCurrency=${ghoAddress}`}
+              />
+
               <div className={classes.item}>
-                {cardsData.map((props, key) => (
+                {cardsDataArray.map((props, key) => (
                   <GcardLink {...props} key={key} />
                 ))}
               </div>

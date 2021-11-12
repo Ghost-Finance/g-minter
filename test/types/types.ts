@@ -1,6 +1,9 @@
+import { BigNumber } from 'ethers';
+
 type AccountFlaggedForLiquidationEvent = {
   account: string;
-  endFlagDate: Number;
+  keeper: string;
+  endFlagDate: string;
 };
 
 type ApproveEvent = {
@@ -9,8 +12,16 @@ type ApproveEvent = {
   amount: number;
 };
 
+type AuctionHouseTakeEvent = {
+  keeper: string;
+  receiver: string;
+  totalAmount: BigNumber;
+  price: BigNumber;
+};
+
 type BurnEvent = {
   user: string;
+  token: string;
   value: number;
 };
 
@@ -56,14 +67,15 @@ type TransferEvent = {
 };
 
 type WithdrawnCollateralEvent = {
-  user: string;
-  collateral: number;
-  collateralAddress: string;
+  account: string;
+  token: string;
+  amount: BigNumber;
 };
 
 export {
   AccountFlaggedForLiquidationEvent,
   ApproveEvent,
+  AuctionHouseTakeEvent,
   BurnEvent,
   CreateSynthEvent,
   DepositedCollateralEvent,

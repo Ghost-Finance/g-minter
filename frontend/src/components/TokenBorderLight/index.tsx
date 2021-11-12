@@ -35,10 +35,10 @@ const TokenBorderLight = ({
   const _label = <ListItemText primary={label} />;
 
   const _price = center ? (
-    <ListItemText primary={convertCurrency(valueNumber)} />
+    <ListItemText primary={valueNumber} />
   ) : (
     <ListItemSecondaryAction className={classes.value}>
-      {convertCurrency(valueNumber)}
+      {valueNumber}
     </ListItemSecondaryAction>
   );
 

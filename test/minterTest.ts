@@ -1,22 +1,22 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { parseEther } from 'ethers/lib/utils';
 import {
+  checkBurnEvent,
   checkCreateSynthEvent,
   checkDepositEvent,
   checkMintEvent,
+  checkWithdrawalEvent,
 } from './util/CheckEvent';
 import setup from './util/setup';
 
-const amount = BigNumber.from(parseEther('500'));
-
 describe('Minter', async function() {
-  let state;
+  let state, amount;
 
   beforeEach(async function() {
     state = await setup();
+    amount = BigNumber.from(parseEther('500.0'));
   });
 
   describe('Create a Synths', async function() {
@@ -83,10 +83,11 @@ describe('Minter', async function() {
   });
 
   describe('Deposit Collateral', async function() {
-    let tokenSynth, amountToDeposit;
+    let synthTokenAddress, amountToDeposit, accountOne;
 
     beforeEach(async function() {
-      amountToDeposit = BigNumber.from(parseEther('5'));
+      accountOne = state.contractAccounts[0];
+      amountToDeposit = BigNumber.from(parseEther('180.0'));
       const feedSynth = await state.Feed.deploy(amount, 'Feed Coin');
       await state.minter.createSynth(
         'Test coin',
@@ -97,16 +98,20 @@ describe('Minter', async function() {
         feedSynth.address
       );
 
-      tokenSynth = await state.minter.getSynth(0);
+      synthTokenAddress = await state.minter.getSynth(0);
+      await state.token
+        .connect(accountOne)
+        .approve(state.minter.address, amountToDeposit);
     });
 
     it('Should return error to deposit collateral if account has not collateral token to deposit', async function() {
-      const account = state.contractAccounts[0];
-
       try {
         await state.minter
-          .connect(account)
-          .depositCollateral(tokenSynth, amountToDeposit);
+          .connect(accountOne)
+          .depositCollateral(
+            synthTokenAddress,
+            BigNumber.from(parseEther('1000.0'))
+          );
       } catch (error) {
         expect(error.message).to.match(
           /ERC20: transfer amount exceeds balance/
@@ -126,23 +131,30 @@ describe('Minter', async function() {
     });
 
     it('Should return success when deposit the collateral', async function() {
-      await state.minter.depositCollateral(tokenSynth, amountToDeposit);
+      await state.minter.depositCollateral(synthTokenAddress, amountToDeposit);
 
       expect(
         await checkDepositEvent(
           state.minter,
           state.contractCreatorOwner.address,
-          tokenSynth,
+          synthTokenAddress,
           amountToDeposit
         )
       ).to.be.true;
     });
   });
 
-  describe('Mint a token', async function() {
-    let tokenSynth, amountToMint;
+  describe('Mint/Burn a token', async function() {
+    let synthTokenAddress,
+      amountToMint,
+      amountToDeposit,
+      accountOne,
+      accountTwo;
 
     beforeEach(async function() {
+      accountOne = state.contractAccounts[0];
+      accountTwo = state.contractAccounts[1];
+      amountToDeposit = BigNumber.from(parseEther('180.0'));
       amountToMint = BigNumber.from(parseEther('1'));
       const feedSynth = await state.Feed.deploy(amountToMint, 'Feed Coin');
       await state.minter.createSynth(
@@ -154,53 +166,305 @@ describe('Minter', async function() {
         feedSynth.address
       );
 
-      tokenSynth = await state.minter.getSynth(0);
+      synthTokenAddress = await state.minter.getSynth(0);
+      await state.token
+        .connect(accountOne)
+        .approve(state.minter.address, amountToDeposit);
     });
 
-    it("Should return error to mint if account hasn't the collateral balance", async function() {
-      try {
-        await state.minter.mint(tokenSynth, amountToMint);
-      } catch (error) {
-        expect(error.message).to.match(/Without collateral deposit/);
-      }
+    describe('Smoke tests', async function() {
+      it('validates when is not the owner to update', async function() {
+        try {
+          await state.minter
+            .connect(accountOne)
+            .updateSynthCRatio(synthTokenAddress, 200, 300);
+        } catch (error) {
+          expect(error.message).to.match(/unauthorized/);
+        }
+      });
+
+      it('validates active c-Ratio is bigger than passive c-Ratio', async function() {
+        try {
+          await state.minter.updateSynthCRatio(synthTokenAddress, 400, 300);
+        } catch (error) {
+          expect(error.message).to.match(/invalid cRatio/);
+        }
+      });
+
+      it('Should return success when update cRatios', async function() {
+        await state.minter.updateSynthCRatio(synthTokenAddress, 300, 400);
+
+        expect(await state.minter.cRatioActive(synthTokenAddress)).to.be.equal(
+          300
+        );
+        expect(await state.minter.cRatioPassive(synthTokenAddress)).to.be.equal(
+          400
+        );
+      });
     });
 
-    it('Should return error to mint if account has below cRatio', async function() {
-      await state.minter.depositCollateral(tokenSynth, parseEther('100'));
-      await state.feed.updatePrice(parseEther('50'));
+    describe('Minter', async function() {
+      it("Should return error to mint if account hasn't the collateral balance", async function() {
+        try {
+          await state.minter
+            .connect(accountOne)
+            .mint(synthTokenAddress, amountToMint);
+        } catch (error) {
+          expect(error.message).to.match(/Without collateral deposit/);
+        }
+      });
 
-      try {
-        await state.minter.mint(tokenSynth, amountToMint);
-      } catch (error) {
-        expect(error.message).to.match(/Below cRatio/);
-      }
+      it('Should return error to mint if account has below cRatio', async function() {
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(synthTokenAddress, amountToDeposit);
+        await state.feed.updatePrice(parseEther('50'));
+
+        try {
+          await state.minter
+            .connect(accountOne)
+            .mint(synthTokenAddress, amountToMint);
+        } catch (error) {
+          expect(error.message).to.match(/Below cRatio/);
+        }
+      });
+
+      it('Should return error to mint if token minted is the same as collateral', async function() {
+        await state.minter.depositCollateral(
+          synthTokenAddress,
+          amountToDeposit
+        );
+
+        try {
+          await state.minter
+            .connect(accountOne)
+            .mint(state.token.address, amountToMint);
+        } catch (error) {
+          expect(error.message).to.match(/invalid token/);
+        }
+      });
+
+      it('Should return success when mint a synth', async function() {
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(synthTokenAddress, amountToDeposit);
+
+        await state.minter
+          .connect(accountOne)
+          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+
+        expect(
+          await checkMintEvent(
+            state.minter,
+            accountOne.address,
+            BigNumber.from(parseEther('20.0'))
+          )
+        ).to.be.true;
+      });
     });
 
-    it('Should return error to mint if token minted is the same as collateral', async function() {
-      await state.minter.depositCollateral(tokenSynth, parseEther('100'));
+    describe('Burn', async function() {
+      it('validates when try to burn before mint gDai', async function() {
+        try {
+          await state.minter
+            .connect(accountOne)
+            .burn(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+        } catch (error) {
+          expect(error.message).to.match(
+            /ERC20: transfer amount exceeds balance/
+          );
+        }
+      });
 
-      try {
-        await state.minter.mint(state.token.address, amountToMint);
-      } catch (error) {
-        expect(error.message).to.match(/invalid token/);
-      }
+      it('validates when try to burn an amount exceeds the balance', async function() {
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(synthTokenAddress, amountToDeposit);
+        await state.minter
+          .connect(accountOne)
+          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+
+        try {
+          await state.minter
+            .connect(accountOne)
+            .burn(synthTokenAddress, BigNumber.from(parseEther('200.0')));
+        } catch (error) {
+          expect(error.message).to.match(
+            /ERC20: transfer amount exceeds balance/
+          );
+        }
+      });
+
+      it('Should burn with success when collateral price going down', async function() {
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(synthTokenAddress, amountToDeposit);
+        await state.minter
+          .connect(accountOne)
+          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+        const amountRatioBefore = await state.minter
+          .connect(accountOne)
+          .getCRatio(synthTokenAddress);
+
+        expect(amountRatioBefore.toString()).to.be.equal(
+          BigNumber.from(parseEther('9.0'))
+        );
+
+        // GHO price go down to 50% c-Ratio is 400%
+        await state.feed.updatePrice(BigNumber.from(parseEther('0.5')));
+        const amountRatioAfterPriceDown = await state.minter
+          .connect(accountOne)
+          .getCRatio(synthTokenAddress);
+
+        expect(amountRatioAfterPriceDown.toString()).to.be.equal(
+          BigNumber.from(parseEther('4.0'))
+        );
+
+        // Burn 10 gDai to readjust for 900%
+        await state.Token.attach(synthTokenAddress)
+          .connect(accountOne)
+          .approve(state.minter.address, BigNumber.from(parseEther('10.0')));
+        await state.minter
+          .connect(accountOne)
+          .burn(synthTokenAddress, BigNumber.from(parseEther('10.0')));
+        const amountRatioAfter = await state.minter
+          .connect(accountOne)
+          .getCRatio(synthTokenAddress);
+
+        expect(amountRatioAfter.toString()).to.be.equal(
+          BigNumber.from(parseEther('9.0'))
+        );
+      });
+
+      it('Should return success when burn a small part of gDai', async function() {
+        const burnAmount = BigNumber.from(parseEther('5.0'));
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(synthTokenAddress, amountToDeposit);
+        await state.minter
+          .connect(accountOne)
+          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+
+        await state.Token.attach(synthTokenAddress)
+          .connect(accountOne)
+          .approve(state.minter.address, burnAmount);
+        await state.minter
+          .connect(accountOne)
+          .burn(synthTokenAddress, burnAmount);
+        const amountRatio = await state.minter
+          .connect(accountOne)
+          .getCRatio(synthTokenAddress);
+
+        expect(
+          await checkBurnEvent(
+            state.minter,
+            accountOne.address,
+            synthTokenAddress,
+            burnAmount
+          )
+        ).to.be.true;
+        expect(amountRatio.toString()).to.be.equal(
+          BigNumber.from(parseEther('12.0'))
+        );
+      });
     });
 
-    it('Should return success when mint a synth', async function() {
-      const value = BigNumber.from(parseEther('50'));
-      await state.minter.depositCollateral(
-        tokenSynth,
-        BigNumber.from(parseEther('100'))
-      );
-      await state.minter.mint(tokenSynth, value);
+    describe('Withdrawn Collateral', async function() {
+      it('validates account when insufficient amount', async function() {
+        try {
+          await state.minter
+            .connect(accountTwo)
+            .withdrawnCollateral(
+              synthTokenAddress,
+              BigNumber.from(parseEther('100.0'))
+            );
+        } catch (error) {
+          expect(error.message).to.match(/Insufficient quantity/);
+        }
+      });
 
-      expect(
-        await checkMintEvent(
-          state.minter,
-          state.contractCreatorOwner.address,
-          value
-        )
-      ).to.be.true;
+      it('validates account when amount exceeds allowance', async function() {
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(synthTokenAddress, amountToDeposit);
+        await state.minter
+          .connect(accountOne)
+          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+
+        try {
+          await state.minter
+            .connect(accountOne)
+            .withdrawnCollateral(
+              synthTokenAddress,
+              BigNumber.from(parseEther('100.0'))
+            );
+        } catch (error) {
+          expect(error.message).to.match(
+            /ERC20: transfer amount exceeds allowance/
+          );
+        }
+      });
+
+      it('validates withdraw collateral is below C-Ratio', async function() {
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(
+            synthTokenAddress,
+            BigNumber.from(parseEther('100.0'))
+          );
+        await state.minter
+          .connect(accountOne)
+          .mint(synthTokenAddress, BigNumber.from(parseEther('10.0')));
+
+        try {
+          await state.feed.updatePrice(BigNumber.from(parseEther('0.2')));
+          await state.minter
+            .connect(accountOne)
+            .withdrawnCollateral(
+              synthTokenAddress,
+              BigNumber.from(parseEther('10.0'))
+            );
+        } catch (error) {
+          expect(error.message).to.match(/below cRatio/);
+        }
+      });
+
+      it('Should return success when try to withdraw GHO', async function() {
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(synthTokenAddress, amountToDeposit);
+        await state.minter
+          .connect(accountOne)
+          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+
+        await state.minter
+          .connect(accountOne)
+          .withdrawnCollateral(
+            synthTokenAddress,
+            BigNumber.from(parseEther('10.0'))
+          );
+        const collateralAmount = await state.token.balanceOf(
+          accountOne.address
+        );
+        const collateralBalanceGdai = await state.minter
+          .connect(accountOne)
+          .collateralBalance(accountOne.address, synthTokenAddress);
+
+        expect(
+          await checkWithdrawalEvent(
+            state.minter,
+            accountOne.address,
+            synthTokenAddress,
+            BigNumber.from(parseEther('10.0'))
+          )
+        ).to.be.true;
+        expect(collateralAmount.toString()).to.be.equal(
+          BigNumber.from(parseEther('10.0'))
+        );
+        expect(collateralBalanceGdai.toString()).to.be.equal(
+          BigNumber.from(parseEther('170.0'))
+        );
+      });
     });
   });
 });

@@ -1,2 +1,7 @@
-export const minterAddress: string =
-  '0x84c24e5973d754AD696A7f2be2FE9755DE88b886';
+import contractAddress from '../contracts/contract-address.json';
+
+export const minterAddress: string = contractAddress.Minter;
+
+export const ghoAddress: string = contractAddress.GHO;
+
+export const gDaiAddress: string = contractAddress.GHO; // It has the GHO address provisionally

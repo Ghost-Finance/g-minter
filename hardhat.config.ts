@@ -1,14 +1,25 @@
 require('dotenv').config();
 
-import { HardhatUserConfig } from 'hardhat/types';
+import 'hardhat-deploy';
 import '@nomiclabs/hardhat-ethers';
-import { task } from 'hardhat/config';
+import '@nomiclabs/hardhat-etherscan';
 import '@nomiclabs/hardhat-waffle';
 import 'hardhat-typechain';
+import 'solidity-coverage';
+import { HardhatUserConfig } from 'hardhat/types';
+import { task } from 'hardhat/config';
 
-const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID || '';
-const MNEMONIC_SEED = process.env.MNEMONIC_SEED || '';
-const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
+const {
+  ALCHEMY_KEY,
+  INFURA_PROJECT_ID,
+  MNEMONIC_SEED,
+  PRIVATE_KEY = '',
+  SECOND_PRIVATE_KEY,
+  ETHERSCAN_API_KEY,
+} = process.env;
+
+const accounts =
+  PRIVATE_KEY.length > 0 ? [PRIVATE_KEY, SECOND_PRIVATE_KEY] : [];
 
 task('accounts', 'Prints the list of accounts', async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -29,22 +40,33 @@ const config: HardhatUserConfig = {
     },
   },
 
+  mocha: {
+    timeout: 150000,
+  },
+
+  etherscan: {
+    apiKey: ETHERSCAN_API_KEY,
+  },
+
   networks: {
-    // kovan: {
-    //   url: `https://kovan.infura.io/v3/${INFURA_PROJECT_ID}`,
-    //   accounts: {
-    //     mnemonic: MNEMONIC_SEED,
-    //   },
-    //   gasPrice: 50000000000,
+    // rinkeby: {
+    //   url: `https://rinkeby.infura.io/v3/${INFURA_PROJECT_ID}`,
+    //   // url:
+    //   //   'https://eth-rinkeby.alchemyapi.io/v2/I3n9-yYF98CHuv4s36G0rjfJeW6rwfDI',
+    //   accounts: accounts,
+    //   live: true,
+    //   saveDeployments: true,
+    //   gas: 12500000,
+    //   gasPrice: 1100000026,
     // },
-    // hardhat: {
-    //   chainId: 1337,
-    //   accounts: {
-    //     mnemonic: MNEMONIC_SEED,
-    //   },
-    // },
+    hardhat: {
+      chainId: 1337,
+      accounts: {
+        mnemonic: MNEMONIC_SEED,
+      },
+    },
     localhost: {
-      chainId: 31337,
+      chainId: 1337,
       url: 'http://127.0.0.1:8545',
       gasPrice: 50000000000,
     },

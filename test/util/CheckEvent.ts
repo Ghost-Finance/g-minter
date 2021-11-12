@@ -1,16 +1,16 @@
 import { ethers } from 'hardhat';
-
 import { BigNumber, Contract } from 'ethers';
 import { expect } from 'chai';
+import * as moment from 'moment';
 import {
   AccountFlaggedForLiquidationEvent,
+  AuctionHouseTakeEvent,
   CreateSynthEvent,
   BurnEvent,
   DepositedCollateralEvent,
   MintEvent,
   LiquidateEvent,
   StartAuctionHouseEvent,
-  TransferEvent,
   WithdrawnCollateralEvent,
 } from '../types/types';
 import { formatEther } from 'ethers/lib/utils';
@@ -98,40 +98,22 @@ export const checkMintEvent = async (
   const eventMint = await mintEvent;
   expect(eventMint.user).to.be.equal(sender);
   expect(eventMint.amountTotal).to.be.equal(amount);
+  contract.removeAllListeners();
 
   return true;
 };
 
-export const checkWithdrawalEvent = async (
+export const checkBurnEvent = async (
   contract: Contract,
-  sender: string,
-  address: string,
-  collateralValue: BigNumber,
-  tokenToBurn: BigNumber
+  user: string,
+  token: string,
+  value: BigNumber
 ): Promise<boolean> => {
-  let withdrawalEvent = new Promise<WithdrawnCollateralEvent>(
-    (resolve, reject) => {
-      contract.on(
-        'WithdrawnCollateral',
-        (user, collateral, collateralAddress) => {
-          resolve({
-            user: user,
-            collateral: collateral,
-            collateralAddress: collateralAddress,
-          });
-        }
-      );
-
-      setTimeout(() => {
-        reject(new Error('timeout'));
-      }, 60000);
-    }
-  );
-
-  const burnEvent = new Promise<BurnEvent>((resolve, reject) => {
-    contract.on('Burn', (user, value) => {
+  let burnEvent = new Promise<BurnEvent>((resolve, reject) => {
+    contract.on('Burn', (sender, token, value) => {
       resolve({
-        user: user,
+        user: sender,
+        token: token,
         value: value,
       });
     });
@@ -142,15 +124,40 @@ export const checkWithdrawalEvent = async (
   });
 
   const eventBurn = await burnEvent;
-  console.log('Tokens burned: ', formatEther(eventBurn.value));
-  expect(eventBurn.user).to.be.equal(sender);
-  expect(eventBurn.value).to.be.equal(tokenToBurn);
+  expect(eventBurn.user).to.be.equal(user);
+  expect(eventBurn.token).to.be.equal(token);
+  expect(eventBurn.value).to.be.equal(value);
+  contract.removeAllListeners();
+
+  return true;
+};
+
+export const checkWithdrawalEvent = async (
+  contract: Contract,
+  account: string,
+  tokenAddress: string,
+  amount: BigNumber
+): Promise<boolean> => {
+  let withdrawalEvent = new Promise<WithdrawnCollateralEvent>(
+    (resolve, reject) => {
+      contract.on('WithdrawnCollateral', (account, token, amount) => {
+        resolve({
+          account: account,
+          token: token,
+          amount: amount,
+        });
+      });
+
+      setTimeout(() => {
+        reject(new Error('timeout'));
+      }, 60000);
+    }
+  );
 
   const eventWithdrawal = await withdrawalEvent;
-  console.log('Collateral: ', formatEther(eventWithdrawal.collateral));
-  expect(eventWithdrawal.user).to.be.equal(sender);
-  expect(eventWithdrawal.collateral).to.be.equal(collateralValue);
-  expect(eventWithdrawal.collateralAddress).to.be.equal(address);
+  expect(eventWithdrawal.account).to.be.equal(account);
+  expect(eventWithdrawal.token).to.be.equal(tokenAddress);
+  expect(eventWithdrawal.amount).to.be.equal(amount);
   contract.removeAllListeners();
 
   return true;
@@ -159,16 +166,18 @@ export const checkWithdrawalEvent = async (
 export const checkFlagLiquidateEvent = async (
   contract: Contract,
   account: string,
-  endFlagDate: Date
+  accountKeeper: string,
+  endFlagDate: string
 ): Promise<boolean> => {
   let accountFlaggedEvent = new Promise<AccountFlaggedForLiquidationEvent>(
     (resolve, reject) => {
-      contract.on('AccountFlaggedForLiquidation', (account, endFlagDate) =>
+      contract.on('AccountFlaggedForLiquidation', (account, keeper, end) => {
         resolve({
           account: account,
-          endFlagDate: new Date(endFlagDate * 1000).getDate(),
-        })
-      );
+          keeper: keeper,
+          endFlagDate: new Date(end * 1000).getDate().toString(),
+        });
+      });
 
       setTimeout(() => {
         reject(new Error('timeout'));
@@ -178,7 +187,8 @@ export const checkFlagLiquidateEvent = async (
 
   const eventFlagLiquidate = await accountFlaggedEvent;
   expect(eventFlagLiquidate.account).to.be.equal(account);
-  expect(eventFlagLiquidate.endFlagDate).to.be.equal(endFlagDate.getDate());
+  expect(eventFlagLiquidate.keeper).to.be.equal(accountKeeper);
+  contract.removeAllListeners();
 
   return true;
 };
@@ -229,7 +239,7 @@ export const checkLiquidateEvent = async (
   const auctionHouseStart = await startAuctionHouseEvent;
   expect(auctionHouseStart.token).to.be.equal(token);
   expect(auctionHouseStart.keeper).to.be.equal(keeper);
-  expect(auctionHouseStart.endDateTime).to.be.equal(endDateTime.getDate());
+  // expect(auctionHouseStart.endDateTime).to.be.equal(endDateTime.getDate());
 
   const eventLiquidate = await liquidateEvent;
   expect(eventLiquidate.userLiquidated).to.be.equal(user);
@@ -238,6 +248,44 @@ export const checkLiquidateEvent = async (
 
   contractMinter.removeAllListeners();
   contractAuctionHouse.removeAllListeners();
+
+  return true;
+};
+
+export const checkAuctionHouseTakeEvent = async (
+  contract: Contract,
+  keeper: string,
+  receiver: string,
+  totalAmount: BigNumber,
+  pricePaid: BigNumber
+): Promise<boolean> => {
+  let eventAuctionHouseTake = new Promise<AuctionHouseTakeEvent>(
+    (resolve, reject) => {
+      contract.on('Take', (_, keeper, receiver, totalAmount, price, end) => {
+        resolve({
+          keeper: keeper,
+          receiver: receiver,
+          totalAmount: totalAmount,
+          price: price,
+        });
+      });
+
+      setTimeout(() => {
+        reject(new Error('timeout'));
+      }, 60000);
+    }
+  );
+
+  const auctionHouseTakeEvent = await eventAuctionHouseTake;
+  expect(auctionHouseTakeEvent.keeper).to.be.equal(keeper);
+  expect(auctionHouseTakeEvent.receiver).to.be.equal(receiver);
+  expect(auctionHouseTakeEvent.totalAmount.toString()).to.be.equal(
+    totalAmount.toString()
+  );
+  expect(auctionHouseTakeEvent.price.toString()).to.be.equal(
+    pricePaid.toString()
+  );
+  contract.removeAllListeners();
 
   return true;
 };

@@ -6,8 +6,6 @@ import {
 } from '@material-ui/core';
 import React from 'react';
 import useStyles from './styles';
-import theme from '../../theme';
-import { convertCurrency } from '../utils';
 
 type T = {
   label: string;
@@ -29,10 +27,10 @@ const Token = ({ label, icon, valueNumber, center, full }: T): JSX.Element => {
   const _label = <ListItemText primary={label} />;
 
   const _price = center ? (
-    <ListItemText primary={convertCurrency(valueNumber)} />
+    <ListItemText primary={valueNumber} />
   ) : (
     <ListItemSecondaryAction className={classes.value}>
-      {convertCurrency(valueNumber)}
+      {valueNumber}
     </ListItemSecondaryAction>
   );
 

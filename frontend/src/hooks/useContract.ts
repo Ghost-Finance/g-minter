@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import minterAbi from '../utils/abis/Minter.json';
-import gTokenERC20Abi from '../utils/abis/GTokenERC20.json';
+import minterAbi from '../contracts/Minter.json';
+import ghoABI from '../contracts/GHO.json';
 import useWeb3 from './useWeb3';
 import contractAddress from '../contracts/contract-address.json';
 
@@ -16,11 +16,11 @@ const useContract = (abi: any, address: string) => {
 };
 
 export const useMinter = () => {
-  return useContract(minterAbi, contractAddress.Minter);
+  return useContract(minterAbi.abi, contractAddress.Minter);
 };
 
 export const useERC20 = (address: string) => {
-  return useContract(gTokenERC20Abi, address);
+  return useContract(ghoABI.abi, address);
 };
 
 export default useContract;

@@ -1,14 +1,5 @@
-// import BigNumber from 'bignumber.js'
-
-export const approve = async (
-  spenderAddres: string,
-  contract: any,
-  account: string
-) => {
-  return contract.methods
-    .approve(spenderAddres, '90000000000000000000000000000')
-    .send({ from: account });
-};
+import { BigNumber } from '@ethersproject/bignumber';
+import { parseEther } from '@ethersproject/units';
 
 export const mint = async (
   token: string,
@@ -38,29 +29,44 @@ export const depositCollateral = async (
     });
 };
 
-export const cRatio = async (
-  token: string,
-  amount: string,
-  contract: any,
-  account: string
-) => {
-  return '';
+export const balanceOf = async (contract: any, account: string) => {
+  return contract.methods.balanceOf(account).call();
 };
 
-export const cMaxDai = async (
-  token: string,
-  amount: string,
+export const getCRatio = async (
   contract: any,
+  token: string,
   account: string
 ) => {
-  return '10000';
+  return contract.methods.getCRatio(token).call((err: any, result: any) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(result);
+    }
+  });
 };
 
-export const cMaxGho = async (
-  token: string,
-  amount: string,
+export const simulateMint = async (
   contract: any,
+  token: string,
+  amountGHO: string,
+  amountGdai: string,
   account: string
 ) => {
-  return '69000';
+  console.log(amountGHO);
+  console.log(amountGdai);
+  return contract.methods
+    .simulateMint(
+      token,
+      BigNumber.from(parseEther(amountGHO)),
+      BigNumber.from(parseEther(amountGdai))
+    )
+    .call((err: any, result: any) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(result);
+      }
+    });
 };

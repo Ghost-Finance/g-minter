@@ -11,7 +11,7 @@ let auctionHouseContractLabelString: string = 'AuctionHouse';
 let contractCreatorOwner: SignerWithAddress;
 let contractAccounts: SignerWithAddress[];
 
-const amount = BigNumber.from(parseEther('500'));
+const amount = BigNumber.from(parseEther('1000.0'));
 
 const setup = async () => {
   let Token, Feed, Minter, AuctionHouse, minter, token, feed, auctionHouse;
@@ -28,7 +28,7 @@ const setup = async () => {
   );
   Minter = await ethers.getContractFactory(minterContractLabelString);
 
-  token = await Token.deploy('erc20 coin', 'Token', amount);
+  token = await Token.deploy('GHO', 'GHO', amount);
   feed = await Feed.deploy(parseEther('1'), 'Feed Token');
   auctionHouse = await AuctionHouse.deploy();
   minter = await Minter.deploy(
@@ -38,8 +38,14 @@ const setup = async () => {
   );
 
   await token.approve(minter.address, amount);
-  await token.approve(contractCreatorOwner.address, amount);
-  await token.approve(contractAccounts[0].address, parseEther('100'));
+  await token.transfer(
+    contractAccounts[0].address,
+    BigNumber.from(parseEther('180.0'))
+  );
+  await token.transfer(
+    contractAccounts[1].address,
+    BigNumber.from(parseEther('180.0'))
+  );
 
   return {
     contractAccounts,
