@@ -11,6 +11,7 @@ contract Minter {
   GTokenERC20 public collateralToken;
   Feed public  collateralFeed;
   AuctionHouse auctionHouse;
+  DebtPool debtPool;
   GTokenERC20[] public synths;
 
   uint256 public constant PENALTY_FEE = 11;
@@ -53,10 +54,16 @@ contract Minter {
     _;
   }
 
-  constructor(address collateralToken_, address collateralFeed_, address auctionHouse_) {
+  modifier onlyDebtPool() {
+    require(address(debtPool) != address(msg.sender), 'Only permitted contract!');
+    _;
+  }
+
+  constructor(address collateralToken_, address collateralFeed_, address auctionHouse_, address debtPool_) {
     collateralToken = GTokenERC20(collateralToken_);
     collateralFeed  = Feed(collateralFeed_);
     auctionHouse  = AuctionHouse(auctionHouse_);
+    debtPool = DebtPool(debtPool_);
     owner = msg.sender;
   }
 
@@ -81,6 +88,7 @@ contract Minter {
     collateralToken.approve(msg.sender, amount);
     require(collateralToken.transferFrom(msg.sender, address(this), amount), 'transfer failed');
     collateralBalance[msg.sender][token] += amount;
+    collateralBalance[address(this)][token] += amount;
 
     emit DepositedCollateral(msg.sender, address(token), amount);
   }
@@ -88,7 +96,7 @@ contract Minter {
   function withdrawnCollateral(GTokenERC20 token, uint256 amount) external {
     require(collateralBalance[msg.sender][token] >= amount, 'Insufficient quantity');
     uint256 futureCollateralValue = (collateralBalance[msg.sender][token] - amount) * collateralFeed.price() / 1 ether;
-    uint256 debtValue = synthDebt[msg.sender][token] * feeds[token].price() / 1 ether;
+    uint256 debtValue = globalDebt(token) * feeds[token].price() / 1 ether;
     require(futureCollateralValue >= debtValue * cRatioActive[token] / 100, 'below cRatio');
 
     collateralBalance[msg.sender][token] -= amount;
@@ -110,6 +118,19 @@ contract Minter {
     emit Mint(msg.sender, synthDebt[msg.sender][token]);
   }
 
+  function setAmountToken(GTokenERC20 token, uint256 amount) public onlyDebtPool returns (uint256) {
+    synthDebt[msg.sender][token] += amount;
+    token.mint(msg.sender, amount);
+
+    return synthDebt[msg.sender][token];
+  }
+
+  function globalDebt(GTokenERC20 token) internal returns (uint256) {
+    uint poolDebtPerToken = synthDebt[address(debtPool)][token] / (token.totalSupply() - synthDebt[debtPool][token]);
+
+    return synthDebt[msg.sender][token] + (synthDebt[msg.sender][token] * poolDebtPerToken);
+  }
+
   function burn(GTokenERC20 token, uint256 amount) external {
     require(token.transferFrom(msg.sender, address(this), amount), 'transfer failed');
     token.burn(amount);
@@ -120,7 +141,7 @@ contract Minter {
 
   function getCRatio(GTokenERC20 token) external view returns (uint256) {
     uint256 collateralValue = collateralBalance[msg.sender][token] * collateralFeed.price() / 1 ether;
-    uint256 debtValue = synthDebt[msg.sender][token] * feeds[token].price() / 1 ether;
+    uint256 debtValue = globalDebt(token) * feeds[token].price() / 1 ether;
 
     return (collateralValue / debtValue) * 1 ether;
   }
