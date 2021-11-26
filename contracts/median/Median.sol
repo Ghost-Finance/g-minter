@@ -5,19 +5,18 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Median is Ownable {
+  uint128        val;
+  uint32  public age;
+  bytes32 public wat = "DAI";
+  uint256 public bar = 3; // numero de respostas para cada feed
 
   struct FeedData {
     uint256 value;
-    uint timestamp;
+    uint256 age;
     uint8 v;
     bytes32 r;
     bytes32 s;
   }
-
-  uint128        feedValue;
-  uint32  public feedCreatedAt;
-  bytes32 public feedType = "DAI";
-  uint256 public bar = 3; // numero de respostas para cada feed
 
   // Authorized oracles, set by an auth
   mapping (address => uint256) public oracle;
@@ -43,31 +42,33 @@ contract Median is Ownable {
 
   function peek() public view toll returns (uint256, bool) {
     // Adiciona a janela de tempo
-    return (feedValue, feedValue > 0);
+    return (val, val > 0);
   }
 
-  function recover(uint256 feedValue_, uint256 feedTimestamp_, uint8 v, bytes32 r, bytes32 s) virtual public view returns (address) {
+  function recover(uint256 val_, uint256 age_, uint8 v, bytes32 r, bytes32 s) virtual public view returns (address) {
     return ecrecover(
-      keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encodePacked(feedValue_, feedTimestamp_, feedType)))),
+      keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(abi.encodePacked(val_, age_, wat)))),
       v, r, s
     );
   }
 
-  function poke(FeedData[] memory data) external {
+  function poke(
+    FeedData[] memory data
+  ) external {
     require(data.length == bar, "Invalid number of answers of Oracles");
 
     uint256 bloom = 0;
     uint256 last = 0;
-    uint256 zzz = feedCreatedAt;
+    uint256 zzz = age;
 
     for (uint i = 0; i < data.length; i++) {
       uint8 sl;
       // Validate the values were signed by an authorized oracle
-      address signer = recover(data[i].value, data[i].timestamp, data[i].v, data[i].r, data[i].s);
+      address signer = recover(data[i].value, data[i].age, data[i].v, data[i].r, data[i].s);
       // Check that signer is an oracle
       require(oracle[signer] == 1, "Not authorized oracle signer");
       // Price feed age greater than last medianizer age
-      require(data[i].timestamp > zzz, "Signer oracle message expired");
+      require(data[i].age > zzz, "Signer oracle message expired");
       // Check for ordered values
       require(data[i].value >= last, "Message is not in the order");
       last = data[i].value;
@@ -79,16 +80,56 @@ contract Median is Ownable {
       bloom += uint256(2) ** sl;
     }
 
-    feedValue = uint128(data[data.length >> 1].value);
-    feedCreatedAt = uint32(block.timestamp);
-    emit LogMedianPrice(feedValue, feedCreatedAt);
+    val = uint128(data[data.length >> 1].value);
+    age = uint32(block.timestamp);
+    emit LogMedianPrice(val, age);
   }
 
-  function addOracle(address newOracle) external onlyOwner {
-    oracle[newOracle] = 1;
+  function lift(address account) external onlyOwner {
+    require(account != address(0), "Median/no-oracle-0");
+    uint8 s;
+    assembly {
+      s := shr(152, account)
+    }
+    require(slot[s] == address(0), "Median/signer-already-exists");
+    oracle[account] = 1;
+    slot[s] = account;
   }
 
-  function addContract(address contractAddress) external onlyOwner {
-    bud[contractAddress] = 1;
+  function drop(address account) external onlyOwner {
+    uint8 s;
+    oracle[account] = 0;
+    assembly {
+      s := shr(152, account)
+    }
+    slot[s] = address(0);
+  }
+
+  function setBar(uint256 bar_) external onlyOwner {
+    require(bar_ > 0, "Median/quorum-is-zero");
+    require(bar_ % 2 != 0, "Median/quorum-not-odd-number");
+    bar = bar_;
+  }
+
+  function kiss(address a) external onlyOwner {
+    require(a != address(0), "Median/no-contract-0");
+    bud[a] = 1;
+  }
+
+  function diss(address a) external onlyOwner {
+    bud[a] = 0;
+  }
+
+  function kiss(address[] calldata a) external onlyOwner {
+    for(uint i = 0; i < a.length; i++) {
+      require(a[i] != address(0), "Median/no-contract-0");
+      bud[a[i]] = 1;
+    }
+  }
+
+  function diss(address[] calldata a) external onlyOwner {
+    for(uint i = 0; i < a.length; i++) {
+      bud[a[i]] = 0;
+    }
   }
 }

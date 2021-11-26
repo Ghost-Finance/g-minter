@@ -9,6 +9,7 @@ let minterContractLabelString: string = 'Minter';
 let tokenContractLabelString: string = 'GTokenERC20';
 let feedContractLabelString: string = 'Feed';
 let auctionHouseContractLabelString: string = 'AuctionHouse';
+let medianContractLabelString: string = 'MedianSpacex';
 
 const ghoArgs = ['GHO', 'GHO', BigNumber.from(parseEther('200000000.0'))];
 const gDaiArgs = [
@@ -39,6 +40,7 @@ const main = async () => {
     auctionHouseContractLabelString
   );
   const Minter = await ethers.getContractFactory(minterContractLabelString);
+  const Median = await ethers.getContractFactory(medianContractLabelString);
 
   const ghoToken = await deployContracts(GhoToken, ...ghoArgs);
   const feedGho = await deployContracts(Feed, ...feedGhoArgs);
@@ -50,6 +52,7 @@ const main = async () => {
     feedGho.address,
     auctionHouse.address
   );
+  const median = await deployContracts(Median);
 
   // Generate synths
   const synthArgs = [].concat(gDaiArgs, feedGdai.address);
@@ -61,12 +64,16 @@ const main = async () => {
     .then(data => (gDaiAddress = data))
     .catch(error => console.log(error.message));
 
+  await median.lift(testUser.address);
+
   console.log(`Feed address contract: ${feedGho.address}`);
   console.log(`Feed 2 address contract: ${feedGdai.address}`);
   console.log(`Token address contract: ${ghoToken.address}`);
   console.log(`AuctionHouse address contract: ${auctionHouse.address}`);
   console.log(`Minter address contract: ${minter.address}`);
   // console.log(`GDai address: ${gDaiAddress}`);
+  console.log(`MedianSpacex addresss ${median.address}`);
+  console.log(`Oracle address ${testUser.address}`);
 
   saveFrontendFiles(
     ghoToken.address,

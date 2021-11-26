@@ -49,16 +49,16 @@ describe('#MedianSpacex', async function() {
     reset();
   });
 
-  it('#addOracle validate only owner can add a new oracle', async function() {
+  it('#lift validate only owner can add a new oracle', async function() {
     try {
-      await median.connect(accountOne).addOracle(wallet.address);
+      await median.connect(accountOne).lift(wallet.address);
     } catch (error) {
       expect(error.message).to.match(/caller is not the owner/);
     }
   });
 
-  it('#addOracle should return success add a new new oracle', async function() {
-    await median.addOracle(wallet.address);
+  it('#lift should return success add a new new oracle', async function() {
+    await median.lift(wallet.address);
 
     expect(await median.oracle(wallet.address)).to.be.equal(1);
   });
@@ -75,15 +75,15 @@ describe('#MedianSpacex', async function() {
     const timestamp = date.getTime();
     const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
 
     try {
       await median.poke(
         Array(4).fill({
           value: BigNumber.from(parseEther('11')),
-          timestamp: timestamp.toString(),
+          age: timestamp.toString(),
           v: sigOne.v,
           r: sigOne.r,
           s: sigOne.s,
@@ -98,15 +98,15 @@ describe('#MedianSpacex', async function() {
     const timestamp = date.getTime();
     const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
 
     try {
       await median.poke([
         {
           value: BigNumber.from(parseEther('11')),
-          timestamp: timestamp.toString(),
+          age: timestamp.toString(),
           v: sigOne.v,
           r: sigOne.r,
           s: sigOne.s,
@@ -119,43 +119,43 @@ describe('#MedianSpacex', async function() {
 
   it('#poke validates signer is a permitted oracle', async function() {
     [wallet.address, walletTwo.address].map(
-      async address => await median.addOracle(address)
+      async address => await median.lift(address)
     );
 
     const timestamp = date.getTime();
     const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const sigTwo = await signerMessage(walletTwo, {
       value: BigNumber.from(parseEther('12')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const sigThree = await signerMessage(walletThree, {
       value: BigNumber.from(parseEther('13')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const feedData = [
       {
         value: BigNumber.from(parseEther('11')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigOne.v,
         r: sigOne.r,
         s: sigOne.s,
       },
       {
         value: BigNumber.from(parseEther('12')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigTwo.v,
         r: sigTwo.r,
         s: sigTwo.s,
       },
       {
         value: BigNumber.from(parseEther('13')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigThree.v,
         r: sigThree.r,
         s: sigThree.s,
@@ -171,39 +171,39 @@ describe('#MedianSpacex', async function() {
 
   it('#poke validates if oracle send a duplicate data', async function() {
     [wallet.address, walletTwo.address].map(
-      async address => await median.addOracle(address)
+      async address => await median.lift(address)
     );
 
     const timestamp = date.getTime();
     const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const sigTwo = await signerMessage(walletTwo, {
       value: BigNumber.from(parseEther('12')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
 
     const feedData = [
       {
         value: BigNumber.from(parseEther('11')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigOne.v,
         r: sigOne.r,
         s: sigOne.s,
       },
       {
         value: BigNumber.from(parseEther('12')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigTwo.v,
         r: sigTwo.r,
         s: sigTwo.s,
       },
       {
         value: BigNumber.from(parseEther('12')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigTwo.v,
         r: sigTwo.r,
         s: sigTwo.s,
@@ -219,44 +219,44 @@ describe('#MedianSpacex', async function() {
 
   it('#poke validates if oracle message was expired at', async function() {
     [wallet.address, walletTwo.address, walletThree.address].map(
-      async address => await median.addOracle(address)
+      async address => await median.lift(address)
     );
 
     let newDate = new Date();
     const timestamp = newDate.setTime(newDate.getTime() - 24 * 60 * 60 * 1000);
     const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const sigTwo = await signerMessage(walletTwo, {
       value: BigNumber.from(parseEther('12')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const sigThree = await signerMessage(walletThree, {
       value: BigNumber.from(parseEther('13')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const feedData = [
       {
         value: BigNumber.from(parseEther('11')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigOne.v,
         r: sigOne.r,
         s: sigOne.s,
       },
       {
         value: BigNumber.from(parseEther('12')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigTwo.v,
         r: sigTwo.r,
         s: sigTwo.s,
       },
       {
         value: BigNumber.from(parseEther('13')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigThree.v,
         r: sigThree.r,
         s: sigThree.s,
@@ -273,42 +273,42 @@ describe('#MedianSpacex', async function() {
 
   it('#poke validates if data is in desc order', async function() {
     [wallet.address, walletTwo.address, walletThree.address].map(
-      async address => await median.addOracle(address)
+      async address => await median.lift(address)
     );
     const timestamp = date.getTime();
     const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const sigTwo = await signerMessage(walletTwo, {
       value: BigNumber.from(parseEther('13')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const sigThree = await signerMessage(walletThree, {
       value: BigNumber.from(parseEther('12')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const feedData = [
       {
         value: BigNumber.from(parseEther('11')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigOne.v,
         r: sigOne.r,
         s: sigOne.s,
       },
       {
         value: BigNumber.from(parseEther('13')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigTwo.v,
         r: sigTwo.r,
         s: sigTwo.s,
       },
       {
         value: BigNumber.from(parseEther('12')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigThree.v,
         r: sigThree.r,
         s: sigThree.s,
@@ -324,42 +324,42 @@ describe('#MedianSpacex', async function() {
 
   it('#poke should return success when data is correct', async function() {
     [wallet.address, walletTwo.address, walletThree.address].map(
-      async address => await median.addOracle(address)
+      async address => await median.lift(address)
     );
     const timestamp = date.getTime();
     const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const sigTwo = await signerMessage(walletTwo, {
       value: BigNumber.from(parseEther('12')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const sigThree = await signerMessage(walletThree, {
       value: BigNumber.from(parseEther('13')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const feedData = [
       {
         value: BigNumber.from(parseEther('11')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigOne.v,
         r: sigOne.r,
         s: sigOne.s,
       },
       {
         value: BigNumber.from(parseEther('12')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigTwo.v,
         r: sigTwo.r,
         s: sigTwo.s,
       },
       {
         value: BigNumber.from(parseEther('13')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigThree.v,
         r: sigThree.r,
         s: sigThree.s,
@@ -383,7 +383,7 @@ describe('#MedianSpacex', async function() {
         [
           BigNumber.from(parseEther('12')),
           timestamp.toString(),
-          ethers.utils.formatBytes32String('SPACEX'),
+          ethers.utils.formatBytes32String('GSPACEX'),
         ]
       )
     );
@@ -410,8 +410,8 @@ describe('#MedianSpacex', async function() {
     }
   });
 
-  it('#read validates if price is not bigger than zero', async function() {
-    await median.addContract(accountOne.address);
+  it.only('#read validates if price is not bigger than zero', async function() {
+    await median.kiss(accountOne.address);
 
     try {
       await median.connect(accountOne).read();
@@ -421,44 +421,44 @@ describe('#MedianSpacex', async function() {
   });
 
   it('#read Should return price when price is bigger than zero', async function() {
-    await median.addContract(accountOne.address);
+    await median.kiss(accountOne.address);
     [wallet.address, walletTwo.address, walletThree.address].map(
-      async address => await median.addOracle(address)
+      async address => await median.lift(address)
     );
     const timestamp = date.getTime();
     const sigOne = await signerMessage(wallet, {
       value: BigNumber.from(parseEther('11')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const sigTwo = await signerMessage(walletTwo, {
       value: BigNumber.from(parseEther('12')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const sigThree = await signerMessage(walletThree, {
       value: BigNumber.from(parseEther('13')),
-      timestamp: timestamp,
-      type: 'SPACEX',
+      age: timestamp,
+      type: 'GSPACEX',
     });
     const feedData = [
       {
         value: BigNumber.from(parseEther('11')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigOne.v,
         r: sigOne.r,
         s: sigOne.s,
       },
       {
         value: BigNumber.from(parseEther('12')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigTwo.v,
         r: sigTwo.r,
         s: sigTwo.s,
       },
       {
         value: BigNumber.from(parseEther('13')),
-        timestamp: timestamp.toString(),
+        age: timestamp.toString(),
         v: sigThree.v,
         r: sigThree.r,
         s: sigThree.s,
