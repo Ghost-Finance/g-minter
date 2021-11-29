@@ -18,11 +18,14 @@ contract DebtPool {
     minter.setAmountToken(token, amount);
   }
 
-  function getSynthDebt() public {
-    return minter.synthDebt(address(this), address(token));
+  function getSynthDebt() public returns (uint256) {
+    return minter.synthDebt(address(this), token);
   }
 
-  // UpdateHouse
+  // function get(type name) {
+  // }
+
+  // PositionVault
     // - Chamado quando precisa de debto
     // - Chamado quando precisa queimar
 }

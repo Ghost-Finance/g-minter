@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 import './GTokenERC20.sol';
 import './AuctionHouse.sol';
 import './base/Feed.sol';
+import './DebtPool.sol';
+import 'hardhat/console.sol';
 
 contract Minter {
   address public owner;
@@ -59,12 +61,15 @@ contract Minter {
     _;
   }
 
-  constructor(address collateralToken_, address collateralFeed_, address auctionHouse_, address debtPool_) {
+  constructor(address collateralToken_, address collateralFeed_, address auctionHouse_) {
     collateralToken = GTokenERC20(collateralToken_);
     collateralFeed  = Feed(collateralFeed_);
     auctionHouse  = AuctionHouse(auctionHouse_);
-    debtPool = DebtPool(debtPool_);
     owner = msg.sender;
+  }
+
+  function addDebtPool(address debtPool_) public onlyOwner {
+    debtPool = DebtPool(debtPool_);
   }
 
   function getSynth(uint256 index) public view returns (GTokenERC20) {
@@ -126,7 +131,7 @@ contract Minter {
   }
 
   function globalDebt(GTokenERC20 token) internal returns (uint256) {
-    uint poolDebtPerToken = synthDebt[address(debtPool)][token] / (token.totalSupply() - synthDebt[debtPool][token]);
+    uint poolDebtPerToken = synthDebt[address(debtPool)][token] / (token.totalSupply() - synthDebt[address(debtPool)][token]);
 
     return synthDebt[msg.sender][token] + (synthDebt[msg.sender][token] * poolDebtPerToken);
   }
@@ -139,10 +144,10 @@ contract Minter {
     emit Burn(msg.sender, address(token), amount);
   }
 
-  function getCRatio(GTokenERC20 token) external view returns (uint256) {
+  function getCRatio(GTokenERC20 token) external payable returns (uint256) {
     uint256 collateralValue = collateralBalance[msg.sender][token] * collateralFeed.price() / 1 ether;
     uint256 debtValue = globalDebt(token) * feeds[token].price() / 1 ether;
-
+    console.log((collateralValue / debtValue) * 1 ether);
     return (collateralValue / debtValue) * 1 ether;
   }
 

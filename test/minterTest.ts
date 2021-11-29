@@ -11,7 +11,7 @@ import {
 } from './util/CheckEvent';
 import setup from './util/setup';
 
-describe('Minter', async function() {
+describe.only('Minter', async function() {
   let state, amount;
 
   beforeEach(async function() {
@@ -83,7 +83,7 @@ describe('Minter', async function() {
   });
 
   describe('Deposit Collateral', async function() {
-    let synthTokenAddress, amountToDeposit, accountOne;
+    let debtPool, synthTokenAddress, amountToDeposit, accountOne;
 
     beforeEach(async function() {
       accountOne = state.contractAccounts[0];
@@ -99,6 +99,11 @@ describe('Minter', async function() {
       );
 
       synthTokenAddress = await state.minter.getSynth(0);
+      debtPool = await state.DebtPool.deploy(
+        synthTokenAddress,
+        state.minter.address
+      );
+      await state.minter.addDebtPool(debtPool.address);
       await state.token
         .connect(accountOne)
         .approve(state.minter.address, amountToDeposit);
@@ -145,7 +150,8 @@ describe('Minter', async function() {
   });
 
   describe('Mint/Burn a token', async function() {
-    let synthTokenAddress,
+    let debtPool,
+      synthTokenAddress,
       amountToMint,
       amountToDeposit,
       accountOne,
@@ -167,6 +173,11 @@ describe('Minter', async function() {
       );
 
       synthTokenAddress = await state.minter.getSynth(0);
+      debtPool = await state.DebtPool.deploy(
+        synthTokenAddress,
+        state.minter.address
+      );
+      await state.minter.addDebtPool(debtPool.address);
       await state.token
         .connect(accountOne)
         .approve(state.minter.address, amountToDeposit);
@@ -295,7 +306,7 @@ describe('Minter', async function() {
         }
       });
 
-      it('Should burn with success when collateral price going down', async function() {
+      it.only('Should burn with success when collateral price going down', async function() {
         await state.minter
           .connect(accountOne)
           .depositCollateral(synthTokenAddress, amountToDeposit);
