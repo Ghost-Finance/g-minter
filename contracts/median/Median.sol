@@ -27,7 +27,7 @@ contract Median is Ownable {
   // Mapping for at most 256 oracles
   mapping (uint8 => address) public slot;
 
-  modifier toll { require(bud[msg.sender] == 1, "Contract not permitted to read"); _;}
+  modifier toll { require(bud[msg.sender] == 1, "Address not permitted to read"); _;}
 
   event LogMedianPrice(uint256 val, uint256 age);
 
@@ -41,7 +41,6 @@ contract Median is Ownable {
   }
 
   function peek() public view toll returns (uint256, bool) {
-    // Adiciona a janela de tempo
     return (val, val > 0);
   }
 
@@ -86,12 +85,12 @@ contract Median is Ownable {
   }
 
   function lift(address account) external onlyOwner {
-    require(account != address(0), "Median/no-oracle-0");
+    require(account != address(0), "Invalid account");
     uint8 s;
     assembly {
       s := shr(152, account)
     }
-    require(slot[s] == address(0), "Median/signer-already-exists");
+    require(slot[s] == address(0), "Signer already exists");
     oracle[account] = 1;
     slot[s] = account;
   }
@@ -111,25 +110,25 @@ contract Median is Ownable {
     bar = bar_;
   }
 
-  function kiss(address a) external onlyOwner {
-    require(a != address(0), "Median/no-contract-0");
-    bud[a] = 1;
+  function kiss(address account) public onlyOwner {
+    require(account != address(0), "It's not a signer valid");
+    bud[account] = 1;
   }
 
-  function diss(address a) external onlyOwner {
-    bud[a] = 0;
+  function diss(address account) public onlyOwner {
+    bud[account] = 0;
   }
 
-  function kiss(address[] calldata a) external onlyOwner {
-    for(uint i = 0; i < a.length; i++) {
-      require(a[i] != address(0), "Median/no-contract-0");
-      bud[a[i]] = 1;
+  function kiss(address[] calldata accounts) public onlyOwner {
+    for(uint i = 0; i < accounts.length; i++) {
+      require(accounts[i] != address(0), "It's not a signer valid");
+      bud[accounts[i]] = 1;
     }
   }
 
-  function diss(address[] calldata a) external onlyOwner {
-    for(uint i = 0; i < a.length; i++) {
-      bud[a[i]] = 0;
+  function diss(address[] calldata accounts) public onlyOwner {
+    for(uint i = 0; i < accounts.length; i++) {
+      bud[accounts[i]] = 0;
     }
   }
 }

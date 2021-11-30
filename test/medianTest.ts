@@ -148,6 +148,16 @@ describe('#MedianSpacex', async function() {
     expect(await median.oracle(wallet.address)).to.be.equal(1);
   });
 
+  it.only('#setBar validates only owner can ', async function() {
+    expect(await median.bar()).to.be.equal(3);
+
+    try {
+      await median.connect(accountOne).setBar(2);
+    } catch (error) {
+      expect(error.message).to.match(/caller is not the owner/);
+    }
+  });
+
   it('#poke validates if answers are blank', async function() {
     try {
       await median.poke([]);
