@@ -57,7 +57,7 @@ const useStyle = makeStyles((theme: Theme) =>
       fontSize: 24,
       display: 'flex',
       alignItems: 'center',
-      color: theme.brand.main,
+      color: theme?.brand.main,
       marginLeft: 35,
     },
     subTitle: {
