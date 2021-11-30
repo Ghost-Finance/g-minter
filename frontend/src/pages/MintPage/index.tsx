@@ -14,10 +14,11 @@ import {
   depositCollateral,
   balanceOf,
   simulateMint,
+  approve,
 } from '../../utils/calls';
 import { setTxSucces, setCRatioSimulateMint } from '../../redux/app/actions';
 import ConnectWallet from '../../components/Button/ConnectWallet';
-import { gDaiAddress, ghoAddress } from '../../utils/constants';
+import { gDaiAddress, ghoAddress, minterAddress } from '../../utils/constants';
 
 const MintPage = () => {
   const classes = useStyle();
@@ -37,6 +38,7 @@ const MintPage = () => {
     if (validateForm()) {
       setRedirect(true);
       dispatch(setTxSucces(false));
+      await approve(ghoContract, account as string, minterAddress, ghoValue);
       await depositCollateral(
         gDaiAddress,
         ghoValue,
