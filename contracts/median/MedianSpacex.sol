@@ -8,7 +8,7 @@ contract MedianSpacex is Ownable {
   uint128        val;
   uint32  public age;
   bytes32 public wat = "GSPACEX";
-  uint256 public bar = 3; // numero de respostas para cada feed
+  uint256 public bar = 3;
 
   struct FeedData {
     uint256 value;
@@ -27,7 +27,7 @@ contract MedianSpacex is Ownable {
   // Mapping for at most 256 oracles
   mapping (uint8 => address) public slot;
 
-  modifier toll { require(bud[msg.sender] == 1, "Contract not permitted to read"); _;}
+  modifier toll { require(bud[msg.sender] == 1, "Address not permitted to read"); _;}
 
   event LogMedianPrice(uint256 val, uint256 age);
 
@@ -85,12 +85,12 @@ contract MedianSpacex is Ownable {
   }
 
   function lift(address account) external onlyOwner {
-    require(account != address(0), "Median/no-oracle-0");
+    require(account != address(0), "Invalid account");
     uint8 s;
     assembly {
       s := shr(152, account)
     }
-    require(slot[s] == address(0), "Median/signer-already-exists");
+    require(slot[s] == address(0), "Signer already exists");
     oracle[account] = 1;
     slot[s] = account;
   }
@@ -110,25 +110,25 @@ contract MedianSpacex is Ownable {
     bar = bar_;
   }
 
-  function kiss(address a) external onlyOwner {
-    require(a != address(0), "Median/no-contract-0");
-    bud[a] = 1;
+  function kissSingle(address account) external onlyOwner {
+    require(account != address(0), "It's not a signer valid");
+    bud[account] = 1;
   }
 
-  function diss(address a) external onlyOwner {
-    bud[a] = 0;
+  function diss(address account) external onlyOwner {
+    bud[account] = 0;
   }
 
-  function kiss(address[] calldata a) external onlyOwner {
-    for(uint i = 0; i < a.length; i++) {
-      require(a[i] != address(0), "Median/no-contract-0");
-      bud[a[i]] = 1;
+  function kiss(address[] calldata accounts) external onlyOwner {
+    for(uint i = 0; i < accounts.length; i++) {
+      require(accounts[i] != address(0), "It's not a signer valid");
+      bud[accounts[i]] = 1;
     }
   }
 
-  function diss(address[] calldata a) external onlyOwner {
-    for(uint i = 0; i < a.length; i++) {
-      bud[a[i]] = 0;
+  function diss(address[] calldata accounts) external onlyOwner {
+    for(uint i = 0; i < accounts.length; i++) {
+      bud[accounts[i]] = 0;
     }
   }
 }

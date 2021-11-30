@@ -2,6 +2,7 @@ import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { set, reset } from 'mockdate';
 import { BigNumber } from 'ethers';
+import setup from './util/setup';
 import { parseEther } from 'ethers/lib/utils';
 import { signerMessage } from './util/FeedSigners';
 
@@ -11,6 +12,7 @@ describe('#MedianSpacex', async function() {
   let Median,
     median,
     owner,
+    state,
     accountOne,
     accountTwo,
     accountThree,
@@ -27,6 +29,7 @@ describe('#MedianSpacex', async function() {
 
   beforeEach(async function() {
     set(date);
+    state = setup();
     [owner, ...accounts] = await ethers.getSigners();
     [accountOne, accountTwo, accountThree, ...others] = accounts;
 
@@ -48,6 +51,52 @@ describe('#MedianSpacex', async function() {
   afterEach(async function() {
     reset();
   });
+
+  it('#kissSingle validates only owner can add a new signer', async function() {
+    try {
+      await median.connect(accountOne).kissSingle(accountTwo.address);
+    } catch (error) {
+      expect(error.message).to.match(/caller is not the owner/);
+    }
+  });
+
+  it('#kissSingle validates address is not valid', async function() {
+    try {
+      await median.kissSingle('0x0000000000000000000000000000000000000000');
+    } catch (error) {
+      expect(error.message).to.match(/It's not a signer valid/);
+    }
+  });
+
+  it('#kissSingle validates if account already exists', async function() {
+    await median.kissSingle(accountOne.address);
+
+    try {
+      await median.kissSingle(accountOne.address);
+    } catch (error) {
+      expect(error.message).to.match(/Signer already exists/);
+    }
+  });
+
+  it('#kissSingle Should add new signer by owner', async function() {
+    await median.kissSingle(accountOne.address);
+
+    expect(await median.bud(accountOne.address)).to.be.equal(1);
+  });
+
+  it('#kiss Should return success when add others signers', async function() {
+    await median.kiss([
+      accountOne.address,
+      accountTwo.address,
+      accountThree.address,
+    ]);
+
+    expect(await median.bud(accountOne.address)).to.be.equal(1);
+    expect(await median.bud(accountTwo.address)).to.be.equal(1);
+    expect(await median.bud(accountThree.address)).to.be.equal(1);
+  });
+
+  it('', async function() {});
 
   it('#lift validate only owner can add a new oracle', async function() {
     try {
@@ -410,18 +459,17 @@ describe('#MedianSpacex', async function() {
     }
   });
 
-  it.only('#read validates if price is not bigger than zero', async function() {
-    await median.kiss(accountOne.address);
-
+  it('#read validates if price is valid to read', async function() {
     try {
+      await median.kissSigle(accountOne.address);
       await median.connect(accountOne).read();
     } catch (error) {
       expect(error.message).to.match(/Invalid price to read/);
     }
   });
 
-  it('#read Should return price when price is bigger than zero', async function() {
-    await median.kiss(accountOne.address);
+  it('#read Should return price when account is permitted', async function() {
+    await median.kissSingle(accountOne.address);
     [wallet.address, walletTwo.address, walletThree.address].map(
       async address => await median.lift(address)
     );
@@ -470,4 +518,6 @@ describe('#MedianSpacex', async function() {
 
     expect(price.toString()).to.be.equal(BigNumber.from(parseEther('12')));
   });
+
+  it('', async function() {});
 });

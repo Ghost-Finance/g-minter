@@ -8,7 +8,7 @@ contract Median is Ownable {
   uint128        val;
   uint32  public age;
   bytes32 public wat = "DAI";
-  uint256 public bar = 3; // numero de respostas para cada feed
+  uint256 public bar = 3;
 
   struct FeedData {
     uint256 value;
