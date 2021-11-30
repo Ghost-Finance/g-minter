@@ -4,4 +4,4 @@ export const minterAddress: string = contractAddress.Minter;
 
 export const ghoAddress: string = contractAddress.GHO;
 
-export const gDaiAddress: string = contractAddress.GHO; // It has the GHO address provisionally
+export const gDaiAddress: string = contractAddress.GDAI;

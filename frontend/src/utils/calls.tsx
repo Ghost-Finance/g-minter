@@ -5,12 +5,12 @@ import { parseEther } from '@ethersproject/units';
 export const mint = async (
   token: string,
   amount: string,
-  contract: any,
+  contract: Contract,
   account: string
 ) => {
   const bigAmount = BigNumber.from(parseEther(amount));
   return contract.methods
-    .mint(token, bigAmount.toString())
+    .mint(token, bigAmount)
     .send({ from: account })
     .on('transactionHash', (tx: any) => {
       return tx.transactionHash;
@@ -25,7 +25,7 @@ export const approve = async (
 ) => {
   const bigAmount = BigNumber.from(parseEther(amount));
   return contract.methods
-    .approve(account, bigAmount.toString())
+    .approve(account, bigAmount)
     .send({ from: sender })
     .on('Approve', (data: any) => {
       console.log(data);
@@ -36,12 +36,14 @@ export const approve = async (
 export const depositCollateral = async (
   token: string,
   amount: string,
-  contract: any,
+  contract: Contract,
   account: string
 ) => {
   const bigAmount = BigNumber.from(parseEther(amount));
+  console.log(token);
+  console.log(bigAmount.toString());
   return contract.methods
-    .depositCollateral(token, bigAmount.toString())
+    .depositCollateral(token, bigAmount)
     .send({ from: account })
     .on('DepositedCollateral', (user: any) => {
       return user;
@@ -78,8 +80,8 @@ export const simulateMint = async (
   return contract.methods
     .simulateMint(
       token,
-      BigNumber.from(parseEther(amountGHO).toString()),
-      BigNumber.from(parseEther(amountGdai).toString())
+      BigNumber.from(parseEther(amountGHO)),
+      BigNumber.from(parseEther(amountGdai))
     )
     .call((err: any, result: any) => {
       if (err) {
