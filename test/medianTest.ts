@@ -52,40 +52,42 @@ describe('#MedianSpacex', async function() {
     reset();
   });
 
-  it('#kissSingle validates only owner can add a new signer', async function() {
+  it('#kiss validates only owner can add a new signer', async function() {
     try {
-      await median.connect(accountOne).kissSingle(accountTwo.address);
+      await median.connect(accountOne)['kiss(address)'](accountTwo.address);
     } catch (error) {
       expect(error.message).to.match(/caller is not the owner/);
     }
   });
 
-  it('#kissSingle validates address is not valid', async function() {
+  it('#kiss validates address is not valid', async function() {
     try {
-      await median.kissSingle('0x0000000000000000000000000000000000000000');
+      await median['kiss(address)'](
+        '0x0000000000000000000000000000000000000000'
+      );
     } catch (error) {
       expect(error.message).to.match(/It's not a signer valid/);
     }
   });
 
-  it('#kissSingle validates if account already exists', async function() {
-    await median.kissSingle(accountOne.address);
+  it('#kiss validates if account already exists', async function() {
+    await median['kiss(address)'](accountOne.address);
 
     try {
-      await median.kissSingle(accountOne.address);
+      await median['kiss(address)'](accountOne.address);
     } catch (error) {
       expect(error.message).to.match(/Signer already exists/);
     }
   });
 
-  it('#kissSingle Should add new signer by owner', async function() {
-    await median.kissSingle(accountOne.address);
+  it('#kiss Should add new signer by owner', async function() {
+    await median['kiss(address)'](accountOne.address);
 
     expect(await median.bud(accountOne.address)).to.be.equal(1);
   });
 
   it('#kiss Should return success when add others signers', async function() {
-    await median.kiss([
+    await median['kiss(address[])']([
       accountOne.address,
       accountTwo.address,
       accountThree.address,
@@ -96,7 +98,41 @@ describe('#MedianSpacex', async function() {
     expect(await median.bud(accountThree.address)).to.be.equal(1);
   });
 
-  it('', async function() {});
+  it('#diss validates only owner can add a new signer', async function() {
+    try {
+      await median.connect(accountOne)['diss(address)'](accountTwo.address);
+    } catch (error) {
+      expect(error.message).to.match(/caller is not the owner/);
+    }
+  });
+
+  it('#diss validates address is not valid', async function() {
+    try {
+      await median['diss(address)'](
+        '0x0000000000000000000000000000000000000000'
+      );
+    } catch (error) {
+      expect(error.message).to.match(/It's not a signer valid/);
+    }
+  });
+
+  it('#diss validates if account already exists', async function() {
+    await median['diss(address)'](accountOne.address);
+
+    try {
+      await median['diss(address)'](accountOne.address);
+    } catch (error) {
+      expect(error.message).to.match(/Signer already exists/);
+    }
+  });
+
+  it('#diss Should remove signer by owner', async function() {
+    await median['kiss(address)'](accountOne.address);
+    expect(await median.bud(accountOne.address)).to.be.equal(1);
+
+    await median['diss(address)'](accountOne.address);
+    expect(await median.bud(accountOne.address)).to.be.equal(0);
+  });
 
   it('#lift validate only owner can add a new oracle', async function() {
     try {
@@ -455,13 +491,13 @@ describe('#MedianSpacex', async function() {
     try {
       await median.connect(accountOne).read();
     } catch (error) {
-      expect(error.message).to.match(/Contract not permitted to read/);
+      expect(error.message).to.match(/Address not permitted to read/);
     }
   });
 
   it('#read validates if price is valid to read', async function() {
     try {
-      await median.kissSigle(accountOne.address);
+      await median['kiss(address)'](accountOne.address);
       await median.connect(accountOne).read();
     } catch (error) {
       expect(error.message).to.match(/Invalid price to read/);
@@ -469,7 +505,7 @@ describe('#MedianSpacex', async function() {
   });
 
   it('#read Should return price when account is permitted', async function() {
-    await median.kissSingle(accountOne.address);
+    await median['kiss(address)'](accountOne.address);
     [wallet.address, walletTwo.address, walletThree.address].map(
       async address => await median.lift(address)
     );
@@ -519,5 +555,5 @@ describe('#MedianSpacex', async function() {
     expect(price.toString()).to.be.equal(BigNumber.from(parseEther('12')));
   });
 
-  it('', async function() {});
+  // it('', async function() {});
 });

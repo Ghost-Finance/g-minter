@@ -110,23 +110,23 @@ contract MedianSpacex is Ownable {
     bar = bar_;
   }
 
-  function kissSingle(address account) external onlyOwner {
+  function kiss(address account) public onlyOwner {
     require(account != address(0), "It's not a signer valid");
     bud[account] = 1;
   }
 
-  function diss(address account) external onlyOwner {
+  function diss(address account) public onlyOwner {
     bud[account] = 0;
   }
 
-  function kiss(address[] calldata accounts) external onlyOwner {
+  function kiss(address[] calldata accounts) public onlyOwner {
     for(uint i = 0; i < accounts.length; i++) {
       require(accounts[i] != address(0), "It's not a signer valid");
       bud[accounts[i]] = 1;
     }
   }
 
-  function diss(address[] calldata accounts) external onlyOwner {
+  function diss(address[] calldata accounts) public onlyOwner {
     for(uint i = 0; i < accounts.length; i++) {
       bud[accounts[i]] = 0;
     }
