@@ -4,7 +4,9 @@ import { expect } from 'chai';
 import * as moment from 'moment';
 import {
   AccountFlaggedForLiquidationEvent,
+  AddPriceEvent,
   AuctionHouseTakeEvent,
+  ChangeMedianEvent,
   CreateSynthEvent,
   BurnEvent,
   DepositedCollateralEvent,
@@ -13,7 +15,6 @@ import {
   StartAuctionHouseEvent,
   WithdrawnCollateralEvent,
 } from '../types/types';
-import { formatEther } from 'ethers/lib/utils';
 
 export const checkCreateSynthEvent = async (
   contract: Contract,
@@ -285,6 +286,58 @@ export const checkAuctionHouseTakeEvent = async (
   expect(auctionHouseTakeEvent.price.toString()).to.be.equal(
     pricePaid.toString()
   );
+  contract.removeAllListeners();
+
+  return true;
+};
+
+export const checkAddPriceEvent = async (
+  contract: Contract,
+  sender: string,
+  price: BigNumber
+): Promise<boolean> => {
+  let addPriceEvent = new Promise<AddPriceEvent>((resolve, reject) => {
+    contract.on('AddPrice', (sender, price) => {
+      console.log(sender);
+      resolve({
+        sender: sender,
+        price: price,
+      });
+    });
+
+    setTimeout(() => {
+      reject(new Error('timeout'));
+    }, 100000);
+  });
+
+  let eventAddPrice = await addPriceEvent;
+  expect(eventAddPrice.sender).to.be.equal(sender);
+  expect(eventAddPrice.price.toString()).to.be.equal(price.toString());
+
+  return true;
+};
+
+export const checkChangeEvent = async (
+  contract: Contract,
+  sender: string,
+  contractAddress: string
+): Promise<boolean> => {
+  let changeEvent = new Promise<ChangeMedianEvent>((resolve, reject) => {
+    contract.on('ChangeMedian', (sender, contractAddress) => {
+      resolve({
+        sender: sender,
+        contractAddress: contractAddress,
+      });
+    });
+
+    setTimeout(() => {
+      reject(new Error('timeout'));
+    }, 60000);
+  });
+
+  const eventBurn = await changeEvent;
+  expect(eventBurn.sender).to.be.equal(sender);
+  expect(eventBurn.contractAddress).to.be.equal(contractAddress);
   contract.removeAllListeners();
 
   return true;

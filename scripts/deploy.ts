@@ -56,10 +56,6 @@ const main = async () => {
   await minter.createSynth(...synthArgs);
   console.log(`Minter address contract: ${minter.address}`);
   const gDaiAddress = await minter.getSynth(0);
-  // minter
-  //   .getSynth(0)
-  //   .then(data => (gDaiAddress = data))
-  //   .catch(error => console.log(error.message));
 
   console.log(`Feed address contract: ${feedGho.address}`);
   console.log(`Feed 2 address contract: ${feedGdai.address}`);

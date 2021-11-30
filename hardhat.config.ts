@@ -49,16 +49,16 @@ const config: HardhatUserConfig = {
   },
 
   networks: {
-    // rinkeby: {
-    //   url: `https://rinkeby.infura.io/v3/${INFURA_PROJECT_ID}`,
-    //   // url:
-    //   //   'https://eth-rinkeby.alchemyapi.io/v2/I3n9-yYF98CHuv4s36G0rjfJeW6rwfDI',
-    //   accounts: accounts,
-    //   live: true,
-    //   saveDeployments: true,
-    //   gas: 12500000,
-    //   gasPrice: 1100000026,
-    // },
+    rinkeby: {
+      url: `https://rinkeby.infura.io/v3/${INFURA_PROJECT_ID}`,
+      // url:
+      //   'https://eth-rinkeby.alchemyapi.io/v2/I3n9-yYF98CHuv4s36G0rjfJeW6rwfDI',
+      accounts: accounts,
+      live: true,
+      saveDeployments: true,
+      gas: 12500000,
+      gasPrice: 1100000026,
+    },
     hardhat: {
       chainId: 1337,
       accounts: {

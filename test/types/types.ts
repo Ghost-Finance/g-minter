@@ -6,6 +6,11 @@ type AccountFlaggedForLiquidationEvent = {
   endFlagDate: string;
 };
 
+type AddPriceEvent = {
+  sender: string;
+  price: BigNumber;
+};
+
 type ApproveEvent = {
   to: string;
   from: string;
@@ -23,6 +28,11 @@ type BurnEvent = {
   user: string;
   token: string;
   value: number;
+};
+
+type ChangeMedianEvent = {
+  sender: string;
+  contractAddress: string;
 };
 
 type CreateSynthEvent = {
@@ -74,10 +84,12 @@ type WithdrawnCollateralEvent = {
 
 export {
   AccountFlaggedForLiquidationEvent,
+  AddPriceEvent,
   ApproveEvent,
   AuctionHouseTakeEvent,
   BurnEvent,
   CreateSynthEvent,
+  ChangeMedianEvent,
   DepositedCollateralEvent,
   MintEvent,
   LiquidateEvent,
