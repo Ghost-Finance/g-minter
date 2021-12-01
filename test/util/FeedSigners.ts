@@ -4,23 +4,23 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-wit
 
 interface Message {
   value: BigNumber;
-  timestamp: Number;
+  age: Number;
   type: string;
 }
 
-export const messageConvertToKecak256 = ({ value, timestamp, type }: Message) =>
+export const messageConvertToKecak256 = ({ value, age, type }: Message) =>
   ethers.utils.keccak256(
     ethers.utils.defaultAbiCoder.encode(
       ['uint256', 'uint256', 'bytes32'],
-      [value, timestamp, ethers.utils.formatBytes32String(type)]
+      [value, age, ethers.utils.formatBytes32String(type)]
     )
   );
 
 export const signerMessage = async (
   account: SignerWithAddress,
-  { value, timestamp, type }: Message
+  { value, age, type }: Message
 ) => {
-  const hash = messageConvertToKecak256({ value, timestamp, type });
+  const hash = messageConvertToKecak256({ value, age, type });
   const signer = await account.signMessage(ethers.utils.arrayify(hash));
 
   return ethers.utils.splitSignature(signer);

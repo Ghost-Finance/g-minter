@@ -90,7 +90,7 @@ contract Ssm is AccessControl {
   }
 
   function read() external view onlyRole(READER_ROLE) returns (uint256) {
-    require(cur.has == 1, "OSM/no-current-value");
+    require(cur.has == 1, "Is not a current value");
     return cur.val;
   }
 }
