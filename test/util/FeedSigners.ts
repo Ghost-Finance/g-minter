@@ -25,7 +25,3 @@ export const signerMessage = async (
 
   return ethers.utils.splitSignature(signer);
 };
-
-// const hash = ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256', 'bytes32'],['74', new Date().getTime(), ethers.utils.formatBytes32String('GSPACEX')]));
-// const signer = await one.signMessage(ethers.utils.arrayify(hash));
-// const sig = ethers.utils.splitSignature(signer);
