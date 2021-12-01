@@ -26,6 +26,7 @@ const initialState: TState = {
   balanceOfGDAI: '0',
 };
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default (state: TState = initialState, action: TAction) => {
   const {
     type,

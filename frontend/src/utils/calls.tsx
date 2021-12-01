@@ -51,7 +51,13 @@ export const depositCollateral = async (
 };
 
 export const balanceOf = async (contract: any, account: string) => {
-  return contract.methods.balanceOf(account).call();
+  return contract.methods.balanceOf(account).call((err: any, result: any) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(result);
+    }
+  });
 };
 
 export const getCRatio = async (
