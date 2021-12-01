@@ -176,6 +176,12 @@ describe('SSM', async function() {
     expect(nextPrice.toString()).to.be.equal(BigNumber.from(parseEther('3')));
     expect(valid).to.be.true;
 
+    try {
+      await ssm.connect(accountOne).read();
+    } catch (error) {
+      expect(error.message).to.match(/Is not a current value/);
+    }
+
     // Update timestamp in block
     await gValue.poke(BigNumber.from(parseEther('2')));
     console.log((await ssm.zzz()).toNumber());
@@ -206,5 +212,10 @@ describe('SSM', async function() {
       BigNumber.from(parseEther('3'))
     );
     expect(validThree).to.be.true;
+
+    const price = await ssm.connect(accountOne).read();
+    expect(price.toString()).to.be.equal(
+      BigNumber.from(parseEther('3')).toString()
+    );
   });
 });

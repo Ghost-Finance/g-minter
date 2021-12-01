@@ -105,8 +105,8 @@ contract MedianSpacex is Ownable {
   }
 
   function setBar(uint256 bar_) external onlyOwner {
-    require(bar_ > 0, "Median/quorum-is-zero");
-    require(bar_ % 2 != 0, "Median/quorum-not-odd-number");
+    require(bar_ > 0, "Needs to be a positive value");
+    require(bar_ % 2 != 0, "Need be a odd number");
     bar = bar_;
   }
 

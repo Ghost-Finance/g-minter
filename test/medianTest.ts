@@ -134,6 +134,16 @@ describe('#MedianSpacex', async function() {
     expect(await median.bud(accountOne.address)).to.be.equal(0);
   });
 
+  it('#diss Should return success when add others signers', async function() {
+    await median['kiss(address[])']([accountOne.address, accountTwo.address]);
+    expect(await median.bud(accountOne.address)).to.be.equal(1);
+    expect(await median.bud(accountTwo.address)).to.be.equal(1);
+
+    await median['diss(address[])']([accountOne.address, accountTwo.address]);
+    expect(await median.bud(accountOne.address)).to.be.equal(0);
+    expect(await median.bud(accountTwo.address)).to.be.equal(0);
+  });
+
   it('#lift validate only owner can add a new oracle', async function() {
     try {
       await median.connect(accountOne).lift(wallet.address);
@@ -148,7 +158,42 @@ describe('#MedianSpacex', async function() {
     expect(await median.oracle(wallet.address)).to.be.equal(1);
   });
 
-  it.only('#setBar validates only owner can ', async function() {
+  it('#drop validate only owner can add a new oracle', async function() {
+    try {
+      await median.connect(accountOne).drop(wallet.address);
+    } catch (error) {
+      expect(error.message).to.match(/caller is not the owner/);
+    }
+  });
+
+  it('#drop should remove a oracle by owner', async function() {
+    await median.lift(wallet.address);
+    expect(await median.oracle(wallet.address)).to.be.equal(1);
+
+    await median.drop(wallet.address);
+    expect(await median.oracle(wallet.address)).to.be.equal(0);
+  });
+
+  it('#setBar validates is a positive value', async function() {
+    try {
+      await median.setBar(0);
+    } catch (error) {
+      expect(error.message).to.match(/Needs to be a positive value/);
+    }
+  });
+
+  it('#setBar validates if is a not odd number', async function() {
+    await median.setBar(3);
+    expect(await median.bar()).to.be.equal(3);
+
+    try {
+      await median.setBar(4);
+    } catch (error) {
+      expect(error.message).to.match(/Need be a odd number/);
+    }
+  });
+
+  it('#setBar validates only the owner can add a new limit of answers', async function() {
     expect(await median.bar()).to.be.equal(3);
 
     try {
