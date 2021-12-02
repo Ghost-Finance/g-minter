@@ -18,6 +18,7 @@ import {
 import { setTxSucces, setCRatioSimulateMint } from '../../redux/app/actions';
 import ConnectWallet from '../../components/Button/ConnectWallet';
 import { gDaiAddress, ghoAddress } from '../../utils/constants';
+import BigNumber from 'bignumber.js';
 
 const MintPage = () => {
   const classes = useStyle();
@@ -37,6 +38,9 @@ const MintPage = () => {
     if (validateForm()) {
       setRedirect(true);
       dispatch(setTxSucces(false));
+
+      // approve.(ghoValue)
+
       await depositCollateral(
         gDaiAddress,
         ghoValue,
@@ -50,12 +54,16 @@ const MintPage = () => {
 
   async function handleMaxGHO() {
     let res = await balanceOf(ghoContract, account as string);
-    setGhoValue(res);
+    setGhoValue(
+      new BigNumber(res).dividedBy(new BigNumber(10).pow(18)).toString()
+    );
   }
 
   async function handleMaxDAI() {
     let res = await balanceOf(gDaiContract, account as string);
-    setGdaiValue(res);
+    setGdaiValue(
+      new BigNumber(res).dividedBy(new BigNumber(10).pow(18)).toString()
+    );
   }
 
   function validateForm() {
@@ -72,12 +80,15 @@ const MintPage = () => {
     return false;
   }
 
-  async function simulateCRatio() {
+  async function simulateCRatio(type: string, value: string) {
+    let gho = type === 'gho' ? value : ghoValue;
+    let gdai = type === 'gdai' ? value : gdaiValue;
+
     let cRatio = await simulateMint(
       minterContract,
       ghoAddress,
-      ghoValue ? ghoValue : '0',
-      gdaiValue ? gdaiValue : '0',
+      gho ? gho : '0',
+      gdai ? gdai : '0',
       account as string
     );
     dispatch(setCRatioSimulateMint(cRatio));
@@ -134,7 +145,9 @@ const MintPage = () => {
                     value={gdaiValue}
                     onChange={e => {
                       setGdaiValue(e.target.value);
-                      simulateCRatio();
+                      setTimeout(() => {
+                        simulateCRatio('gdai', e.target.value);
+                      }, 3000);
                     }}
                   />
 
@@ -153,7 +166,9 @@ const MintPage = () => {
                     value={ghoValue}
                     onChange={e => {
                       setGhoValue(e.target.value);
-                      simulateCRatio();
+                      setTimeout(() => {
+                        simulateCRatio('gho', e.target.value);
+                      }, 3000);
                     }}
                   />
 

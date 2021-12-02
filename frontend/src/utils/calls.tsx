@@ -21,8 +21,9 @@ export const depositCollateral = async (
   contract: any,
   account: string
 ) => {
+  console.log(BigNumber.from(parseEther(amount)).toString());
   return contract.methods
-    .depositCollateral(token, amount)
+    .depositCollateral(token, '100000000000000000000')
     .send({ from: account })
     .on('transactionHash', (tx: any) => {
       return tx.transactionHash;
@@ -35,14 +36,14 @@ export const balanceOf = async (contract: any, account: string) => {
 
 export const getCRatio = async (
   contract: any,
-  token: string,
+  token: string, // gdai
   account: string
 ) => {
   return contract.methods.getCRatio(token).call((err: any, result: any) => {
     if (err) {
-      console.log(err);
+      // console.log(err);
     } else {
-      console.log(result);
+      // console.log(result);
     }
   });
 };
@@ -54,13 +55,11 @@ export const simulateMint = async (
   amountGdai: string,
   account: string
 ) => {
-  console.log(amountGHO);
-  console.log(amountGdai);
   return contract.methods
     .simulateMint(
       token,
-      BigNumber.from(parseEther(amountGHO)),
-      BigNumber.from(parseEther(amountGdai))
+      BigNumber.from(parseEther(amountGHO)).toString(),
+      BigNumber.from(parseEther(amountGdai)).toString()
     )
     .call((err: any, result: any) => {
       if (err) {
