@@ -306,7 +306,7 @@ describe.only('Minter', async function() {
         }
       });
 
-      it.only('Should burn with success when collateral price going down', async function() {
+      it('Should burn with success when collateral price going down', async function() {
         await state.minter
           .connect(accountOne)
           .depositCollateral(synthTokenAddress, amountToDeposit);

@@ -10,6 +10,18 @@ contract CoreMath {
   uint256 constant RAY = 10**27;
   uint256 constant RAD = 10**45;
 
+  function wad() public pure returns (uint256) {
+    return WAD;
+  }
+
+  function ray() public pure returns (uint256) {
+    return RAY;
+  }
+
+  function rad() public pure returns (uint256) {
+    return RAD;
+  }
+
   function radiv(uint256 dividend, uint256 divisor) public pure returns (uint256) {
     return div(div(dividend * RAD, divisor), RAY);
   }

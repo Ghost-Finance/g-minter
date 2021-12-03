@@ -5,8 +5,7 @@ import './oracle/GSpot.sol';
 import './base/CoreMath.sol';
 import './GTokenERC20.sol';
 
-contract UpdateHouse {
-  using CoreMath for uint;
+contract UpdateHouse is CoreMath {
 
   GTokenERC20 token;
   GSpot spot;
@@ -70,10 +69,10 @@ contract UpdateHouse {
     uint256 p = (dataPosition.tokenAmount * price - dataPosition.tokenAmount * dataPosition.initialPrice);
     uint256 currentPricePosition;
     if (dataPosition.position == Position.LONG) {
-      currentPricePosition = dataPosition.tokenAmount.add(p);
+      currentPricePosition = dataPosition.tokenAmount + p;
     } else if (dataPosition.position == Position.SHORT) {
       // verificar se o p é maior dataPosition.amount
-      currentPricePosition = dataPosition.tokenAmount.orderToSub(p);
+      currentPricePosition = orderToSub(dataPosition.tokenAmount, p);
     }
 
     dataPosition.position = Position.FINISHED;

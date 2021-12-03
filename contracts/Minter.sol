@@ -5,7 +5,6 @@ import './GTokenERC20.sol';
 import './AuctionHouse.sol';
 import './base/Feed.sol';
 import './DebtPool.sol';
-import 'hardhat/console.sol';
 
 contract Minter {
   address public owner;
@@ -147,7 +146,6 @@ contract Minter {
   function getCRatio(GTokenERC20 token) external payable returns (uint256) {
     uint256 collateralValue = collateralBalance[msg.sender][token] * collateralFeed.price() / 1 ether;
     uint256 debtValue = globalDebt(token) * feeds[token].price() / 1 ether;
-    console.log((collateralValue / debtValue) * 1 ether);
     return (collateralValue / debtValue) * 1 ether;
   }
 
