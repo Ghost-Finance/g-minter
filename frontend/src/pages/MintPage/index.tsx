@@ -10,6 +10,7 @@ import { GhostIcon } from '../../components/Icons';
 import { useMinter, useERC20 } from '../../hooks/useContract';
 import { useDispatch, useSelector } from '../../redux/hooks';
 import {
+  approve,
   mint,
   depositCollateral,
   balanceOf,
@@ -17,8 +18,9 @@ import {
 } from '../../utils/calls';
 import { setTxSucces, setCRatioSimulateMint } from '../../redux/app/actions';
 import ConnectWallet from '../../components/Button/ConnectWallet';
-import { gDaiAddress, ghoAddress } from '../../utils/constants';
+import { gDaiAddress, ghoAddress, minterAddress } from '../../utils/constants';
 import BigNumber from 'bignumber.js';
+import { bigNumberToFloat } from '../../utils/StringUtils';
 
 const MintPage = () => {
   const classes = useStyle();
@@ -38,9 +40,7 @@ const MintPage = () => {
     if (validateForm()) {
       setRedirect(true);
       dispatch(setTxSucces(false));
-
-      // approve.(ghoValue)
-
+      await approve(ghoContract, account as string, minterAddress, ghoValue);
       await depositCollateral(
         gDaiAddress,
         ghoValue,
@@ -82,16 +82,17 @@ const MintPage = () => {
 
   async function simulateCRatio(type: string, value: string) {
     let gho = type === 'gho' ? value : ghoValue;
-    let gdai = type === 'gdai' ? value : gdaiValue;
+    let gdai = type === '' ? value : gdaiValue;
 
-    let cRatio = await simulateMint(
+    debugger;
+    let cRatioValue = await simulateMint(
       minterContract,
       gDaiAddress,
       ghoValue ? ghoValue : '0',
-      gdaiValue ? gdaiValue : '0',
-      account as string
+      gdaiValue ? ghoValue : '0'
     );
-    dispatch(setCRatioSimulateMint(cRatio));
+    console.log(cRatioValue);
+    dispatch(setCRatioSimulateMint(cRatioValue));
   }
 
   return (

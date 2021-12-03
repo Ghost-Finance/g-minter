@@ -28,7 +28,6 @@ export const approve = async (
     .approve(account, bigAmount)
     .send({ from: sender })
     .on('Approve', (data: any) => {
-      console.log(data);
       return data;
     });
 };
@@ -48,7 +47,7 @@ export const depositCollateral = async (
     });
 };
 
-export const balanceOf = async (contract: any, account: string) => {
+export const balanceOf = async (contract: Contract, account: string) => {
   return contract.methods.balanceOf(account).call((err: any, result: any) => {
     if (err) {
       console.log(err);
@@ -59,31 +58,24 @@ export const balanceOf = async (contract: any, account: string) => {
 };
 
 export const getCRatio = async (
-  contract: any,
+  contract: Contract,
   token: string, // gdai
   account: string
 ) => {
-  return contract.methods.getCRatio(token).call((err: any, result: any) => {
-    if (err) {
-      // console.log(err);
-    } else {
-      // console.log(result);
-    }
-  });
+  return contract.methods.getCRatio(token).call({ from: account });
 };
 
 export const simulateMint = async (
-  contract: any,
+  contract: Contract,
   token: string,
   amountGHO: string,
-  amountGdai: string,
-  account: string
+  amountGdai: string
 ) => {
   return contract.methods
     .simulateMint(
       token,
-      BigNumber.from(parseEther(amountGHO)).toString(),
-      BigNumber.from(parseEther(amountGdai)).toString()
+      BigNumber.from(parseEther(amountGHO)),
+      BigNumber.from(parseEther(amountGdai))
     )
     .call((err: any, result: any) => {
       if (err) {
