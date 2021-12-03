@@ -1,6 +1,5 @@
 import '@material-ui/core/styles';
-import { createTheme } from '@material-ui/core';
-
+import { createMuiTheme } from '@material-ui/core/styles';
 import {
   TOKEN_BRAND_COLOR_PRIMARY_DARK,
   TOKEN_BRAND_COLOR_PRIMARY_PURE,
@@ -18,7 +17,7 @@ import {
   TOKEN_WARNING_COLOR_PRIMARY,
 } from './tokens';
 
-declare module '@material-ui/core/styles/createTheme' {
+declare module '@material-ui/core/styles/createMuiTheme' {
   interface Theme {
     brand: {
       main: React.CSSProperties['color'];
@@ -33,7 +32,7 @@ declare module '@material-ui/core/styles/createTheme' {
   }
 }
 
-const theme = createTheme({
+const theme = createMuiTheme({
   brand: {
     main: TOKEN_BRAND_COLOR_PRIMARY_PURE,
     dark: TOKEN_BRAND_COLOR_PRIMARY_DARK,

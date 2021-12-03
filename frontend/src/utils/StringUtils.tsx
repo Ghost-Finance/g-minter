@@ -3,6 +3,7 @@
 
 import { BigNumber } from '@ethersproject/bignumber';
 import { formatEther } from '@ethersproject/units';
+// import BigNumber from 'bignumber.js';
 
 export const shortenAddress = (address: string) => {
   if (address.length < 10) return address;

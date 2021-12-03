@@ -1,6 +1,6 @@
-import { makeStyles } from '@material-ui/core';
+import { makeStyles, Theme } from '@material-ui/core';
 
-export default makeStyles(theme => ({
+export default makeStyles((theme: Theme) => ({
   root: {
     borderRadius: '24px',
     boxSizing: 'border-box',

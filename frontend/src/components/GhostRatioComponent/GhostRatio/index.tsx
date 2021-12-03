@@ -19,7 +19,6 @@ const GhostRatio = () => {
 
   const app = useSelector(state => state.app);
   const { cRatioValue, balanceOfGHO } = app;
-
   return (
     <Box component="div" m={1} className={classes.root}>
       <div className={classes.box}>

@@ -127,7 +127,7 @@ const useStyle = makeStyles((theme: Theme) =>
       margin: '0 auto',
       width: '100% !important',
       height: '4px',
-      backgroundColor: theme.brand.main,
+      backgroundColor: theme?.brand.main,
     },
     bottomBoxGrey: {
       margin: '0 auto',

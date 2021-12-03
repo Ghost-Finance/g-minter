@@ -27,8 +27,9 @@ import AlertLeftBar from '../../components/AlertLeftBar';
 import { balanceOf, getCRatio } from '../../utils/calls';
 import { useERC20, useMinter } from '../../hooks/useContract';
 import { setBalanceOfGHO, setCRatio } from '../../redux/app/actions';
-import { ghoAddress } from '../../utils/constants';
+import { ghoAddress, gDaiAddress } from '../../utils/constants';
 import { useSelector } from '../../redux/hooks';
+import { bigNumberToFloat } from '../../utils/StringUtils';
 
 interface Props {
   account?: string;
@@ -67,12 +68,18 @@ const MainPage = ({ account, networkName }: Props) => {
     async function fetchData() {
       let cRatioValue = await getCRatio(
         minterContract,
-        ghoAddress,
+        gDaiAddress,
         account as string
       );
-      dispatch(setCRatio(cRatioValue));
+      console.log(typeof cRatioValue);
+      dispatch(setCRatio(bigNumberToFloat(cRatioValue) * 100));
 
       let balanceOfGHOValue = await balanceOf(ghoContract, ghoAddress);
+      console.log(
+        new BigNumber(balanceOfGHOValue)
+          .dividedBy(new BigNumber(10).pow(18))
+          .toString()
+      );
       dispatch(
         setBalanceOfGHO(
           new BigNumber(balanceOfGHOValue)
@@ -142,14 +149,14 @@ const MainPage = ({ account, networkName }: Props) => {
                 title="Don’t forget, we are"
                 subTitle="on xDAI network"
                 type="error"
-                link={`https://app.uniswap.org/#/swap?outputCurrency=${ghoAddress}`}
+                link={`#`}
               />
 
               <InfoCard
                 title="Don’t forget, we are"
                 subTitle="on xDAI network"
                 type="success"
-                link={`https://app.uniswap.org/#/swap?outputCurrency=${ghoAddress}`}
+                link={`#`}
               />
 
               <div className={classes.item}>

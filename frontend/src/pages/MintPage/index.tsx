@@ -86,9 +86,9 @@ const MintPage = () => {
 
     let cRatio = await simulateMint(
       minterContract,
-      ghoAddress,
-      gho ? gho : '0',
-      gdai ? gdai : '0',
+      gDaiAddress,
+      ghoValue ? ghoValue : '0',
+      gdaiValue ? gdaiValue : '0',
       account as string
     );
     dispatch(setCRatioSimulateMint(cRatio));
