@@ -207,6 +207,7 @@ contract Minter {
   }
 
   function simulateMint(GTokenERC20 token, uint256 amountGHO, uint256 amountGdai) external view returns (uint256) {
+    require(amountGHO != 0 && amountGdai != 0, 'Incorrect values');
     uint256 collateralValue = amountGHO * collateralFeed.price() / 1 ether;
     uint256 debtValue = amountGdai * feeds[token].price() / 1 ether;
 
