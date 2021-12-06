@@ -122,25 +122,28 @@ contract Minter {
     emit Mint(msg.sender, synthDebt[msg.sender][token]);
   }
 
-  function setAmountToken(GTokenERC20 token, uint256 amount) public onlyDebtPool returns (uint256) {
-    synthDebt[msg.sender][token] += amount;
-    token.mint(msg.sender, amount);
-
-    return synthDebt[msg.sender][token];
-  }
-
-  function globalDebt(GTokenERC20 token) internal returns (uint256) {
-    uint poolDebtPerToken = synthDebt[address(debtPool)][token] / (token.totalSupply() - synthDebt[address(debtPool)][token]);
-
-    return synthDebt[msg.sender][token] + (synthDebt[msg.sender][token] * poolDebtPerToken);
-  }
-
   function burn(GTokenERC20 token, uint256 amount) external {
     require(token.transferFrom(msg.sender, address(this), amount), 'transfer failed');
     token.burn(amount);
     synthDebt[msg.sender][token] -= amount;
 
     emit Burn(msg.sender, address(token), amount);
+  }
+
+  function debtPoolMint(GTokenERC20 token, uint256 amount) public onlyDebtPool {
+    synthDebt[msg.sender][token] += amount;
+    token.mint(msg.sender, amount);
+  }
+
+  function debtPoolBurn(GTokenERC20 token, uint256 amount) public onlyDebtPool {
+    synthDebt[msg.sender][token] -= amount;
+    token.burn(amount);
+  }
+
+  function globalDebt(GTokenERC20 token) internal returns (uint256) {
+    uint poolDebtPerToken = synthDebt[address(debtPool)][token] / (token.totalSupply() - synthDebt[address(debtPool)][token]);
+
+    return synthDebt[msg.sender][token] + (synthDebt[msg.sender][token] * poolDebtPerToken);
   }
 
   function getCRatio(GTokenERC20 token) external payable returns (uint256) {

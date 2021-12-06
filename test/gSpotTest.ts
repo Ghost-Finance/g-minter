@@ -8,7 +8,7 @@ let medianizerContractLabel: string = 'MedianSpacex';
 let ssmContractLabel: string = 'Ssm';
 let gSpotContractLabel: string = 'GSpot';
 
-describe.only('GSpot', async function() {
+describe('GSpot', async function() {
   let GSpot,
     gSpot,
     Ssm,
@@ -40,7 +40,7 @@ describe.only('GSpot', async function() {
     }
   });
 
-  it.only('#addSsm validates if address is zero', async function() {
+  it('#addSsm validates if address is zero', async function() {
     const key: any = ethers.utils.formatBytes32String('GSPACEX');
 
     try {
@@ -50,11 +50,11 @@ describe.only('GSpot', async function() {
     }
   });
 
-  it.only('#addSsm validates if address already exists', async function() {
+  it('#addSsm validates if address already exists', async function() {
     const key: any = ethers.utils.formatBytes32String('GSPACEX');
 
     await gSpot.addSsm(key, ssm.address);
-    expect(await gSpot.oracles(key >> 152)).to.equal(ssm.address);
+    expect(await gSpot.oracles(key)).to.equal(ssm.address);
 
     try {
       await gSpot.addSsm(key, ssm.address);
@@ -63,32 +63,32 @@ describe.only('GSpot', async function() {
     }
   });
 
-  it.only('#addSsm Should add a new ssm contract', async function() {
+  it('#addSsm Should add a new ssm contract', async function() {
     const key: any = ethers.utils.formatBytes32String('GSPACEX');
 
     await gSpot.addSsm(key, ssm.address);
 
-    expect(await gSpot.oracles(key >> 152)).to.equal(ssm.address);
+    expect(await gSpot.oracles(key)).to.equal(ssm.address);
   });
 
-  it.only('#addSsm Should add multiples ssm contract', async function() {
+  it('#addSsm Should add multiples ssm contract', async function() {
     const keyOne: any = ethers.utils.formatBytes32String('GSPACEX');
     const keyTwo: any = ethers.utils.formatBytes32String('GMADEINSPACE');
 
     await gSpot.addSsm(keyOne, ssm.address);
     await gSpot.addSsm(keyTwo, ssm.address);
 
-    expect(await gSpot.oracles(keyOne >> 152)).to.equal(ssm.address);
-    expect(await gSpot.oracles(keyTwo >> 152)).to.equal(ssm.address);
+    expect(await gSpot.oracles(keyOne)).to.equal(ssm.address);
+    expect(await gSpot.oracles(keyTwo)).to.equal(ssm.address);
   });
 
-  it.only('#peek Should return a number and a boolean', async function() {
+  it('#peek Should return a number and a boolean', async function() {
     await ssm.grantRole(await ssm.READER_ROLE(), gSpot.address);
     const key = ethers.utils.formatBytes32String('GSPACEX');
 
     await gSpot.addSsm(key, ssm.address);
 
-    const [value, bool] = await gSpot.connect(accountOne).peek(0);
+    const [value, bool] = await gSpot.connect(accountOne).peek(key);
     expect(value).to.be.an.instanceof(BigNumber);
     expect(bool).to.be.false;
   });

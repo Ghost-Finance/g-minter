@@ -1,21 +1,42 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import './GTokenERC20.sol';
+import './UpdateHouse.sol';
 import './Minter.sol';
 
-contract DebtPool {
+contract DebtPool is Ownable {
 
   GTokenERC20 public token;
   Minter public minter;
+  UpdateHouse public updateHouse;
+
+  modifier onlyHouse() {
+    require(msg.sender == address(updateHouse), 'Is not update house');
+    _;
+  }
 
   constructor(address token_, address minter_) {
     token = GTokenERC20(token_);
     minter = Minter(minter);
   }
 
-  function setTotalSystemDebt(uint256 amount) public {
-    minter.setAmountToken(token, amount);
+  function addUpdatedHouse(address updated_) public onlyOwner {
+    updateHouse = UpdateHouse(updated_);
+  }
+
+  function update(uint256 amount, uint256 currentAmount) public onlyHouse returns (bool) {
+    if (currentAmount > amount) {
+      // mint
+      minter.debtPoolMint(token, currentAmount - amount);
+    } else {
+      // burn
+      minter.debtPoolBurn(token, amount - currentAmount);
+    }
+
+    token.approve(address(updateHouse), currentAmount);
+    return true;
   }
 
   function getSynthDebt() public returns (uint256) {

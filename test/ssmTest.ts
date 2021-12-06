@@ -184,7 +184,6 @@ describe('SSM', async function() {
 
     // Update timestamp in block
     await gValue.poke(BigNumber.from(parseEther('2')));
-    console.log((await ssm.zzz()).toNumber());
     await network.provider.send('evm_increaseTime', [
       (await ssm.zzz()).toNumber() + 3600,
     ]);

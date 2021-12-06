@@ -11,7 +11,7 @@ import {
 } from './util/CheckEvent';
 import setup from './util/setup';
 
-describe.only('Minter', async function() {
+describe('Minter', async function() {
   let state, amount;
 
   beforeEach(async function() {

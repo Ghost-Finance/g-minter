@@ -34,10 +34,10 @@ contract CoreMath {
 
   function orderToSub(uint256 a, uint256 b) internal pure returns (uint256) {
     if (b > a) {
-      return b - a;
-    } else {
-      return a - b;
+      return 0;
     }
+
+    return a - b;
   }
 
   function rpow(uint256 x, uint256 n, uint256 b) internal pure returns (uint256 z) {
