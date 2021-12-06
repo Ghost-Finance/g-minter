@@ -68,20 +68,14 @@ export const getCRatio = async (
 export const simulateMint = async (
   contract: Contract,
   token: string,
+  account: string,
   amountGHO: string,
   amountGdai: string
 ) => {
+  const ghoAmount = BigNumber.from(parseEther(amountGHO));
+  const gdaiAmount = BigNumber.from(parseEther(amountGdai));
+
   return contract.methods
-    .simulateMint(
-      token,
-      BigNumber.from(parseEther(amountGHO)),
-      BigNumber.from(parseEther(amountGdai))
-    )
-    .call((err: any, result: any) => {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log(result);
-      }
-    });
+    .simulateMint(token, ghoAmount, gdaiAmount)
+    .call({ from: account });
 };

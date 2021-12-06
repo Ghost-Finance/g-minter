@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
@@ -61,9 +61,7 @@ const MintPage = () => {
 
   async function handleMaxDAI() {
     let res = await balanceOf(gDaiContract, account as string);
-    setGdaiValue(
-      new BigNumber(res).dividedBy(new BigNumber(10).pow(18)).toString()
-    );
+    setGdaiValue(new BigNumber(res).toString());
   }
 
   function validateForm() {
@@ -80,21 +78,19 @@ const MintPage = () => {
     return false;
   }
 
-  async function simulateCRatio(type: string, value: string) {
-    let gho = type === 'gho' ? value : ghoValue;
-    let gdai = type === '' ? value : gdaiValue;
-
-    debugger;
-    let cRatioValue = await simulateMint(
+  useEffect(() => {
+    if (parseInt(gdaiValue || '0') === 0 || parseInt(ghoValue || '0') === 0)
+      return;
+    simulateMint(
       minterContract,
       gDaiAddress,
-      ghoValue ? ghoValue : '0',
-      gdaiValue ? ghoValue : '0'
-    );
-    console.log(cRatioValue);
-    dispatch(setCRatioSimulateMint(cRatioValue));
-  }
-
+      account as string,
+      ghoValue,
+      gdaiValue
+    ).then(cRatio => {
+      dispatch(setCRatioSimulateMint(((cRatio / 10 ** 18) * 100).toString()));
+    });
+  });
   return (
     <div className="modal">
       {redirect ? (
@@ -146,9 +142,6 @@ const MintPage = () => {
                     value={gdaiValue}
                     onChange={e => {
                       setGdaiValue(e.target.value);
-                      setTimeout(() => {
-                        simulateCRatio('gdai', e.target.value);
-                      }, 3000);
                     }}
                   />
 
@@ -167,9 +160,6 @@ const MintPage = () => {
                     value={ghoValue}
                     onChange={e => {
                       setGhoValue(e.target.value);
-                      setTimeout(() => {
-                        simulateCRatio('gho', e.target.value);
-                      }, 3000);
                     }}
                   />
 

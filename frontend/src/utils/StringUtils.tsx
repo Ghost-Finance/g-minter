@@ -21,6 +21,10 @@ export const bigNumberToFloat = (bNumber: BigNumber) => {
   return parseFloat(etherBalance);
 };
 
+export const stringToBigNumber = (value: string) => {
+  return BigNumber.from(formatEther(value));
+};
+
 /**
  * Formats a number to a currency string
  *
