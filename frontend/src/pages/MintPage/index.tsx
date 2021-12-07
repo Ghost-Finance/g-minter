@@ -33,6 +33,7 @@ const MintPage = () => {
 
   const [redirect, setRedirect] = useState(false);
   const [redirectHome, setRedirectHome] = useState(false);
+  const [btnDisabled, setBtnDisabled] = useState(true);
   const [gdaiValue, setGdaiValue] = useState('');
   const [ghoValue, setGhoValue] = useState('');
 
@@ -79,8 +80,11 @@ const MintPage = () => {
   }
 
   useEffect(() => {
+    setBtnDisabled(true);
     if (parseInt(gdaiValue || '0') === 0 || parseInt(ghoValue || '0') === 0)
       return;
+
+    setBtnDisabled(false);
     simulateMint(
       minterContract,
       gDaiAddress,
@@ -90,7 +94,8 @@ const MintPage = () => {
     ).then(cRatio => {
       dispatch(setCRatioSimulateMint(((cRatio / 10 ** 18) * 100).toString()));
     });
-  });
+  }, [account, minterContract, ghoValue, gdaiValue, dispatch]);
+
   return (
     <div className="modal">
       {redirect ? (
@@ -141,7 +146,7 @@ const MintPage = () => {
                     type="text"
                     value={gdaiValue}
                     onChange={e => {
-                      setGdaiValue(e.target.value);
+                      setGdaiValue(e.target.value.trim());
                     }}
                   />
 
@@ -170,14 +175,14 @@ const MintPage = () => {
 
                 <span className={classes.labelGas}>Gas Fee $0.00/0 GWEI</span>
 
-                <div onClick={() => handleMint()}>
+                <div>
                   <ButtonForm
                     text="Mint gDAI"
                     className={
-                      stateColorButton()
-                        ? classes.buttonMint
-                        : classes.buttonMintGrey
+                      btnDisabled ? classes.buttonMintGrey : classes.buttonMint
                     }
+                    onClick={() => handleMint()}
+                    disabled={btnDisabled}
                   />
                 </div>
               </div>

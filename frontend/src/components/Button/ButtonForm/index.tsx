@@ -7,7 +7,8 @@ interface Props {
   text: string;
   className?: string;
   children?: JSX.Element;
-  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
+  onClick?: any;
+  disabled?: boolean;
 }
 
 const ButtonForm = ({
@@ -15,6 +16,7 @@ const ButtonForm = ({
   className,
   children,
   onClick,
+  disabled,
 }: Props): React.ReactElement => {
   const classes = useStyles(theme);
 
@@ -24,6 +26,7 @@ const ButtonForm = ({
       disableElevation
       className={`${classes.root} ${className}`}
       onClick={() => onClick}
+      disabled={disabled}
     >
       {text || children}
     </Button>
