@@ -32,7 +32,6 @@ const main = async () => {
   );
 
   console.log('Account 1 user address:', testUser.address);
-
   // Deploy Feed contract
   const GhoToken = await ethers.getContractFactory(tokenContractLabelString);
   const Feed = await ethers.getContractFactory(feedContractLabelString);
@@ -58,11 +57,7 @@ const main = async () => {
   const synthArgs = [].concat(gDaiArgs, feedGdai.address);
   await minter.createSynth(...synthArgs);
   console.log(`Minter address contract: ${minter.address}`);
-  let gDaiAddress;
-  minter
-    .getSynth(0)
-    .then(data => (gDaiAddress = data))
-    .catch(error => console.log(error.message));
+  let gDaiAddress = await minter.getSynth(0);
 
   await median.lift(testUser.address);
 
@@ -71,7 +66,7 @@ const main = async () => {
   console.log(`Token address contract: ${ghoToken.address}`);
   console.log(`AuctionHouse address contract: ${auctionHouse.address}`);
   console.log(`Minter address contract: ${minter.address}`);
-  // console.log(`GDai address: ${gDaiAddress}`);
+  console.log(`GDai address: ${gDaiAddress}`);
   console.log(`MedianSpacex addresss ${median.address}`);
   console.log(`Oracle address ${testUser.address}`);
 

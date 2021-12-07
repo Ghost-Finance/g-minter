@@ -68,7 +68,7 @@ const deployContract = async (
   }
 
   if (isValid) return contract;
-  else throw console.log(contractName + ' is not valid');
+  else throw console.error(contractName + ' is not valid');
 };
 
 /**

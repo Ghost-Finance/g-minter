@@ -6,6 +6,8 @@ import {
 } from '@material-ui/core';
 import React from 'react';
 import useStyles from './styles';
+import theme from '../../theme';
+import { convertCurrency } from '../utils';
 
 type T = {
   label: string;
@@ -15,7 +17,13 @@ type T = {
   full?: boolean;
 };
 
-const Token = ({ label, icon, valueNumber, center, full }: T): JSX.Element => {
+const TokenBorderLight = ({
+  label,
+  icon,
+  valueNumber,
+  center,
+  full,
+}: T): JSX.Element => {
   const classes = useStyles();
 
   const _avatar = (
@@ -53,4 +61,4 @@ const Token = ({ label, icon, valueNumber, center, full }: T): JSX.Element => {
   );
 };
 
-export default React.memo(Token);
+export default React.memo(TokenBorderLight);

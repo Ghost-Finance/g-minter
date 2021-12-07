@@ -5,11 +5,14 @@ export default makeStyles((theme: Theme) => ({
     flexGrow: 1,
     marginTop: '28px',
     width: '100%',
+    overflowX: 'hidden',
   },
   box: {
     display: 'flex',
     flexFlow: 'column',
     boxSizing: 'border-box',
+    overflowX: 'hidden',
+    marginLeft: '70px',
     [theme.breakpoints.down('md')]: {
       width: '100%',
       height: '100%',

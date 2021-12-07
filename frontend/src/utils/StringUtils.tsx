@@ -1,21 +1,29 @@
-import { BigNumber } from 'ethers'
-import { formatEther } from 'ethers/lib/utils'
+// import { BigNumber } from 'ethers'
+// import { formatEther } from 'ethers/lib/utils'
+
+import { BigNumber } from '@ethersproject/bignumber';
+import { formatEther } from '@ethersproject/units';
+// import BigNumber from 'bignumber.js';
 
 export const shortenAddress = (address: string) => {
-  if (address.length < 10) return address
+  if (address.length < 10) return address;
 
-  let displayAddress = address.substr(0, 6)
-  displayAddress += '...' + address.substr(-4)
-  return displayAddress
-}
+  let displayAddress = address.substr(0, 6);
+  displayAddress += '...' + address.substr(-4);
+  return displayAddress;
+};
 
 /**
  * Converts an ethers.BigNumber to vanilla JS "number"
  */
 export const bigNumberToFloat = (bNumber: BigNumber) => {
-  const etherBalance = formatEther(bNumber)
-  return parseFloat(etherBalance)
-}
+  const etherBalance = formatEther(bNumber);
+  return parseFloat(etherBalance);
+};
+
+export const stringToBigNumber = (value: string) => {
+  return BigNumber.from(formatEther(value));
+};
 
 /**
  * Formats a number to a currency string
@@ -36,7 +44,7 @@ export const formatBalance = (
   c?: string
 ) => {
   const re = '\\d(?=(\\d{' + x + '})+' + (n > 0 ? '\\D' : '$') + ')',
-    num = bal.toFixed(Math.max(0, ~~n))
+    num = bal.toFixed(Math.max(0, ~~n));
 
-  return (c ? num.replace('.', c) : num).replace(new RegExp(re, 'g'), '$&' + s)
-}
+  return (c ? num.replace('.', c) : num).replace(new RegExp(re, 'g'), '$&' + s);
+};
