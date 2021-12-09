@@ -71,7 +71,7 @@ const MainPage = ({ account, networkName }: Props) => {
         gDaiAddress,
         account as string
       );
-      dispatch(setCRatio(bigNumberToFloat(cRatioValue) * 100));
+      dispatch(setCRatio((bigNumberToFloat(cRatioValue) * 100).toString()));
 
       let balanceOfGHOValue = await balanceOf(ghoContract, ghoAddress);
       dispatch(

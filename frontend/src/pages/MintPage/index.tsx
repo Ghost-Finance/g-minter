@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
+import BigNumber from 'bignumber.js';
 import useStyle from './style';
 import hooks from '../../hooks/walletConnect';
 import ButtonForm from '../../components/Button/ButtonForm';
@@ -19,7 +20,6 @@ import {
 import { setTxSucces, setCRatioSimulateMint } from '../../redux/app/actions';
 import ConnectWallet from '../../components/Button/ConnectWallet';
 import { gDaiAddress, ghoAddress, minterAddress } from '../../utils/constants';
-import BigNumber from 'bignumber.js';
 import { bigNumberToFloat } from '../../utils/StringUtils';
 
 const MintPage = () => {
@@ -38,19 +38,19 @@ const MintPage = () => {
   const [ghoValue, setGhoValue] = useState('');
 
   async function handleMint() {
-    if (validateForm()) {
-      setRedirect(true);
-      dispatch(setTxSucces(false));
-      await approve(ghoContract, account as string, minterAddress, ghoValue);
-      await depositCollateral(
-        gDaiAddress,
-        ghoValue,
-        minterContract,
-        account as string
-      );
-      await mint(gDaiAddress, gdaiValue, minterContract, account as string);
-      setTimeout(() => dispatch(setTxSucces(true)), 5000);
-    }
+    if (btnDisabled) return;
+
+    setRedirect(true);
+    dispatch(setTxSucces(false));
+    await approve(ghoContract, account as string, minterAddress, ghoValue);
+    await depositCollateral(
+      gDaiAddress,
+      ghoValue,
+      minterContract,
+      account as string
+    );
+    await mint(gDaiAddress, gdaiValue, minterContract, account as string);
+    setTimeout(() => dispatch(setTxSucces(true)), 5000);
   }
 
   async function handleMaxGHO() {
@@ -65,36 +65,38 @@ const MintPage = () => {
     setGdaiValue(new BigNumber(res).toString());
   }
 
-  function validateForm() {
-    if (gdaiValue === '0' || ghoValue === '0') {
-      return false;
-    }
-    return true;
-  }
-
-  function stateColorButton() {
-    if (gdaiValue !== '' && ghoValue !== '') {
+  function stateDisableButton() {
+    if (parseInt(gdaiValue || '0') === 0 || parseInt(ghoValue || '0') === 0) {
+      setBtnDisabled(true);
       return true;
     }
+
+    setBtnDisabled(false);
     return false;
   }
 
   useEffect(() => {
-    setBtnDisabled(true);
-    if (parseInt(gdaiValue || '0') === 0 || parseInt(ghoValue || '0') === 0)
-      return;
+    // if (btnDisabled) return;
 
-    setBtnDisabled(false);
-    simulateMint(
-      minterContract,
-      gDaiAddress,
-      account as string,
-      ghoValue,
-      gdaiValue
-    ).then(cRatio => {
-      dispatch(setCRatioSimulateMint(((cRatio / 10 ** 18) * 100).toString()));
-    });
-  }, [account, minterContract, ghoValue, gdaiValue, dispatch]);
+    const timeout = setTimeout(async () => {
+      if (parseInt(ghoValue) === 0 || parseInt(gdaiValue) === 0) return;
+
+      const cRatio = await simulateMint(
+        minterContract,
+        gDaiAddress,
+        account as string,
+        ghoValue ? ghoValue : '0',
+        gdaiValue ? ghoValue : '0'
+      );
+      dispatch(
+        setCRatioSimulateMint((bigNumberToFloat(cRatio) * 100).toString())
+      );
+    }, 3000);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [account, minterContract, ghoValue, gdaiValue, dispatch, btnDisabled]);
 
   return (
     <div className="modal">
@@ -147,6 +149,7 @@ const MintPage = () => {
                     value={gdaiValue}
                     onChange={e => {
                       setGdaiValue(e.target.value.trim());
+                      setTimeout(() => stateDisableButton(), 3000);
                     }}
                   />
 
@@ -165,6 +168,7 @@ const MintPage = () => {
                     value={ghoValue}
                     onChange={e => {
                       setGhoValue(e.target.value);
+                      setTimeout(() => stateDisableButton(), 3000);
                     }}
                   />
 
@@ -181,7 +185,7 @@ const MintPage = () => {
                     className={
                       btnDisabled ? classes.buttonMintGrey : classes.buttonMint
                     }
-                    onClick={() => handleMint()}
+                    onClick={handleMint}
                     disabled={btnDisabled}
                   />
                 </div>
@@ -189,7 +193,7 @@ const MintPage = () => {
             </Box>
             <div
               className={
-                stateColorButton() ? classes.bottomBox : classes.bottomBoxGrey
+                btnDisabled ? classes.bottomBoxGrey : classes.bottomBox
               }
             >
               &nbsp;

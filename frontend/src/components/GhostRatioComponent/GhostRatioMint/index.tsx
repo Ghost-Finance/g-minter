@@ -8,6 +8,10 @@ import CRatio from '../../CRatio';
 import useStyles from './styles';
 import theme from '../../../theme';
 import { useSelector } from '../../../redux/hooks';
+import {
+  stringToBigNumber,
+  bigNumberToFloat,
+} from '../../../utils/StringUtils';
 
 const GhostRatioMint = () => {
   const classes = useStyles(theme);
@@ -38,7 +42,7 @@ const GhostRatioMint = () => {
           <TokenBorderLight
             icon={<GhostIcon />}
             label="GHO"
-            valueNumber={parseFloat(balanceOfGHO || '')}
+            valueNumber={String(balanceOfGHO || '')}
           />
         </ListSynths>
       </div>
