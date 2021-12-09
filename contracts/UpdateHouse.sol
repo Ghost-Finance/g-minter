@@ -14,15 +14,16 @@ contract UpdateHouse is CoreMath {
   address staker;
   address vault;
 
-  enum Position{ UNSET, SHORT, LONG, FINISHED }
+  enum Direction{ UNSET, SHORT, LONG, FINISHED }
 
   struct PositionData {
     address account;
-    Position position;
+    Direction direction;
     bytes32 synth;
-    uint256 initialPrice;
-    uint256 lastPrice;
-    uint256 tokenAmount;
+    uint256 initialPrice; // ok
+    uint256 lastPrice; // confirma spotPrice?
+    uint256 tokenAmount; // ok
+    uint256 synthTokenAmount;
   }
 
   uint positionCount;
@@ -30,7 +31,7 @@ contract UpdateHouse is CoreMath {
   mapping (uint => PositionData) data;
 
   event Add(address account, PositionData data);
-  event Finish(address account, uint256 currentPrice, Position position);
+  event Finish(address account, uint256 currentPrice, Direction direction);
 
   constructor(GTokenERC20 token_, GSpot spot_, DebtPool debtPool_) {
     // staker = staker_;
@@ -40,21 +41,22 @@ contract UpdateHouse is CoreMath {
     debtPool = DebtPool(debtPool_);
   }
 
-  function add(uint256 amount, bytes32 synthKey, Position position_) external {
+  function add(uint256 amount, bytes32 synthKey, Direction direction_) external {
     require(amount > 0, 'Invalid amount');
-    require(position_ == Position.SHORT || position_ == Position.LONG, "Invalid position option");
+    require(direction_ == Direction.SHORT || direction_ == Direction.LONG, "Invalid position option");
     require(token.transferFrom(msg.sender, address(this), amount), "");
 
-    uint256 price = spot.read(synthKey);
+    uint256 initialPrice = spot.read(synthKey);
     require(price > 0);
 
     PositionData memory dataPosition = PositionData(
       msg.sender,
-      position_,
+      direction_,
       synthKey,
-      price,
+      initialPrice,
       0,
-      amount
+      amount,
+      amount / initialPrice
     );
 
     data[positionCount] = dataPosition;
@@ -68,20 +70,21 @@ contract UpdateHouse is CoreMath {
   function finishPosition(uint index, bytes32 synthKey) external {
     PositionData storage dataPosition = data[index];
     require(dataPosition.account == msg.sender);
-    uint256 price = spot.read(synthKey);
-    require(price > 0);
+    uint256 currentPrice = spot.read(synthKey);
+    require(currentPrice > 0);
 
-    uint256 p = (dataPosition.tokenAmount * price - dataPosition.tokenAmount * dataPosition.initialPrice);
+    uint256 positionFixValue = (dataPosition.synthTokenAmount * currentPrice - dataPosition.synthTokenAmount * dataPosition.initialPrice);
     uint256 currentPricePosition;
-    if (dataPosition.position == Position.LONG) {
-      currentPricePosition = dataPosition.tokenAmount + p;
-    } else if (dataPosition.position == Position.SHORT) {
-      currentPricePosition = orderToSub(dataPosition.tokenAmount, p);
+    if (dataPosition.direction == Direction.LONG) {
+      currentPricePosition = dataPosition.tokenAmount + positionFixValue;
+    } else if (dataPosition.direction == Direction.SHORT) {
+      currentPricePosition = orderToSub(dataPosition.tokenAmount, positionFixValue);
     }
-    dataPosition.position = Position.FINISHED;
+
+    dataPosition.direction = Direction.FINISHED;
     require(debtPool.update(dataPosition.tokenAmount, currentPricePosition));
     token.transferFrom(address(debtPool), address(msg.sender), currentPricePosition);
 
-    emit Finish(msg.sender, currentPricePosition, dataPosition.position);
+    emit Finish(msg.sender, currentPricePosition, dataPosition.direction);
   }
 }
