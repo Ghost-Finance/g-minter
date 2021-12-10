@@ -14,16 +14,20 @@ contract UpdateHouse is CoreMath {
   address staker;
   address vault;
 
-  enum Direction{ UNSET, SHORT, LONG, FINISHED }
+  enum Direction{ UNSET, SHORT, LONG }
+  enum Status { UNSET, OPEN, FINISHED }
 
   struct PositionData {
     address account;
     Direction direction;
+    Status status;
     bytes32 synth;
     uint256 initialPrice; // ok
     uint256 lastPrice; // confirma spotPrice?
     uint256 tokenAmount; // ok
     uint256 synthTokenAmount;
+    uint256 created_at;
+    uint256 updated_at;
   }
 
   uint positionCount;
@@ -34,7 +38,6 @@ contract UpdateHouse is CoreMath {
   event Finish(address account, uint256 currentPrice, Direction direction);
 
   constructor(GTokenERC20 token_, GSpot spot_, DebtPool debtPool_) {
-    // staker = staker_;
     // vault = vault_; // verificar com Jairzera
     token = GTokenERC20(token_);
     spot = GSpot(spot_);
@@ -47,16 +50,19 @@ contract UpdateHouse is CoreMath {
     require(token.transferFrom(msg.sender, address(this), amount), "");
 
     uint256 initialPrice = spot.read(synthKey);
-    require(price > 0);
+    require(initialPrice > 0);
 
     PositionData memory dataPosition = PositionData(
       msg.sender,
       direction_,
+      Status.OPEN,
       synthKey,
       initialPrice,
       0,
       amount,
-      amount / initialPrice
+      amount / initialPrice,
+      block.timestamp,
+      block.timestamp
     );
 
     data[positionCount] = dataPosition;
@@ -69,7 +75,7 @@ contract UpdateHouse is CoreMath {
 
   function finishPosition(uint index, bytes32 synthKey) external {
     PositionData storage dataPosition = data[index];
-    require(dataPosition.account == msg.sender);
+    require(dataPosition.account == msg.sender && dataPosition.status != Status.FINISHED);
     uint256 currentPrice = spot.read(synthKey);
     require(currentPrice > 0);
 
@@ -81,7 +87,10 @@ contract UpdateHouse is CoreMath {
       currentPricePosition = orderToSub(dataPosition.tokenAmount, positionFixValue);
     }
 
-    dataPosition.direction = Direction.FINISHED;
+    dataPosition.status = Status.FINISHED;
+    dataPosition.updated_at = block.timestamp;
+    data[index] = dataPosition;
+
     require(debtPool.update(dataPosition.tokenAmount, currentPricePosition));
     token.transferFrom(address(debtPool), address(msg.sender), currentPricePosition);
 

@@ -2,6 +2,7 @@ import { ethers, network } from 'hardhat';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
+import { checkAddPositionEvent } from './util/CheckEvent';
 import setup from './util/setup';
 
 let updateHouseContractLabel: string = 'UpdateHouse';
@@ -10,7 +11,7 @@ let gSpotContractLabel: string = 'GSpot';
 let ssmContractLabel: string = 'Ssm';
 let medianTestContractLabel: string = 'GValueTest';
 
-describe('#UpdateHouse', async function() {
+describe.only('#UpdateHouse', async function() {
   let UpdateHouse,
     DebtPool,
     GSpot,
@@ -69,11 +70,9 @@ describe('#UpdateHouse', async function() {
     UpdateHouse = await ethers.getContractFactory(updateHouseContractLabel);
 
     median = await Median.deploy();
-    ssm = await Ssm.deploy(median.address);
+    // ssm = await Ssm.deploy(median.address);
     gSpot = await GSpot.deploy();
-    console.log('esta akkk');
     debtPool = await DebtPool.deploy(synthTokenAddress, state.minter.address);
-    console.log('passouu aqui');
     updateHouse = await UpdateHouse.deploy(
       synthTokenAddress,
       gSpot.address,
@@ -81,26 +80,27 @@ describe('#UpdateHouse', async function() {
     );
 
     gSpacexKey = ethers.utils.formatBytes32String('GSPACEX');
-    // Add READER rule for accountOne and gSpot contract
-    await ssm.grantRole(await ssm.READER_ROLE(), accountOne.address);
-    await ssm.grantRole(await ssm.READER_ROLE(), gSpot.address);
+    // // Add READER rule for accountOne and gSpot contract
+    // await ssm.grantRole(await ssm.READER_ROLE(), accountOne.address);
+    // await ssm.grantRole(await ssm.READER_ROLE(), gSpot.address);
     // Add contract ssm for gSpot
-    await gSpot.addSsm(gSpacexKey, ssm.address);
+    await gSpot.addSsm(gSpacexKey, median.address);
     // Simulate add a new current price for a synth
     await median.poke(BigNumber.from(parseEther('3.0')));
-    await network.provider.send('evm_increaseTime', [
-      (await ssm.zzz()).toNumber() + 3600,
-    ]);
-    await ssm.connect(accountOne).poke();
+    // await network.provider.send('evm_increaseTime', [
+    //   (await ssm.zzz()).toNumber() + 3600,
+    // ]);
+    // await ssm.connect(accountOne).poke();
 
-    await median.poke(BigNumber.from(parseEther('3.0')));
-    await network.provider.send('evm_increaseTime', [
-      (await ssm.zzz()).toNumber() + 3600,
-    ]);
-    await ssm.connect(accountOne).poke();
+    // await median.poke(BigNumber.from(parseEther('3.0')));
+    // await network.provider.send('evm_increaseTime', [
+    //   (await ssm.zzz()).toNumber() + 3600,
+    // ]);
+    // await ssm.connect(accountOne).poke();
 
     // If return success when adds a new price, it will be possible to read.
     const price = await gSpot.connect(accountOne).read(gSpacexKey);
+    console.log(price.toString());
     expect(price.toString()).to.be.equal(
       BigNumber.from(parseEther('3.0')).toString()
     );
@@ -140,6 +140,27 @@ describe('#UpdateHouse', async function() {
         console.log(error.message);
         expect(error.message).to.match(/transfer amount exceeds balance/);
       }
+    });
+
+    it.only('#add should return success to add a new SHORT position', async function() {
+      await state.token
+        .attach(synthTokenAddress)
+        .connect(accountOne)
+        .approve(updateHouse.address, BigNumber.from(parseEther('2.0')));
+      await updateHouse
+        .connect(accountOne)
+        .add(BigNumber.from(parseEther('2.0')), gSpacexKey, 1);
+
+      expect(
+        await checkAddPositionEvent(
+          updateHouse,
+          accountOne.address,
+          1,
+          1,
+          gSpacexKey,
+          BigNumber.from(parseEther('2.0')).toString()
+        )
+      ).to.be.true;
     });
   });
 });

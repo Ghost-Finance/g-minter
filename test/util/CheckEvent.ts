@@ -9,6 +9,7 @@ import {
   CreateSynthEvent,
   BurnEvent,
   DepositedCollateralEvent,
+  AddPositionEvent,
   MintEvent,
   LiquidateEvent,
   StartAuctionHouseEvent,
@@ -337,6 +338,38 @@ export const checkChangeEvent = async (
   const eventBurn = await changeEvent;
   expect(eventBurn.sender).to.be.equal(sender);
   expect(eventBurn.contractAddress).to.be.equal(contractAddress);
+  contract.removeAllListeners();
+
+  return true;
+};
+
+export const checkAddPositionEvent = async (
+  contract: Contract,
+  account: string,
+  direction: Number,
+  status: Number,
+  synthKey: string,
+  amount: string
+): Promise<boolean> => {
+  let addEvent = new Promise<AddPositionEvent>((resolve, reject) => {
+    contract.on('Add', (sender, data) => {
+      resolve({
+        account: sender,
+        data: data,
+      });
+    });
+
+    setTimeout(() => {
+      reject(new Error('timeout'));
+    }, 60000);
+  });
+
+  const eventAdd = await addEvent;
+  expect(eventAdd.data[0]).to.be.equal(account);
+  expect(eventAdd.data[1]).to.be.equal(status);
+  expect(eventAdd.data[2]).to.be.equal(direction);
+  expect(eventAdd.data[3]).to.be.equal(synthKey);
+  expect(eventAdd.data[6].toString()).to.be.equal(amount.toString());
   contract.removeAllListeners();
 
   return true;
