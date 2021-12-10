@@ -15,6 +15,8 @@ import {
   mint,
   depositCollateral,
   balanceOf,
+  maximumByCollateral,
+  maximumByDebt,
   simulateMint,
 } from '../../utils/calls';
 import { setTxSucces, setCRatioSimulateMint } from '../../redux/app/actions';
@@ -53,16 +55,43 @@ const MintPage = () => {
     setTimeout(() => dispatch(setTxSucces(true)), 5000);
   }
 
-  async function handleMaxGHO() {
-    let res = await balanceOf(ghoContract, account as string);
-    setGhoValue(
-      new BigNumber(res).dividedBy(new BigNumber(10).pow(18)).toString()
-    );
+  function setValues(ghoValue: string, gdaiValue: string) {
+    setGhoValue(ghoValue);
+    setGdaiValue(gdaiValue);
   }
 
-  async function handleMaxDAI() {
-    let res = await balanceOf(gDaiContract, account as string);
-    setGdaiValue(new BigNumber(res).toString());
+  async function handleMaxGHO(e: any) {
+    e.preventDefault();
+    let balanceValue = await balanceOf(ghoContract, account as string);
+    debugger;
+    let value = ghoValue ? ghoValue : balanceValue;
+    try {
+      let maxGdaiValue = await maximumByCollateral(
+        minterContract,
+        gDaiAddress,
+        account as string,
+        value
+      );
+      debugger;
+      setValues(value, maxGdaiValue);
+    } catch (error) {}
+  }
+
+  async function handleMaxDAI(e: any) {
+    e.preventDefault();
+    let balanceValue = await balanceOf(gDaiContract, account as string);
+
+    let value = gdaiValue ? gdaiValue : balanceValue;
+    try {
+      let maxGhoValue = await maximumByDebt(
+        minterContract,
+        gDaiAddress,
+        account as string,
+        value
+      );
+
+      setValues(maxGhoValue, value);
+    } catch (error) {}
   }
 
   function stateDisableButton() {
@@ -76,17 +105,18 @@ const MintPage = () => {
   }
 
   useEffect(() => {
-    // if (btnDisabled) return;
+    dispatch(setCRatioSimulateMint('0'));
 
     const timeout = setTimeout(async () => {
-      if (parseInt(ghoValue) === 0 || parseInt(gdaiValue) === 0) return;
+      if (parseInt(ghoValue || '0') === 0 || parseInt(gdaiValue || '0') === 0)
+        return;
 
       const cRatio = await simulateMint(
         minterContract,
         gDaiAddress,
         account as string,
         ghoValue ? ghoValue : '0',
-        gdaiValue ? ghoValue : '0'
+        gdaiValue ? gdaiValue : '0'
       );
       dispatch(
         setCRatioSimulateMint((bigNumberToFloat(cRatio) * 100).toString())
@@ -153,8 +183,12 @@ const MintPage = () => {
                     }}
                   />
 
-                  <div onClick={() => handleMaxDAI()}>
-                    <ButtonForm text="MAX" className={classes.buttonMax} />
+                  <div>
+                    <ButtonForm
+                      text="MAX"
+                      className={classes.buttonMax}
+                      onClick={handleMaxDAI}
+                    />
                   </div>
                 </InputContainer>
 
@@ -167,13 +201,17 @@ const MintPage = () => {
                     type="text"
                     value={ghoValue}
                     onChange={e => {
-                      setGhoValue(e.target.value);
+                      setGhoValue(e.target.value.trim());
                       setTimeout(() => stateDisableButton(), 3000);
                     }}
                   />
 
-                  <div onClick={() => handleMaxGHO()}>
-                    <ButtonForm text="MAX" className={classes.buttonMax} />
+                  <div>
+                    <ButtonForm
+                      text="MAX"
+                      className={classes.buttonMax}
+                      onClick={handleMaxGHO}
+                    />
                   </div>
                 </InputContainer>
 

@@ -59,6 +59,27 @@ export const getCRatio = async (
   return contract.methods.getCRatio(token).call({ from: account });
 };
 
+export const maximumByCollateral = async (
+  contract: Contract,
+  token: string,
+  account: string,
+  amount: string
+) => {
+  debugger;
+  return contract.methods
+    .maximumByCollateral(token, amount)
+    .call({ from: account });
+};
+
+export const maximumByDebt = async (
+  contract: Contract,
+  token: string,
+  account: string,
+  amount: string
+) => {
+  return contract.methods.maximumByDebt(token, amount).call({ from: account });
+};
+
 export const simulateMint = async (
   contract: Contract,
   token: string,
@@ -70,6 +91,6 @@ export const simulateMint = async (
   const gdaiAmount = BigNumber.from(parseEther(amountGdai));
 
   return contract.methods
-    .simulateMint(token, ghoAmount, gdaiAmount)
+    .simulateCRatio(token, ghoAmount, gdaiAmount)
     .call({ from: account });
 };

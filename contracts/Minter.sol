@@ -206,17 +206,25 @@ contract Minter {
     // token.transfer(address(liquidationVaultAddress), restAmount);
   }
 
-  function simulateByCollateral(GTokenERC20 token, uint256 amount) external view returns (uint256) {
+  function maximumByCollateral(GTokenERC20 token, uint256 amount) external view returns (uint256) {
     require(amount != 0, 'Incorrect values');
     uint256 collateralValue = (collateralBalance[msg.sender][token] + amount) * collateralFeed.price() / 1 ether;
 
     return (collateralValue / ratio) * 1 ether;
   }
 
-  function simulateByDebt(GTokenERC20 token, uint256 amount) external view returns (uint256) {
+  function maximumByDebt(GTokenERC20 token, uint256 amount) external view returns (uint256) {
     require(amount != 0, 'Incorrect values');
     uint256 debtValue = (synthDebt[msg.sender][token] + amount) * feeds[token].price() / 1 ether;
 
     return (debtValue * ratio) * 1 ether;
+  }
+
+  function simulateCRatio(GTokenERC20 token, uint256 amountGHO, uint256 amountGDAI) external view returns (uint256) {
+    require(amountGHO != 0 || amountGDAI != 0, 'Incorrect values');
+    uint256 collateralValue = (collateralBalance[msg.sender][token] + amountGHO) * collateralFeed.price() / 1 ether;
+    uint256 debtValue = (synthDebt[msg.sender][token] + amountGDAI) * feeds[token].price() / 1 ether;
+
+    return (collateralValue / debtValue) * 1 ether;
   }
 }
