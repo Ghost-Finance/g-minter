@@ -22,7 +22,11 @@ import {
 import { setTxSucces, setCRatioSimulateMint } from '../../redux/app/actions';
 import ConnectWallet from '../../components/Button/ConnectWallet';
 import { gDaiAddress, ghoAddress, minterAddress } from '../../utils/constants';
-import { bigNumberToFloat } from '../../utils/StringUtils';
+import {
+  bigNumberToFloat,
+  bigNumberToString,
+  stringToBigNumber,
+} from '../../utils/StringUtils';
 
 const MintPage = () => {
   const classes = useStyle();
@@ -45,13 +49,13 @@ const MintPage = () => {
     setRedirect(true);
     dispatch(setTxSucces(false));
     await approve(ghoContract, account as string, minterAddress, ghoValue);
-    await depositCollateral(
+    await mint(
+      minterContract,
       gDaiAddress,
       ghoValue,
-      minterContract,
+      gdaiValue,
       account as string
     );
-    await mint(gDaiAddress, gdaiValue, minterContract, account as string);
     setTimeout(() => dispatch(setTxSucces(true)), 5000);
   }
 
@@ -63,7 +67,6 @@ const MintPage = () => {
   async function handleMaxGHO(e: any) {
     e.preventDefault();
     let balanceValue = await balanceOf(ghoContract, account as string);
-    debugger;
     let value = ghoValue ? ghoValue : balanceValue;
     try {
       let maxGdaiValue = await maximumByCollateral(
@@ -73,7 +76,7 @@ const MintPage = () => {
         value
       );
       debugger;
-      setValues(value, maxGdaiValue);
+      setValues(value, bigNumberToString(maxGdaiValue));
     } catch (error) {}
   }
 
@@ -81,7 +84,9 @@ const MintPage = () => {
     e.preventDefault();
     let balanceValue = await balanceOf(gDaiContract, account as string);
 
-    let value = gdaiValue ? gdaiValue : balanceValue;
+    let value = gdaiValue
+      ? gdaiValue
+      : bigNumberToString(balanceValue).toString();
     try {
       let maxGhoValue = await maximumByDebt(
         minterContract,
@@ -90,11 +95,12 @@ const MintPage = () => {
         value
       );
 
-      setValues(maxGhoValue, value);
+      setValues(bigNumberToString(maxGhoValue), value);
     } catch (error) {}
   }
 
   function stateDisableButton() {
+    debugger;
     if (parseInt(gdaiValue || '0') === 0 || parseInt(ghoValue || '0') === 0) {
       setBtnDisabled(true);
       return true;
@@ -108,8 +114,7 @@ const MintPage = () => {
     dispatch(setCRatioSimulateMint('0'));
 
     const timeout = setTimeout(async () => {
-      if (parseInt(ghoValue || '0') === 0 || parseInt(gdaiValue || '0') === 0)
-        return;
+      if (stateDisableButton()) return;
 
       const cRatio = await simulateMint(
         minterContract,
@@ -126,7 +131,7 @@ const MintPage = () => {
     return () => {
       clearTimeout(timeout);
     };
-  }, [account, minterContract, ghoValue, gdaiValue, dispatch, btnDisabled]);
+  }, [account, minterContract, ghoValue, gdaiValue, dispatch]);
 
   return (
     <div className="modal">
@@ -179,7 +184,7 @@ const MintPage = () => {
                     value={gdaiValue}
                     onChange={e => {
                       setGdaiValue(e.target.value.trim());
-                      setTimeout(() => stateDisableButton(), 3000);
+                      setTimeout(() => stateDisableButton, 3000);
                     }}
                   />
 
@@ -202,7 +207,7 @@ const MintPage = () => {
                     value={ghoValue}
                     onChange={e => {
                       setGhoValue(e.target.value.trim());
-                      setTimeout(() => stateDisableButton(), 3000);
+                      setTimeout(() => stateDisableButton, 3000);
                     }}
                   />
 

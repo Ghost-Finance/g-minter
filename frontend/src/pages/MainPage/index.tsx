@@ -71,6 +71,7 @@ const MainPage = ({ account, networkName }: Props) => {
         gDaiAddress,
         account as string
       );
+      debugger;
       dispatch(setCRatio((bigNumberToFloat(cRatioValue) * 100).toString()));
 
       let balanceOfGHOValue = await balanceOf(ghoContract, ghoAddress);
@@ -137,20 +138,6 @@ const MainPage = ({ account, networkName }: Props) => {
                 title="🦄 Swap GHO"
                 text="into your wallet"
                 link={`https://app.uniswap.org/#/swap?outputCurrency=${ghoAddress}`}
-              />
-
-              <InfoCard
-                title="Don’t forget, we are"
-                subTitle="on xDAI network"
-                type="error"
-                link={`#`}
-              />
-
-              <InfoCard
-                title="Don’t forget, we are"
-                subTitle="on xDAI network"
-                type="success"
-                link={`#`}
               />
 
               <div className={classes.item}>

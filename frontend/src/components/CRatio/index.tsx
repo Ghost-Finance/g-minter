@@ -31,11 +31,20 @@ const CircularProgressBar = (props: Props) => {
 
   useEffect(() => {
     const progressOffset = ((900 - progress) / 900) * circumference;
-    const color = progress < 0 ? errorColorStroke : circleTwoStroke;
+    const color = progress < 300 ? errorColorStroke : circleTwoStroke;
 
     setOffset(progressOffset);
     setColorStroke(color);
-  }, [setOffset, setColorStroke, progress, colorStroke, circumference, offset]);
+  }, [
+    setOffset,
+    setColorStroke,
+    progress,
+    colorStroke,
+    circumference,
+    circleTwoStroke,
+    errorColorStroke,
+    offset,
+  ]);
 
   const SVGCircleProgress = () => (
     <svg className={classes.svg} width={size} height={size}>

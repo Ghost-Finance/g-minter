@@ -3,14 +3,17 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { parseEther } from '@ethersproject/units';
 
 export const mint = async (
-  token: string,
-  amount: string,
   contract: Contract,
+  token: string,
+  amountToDeposit: string,
+  amountToMint: string,
   account: string
 ) => {
-  const bigAmount = BigNumber.from(parseEther(amount));
+  const depositAmount = BigNumber.from(parseEther(amountToDeposit));
+  const mintAmount = BigNumber.from(parseEther(amountToMint));
+
   return contract.methods
-    .mint(token, bigAmount)
+    .mint(token, depositAmount, mintAmount)
     .send({ from: account })
     .on('transactionHash', (tx: any) => {
       return tx.transactionHash;
@@ -53,7 +56,7 @@ export const balanceOf = async (contract: Contract, account: string) => {
 
 export const getCRatio = async (
   contract: Contract,
-  token: string, // gdai
+  token: string,
   account: string
 ) => {
   return contract.methods.getCRatio(token).call({ from: account });
@@ -65,9 +68,9 @@ export const maximumByCollateral = async (
   account: string,
   amount: string
 ) => {
-  debugger;
+  const value = BigNumber.from(parseEther(amount));
   return contract.methods
-    .maximumByCollateral(token, amount)
+    .maximumByCollateral(token, value)
     .call({ from: account });
 };
 
@@ -77,7 +80,8 @@ export const maximumByDebt = async (
   account: string,
   amount: string
 ) => {
-  return contract.methods.maximumByDebt(token, amount).call({ from: account });
+  const value = BigNumber.from(parseEther(amount));
+  return contract.methods.maximumByDebt(token, value).call({ from: account });
 };
 
 export const simulateMint = async (
@@ -87,9 +91,9 @@ export const simulateMint = async (
   amountGHO: string,
   amountGdai: string
 ) => {
-  const ghoAmount = BigNumber.from(parseEther(amountGHO));
-  const gdaiAmount = BigNumber.from(parseEther(amountGdai));
-
+  debugger;
+  const ghoAmount = BigNumber.from(parseEther(amountGHO)).toString();
+  const gdaiAmount = BigNumber.from(parseEther(amountGdai)).toString();
   return contract.methods
     .simulateCRatio(token, ghoAmount, gdaiAmount)
     .call({ from: account });
