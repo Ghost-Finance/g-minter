@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import './GTokenERC20.sol';
 import './AuctionHouse.sol';
 import './base/Feed.sol';
+import 'hardhat/console.sol';
 
 contract Minter {
   address public owner;
@@ -77,14 +78,6 @@ contract Minter {
     emit CreateSynth(name, symbol, address(feed));
   }
 
-  function depositCollateral(GTokenERC20 token, uint256 amount) external isCollateral(token) {
-    collateralToken.approve(msg.sender, amount);
-    require(collateralToken.transferFrom(msg.sender, address(this), amount), 'transfer failed');
-    collateralBalance[msg.sender][token] += amount;
-
-    emit DepositedCollateral(msg.sender, address(token), amount);
-  }
-
   function withdrawnCollateral(GTokenERC20 token, uint256 amount) external {
     require(collateralBalance[msg.sender][token] >= amount, 'Insufficient quantity');
     uint256 futureCollateralValue = (collateralBalance[msg.sender][token] - amount) * collateralFeed.price() / 1 ether;
@@ -97,15 +90,24 @@ contract Minter {
     emit WithdrawnCollateral(msg.sender, address(token), amount);
   }
 
-  function mint(GTokenERC20 token, uint256 amount) external isCollateral(token) {
+  function depositCollateral(GTokenERC20 token, uint256 amount) public isCollateral(token) {
+    collateralToken.approve(msg.sender, amount);
+    require(collateralToken.transferFrom(msg.sender, address(this), amount), 'transfer failed');
+    collateralBalance[msg.sender][token] += amount;
+
+    emit DepositedCollateral(msg.sender, address(token), amount);
+  }
+
+  function mint(GTokenERC20 token, uint256 amountToDeposit, uint256 amountToMint) external isCollateral(token) {
+    depositCollateral(token, amountToDeposit);
     require(collateralBalance[msg.sender][token] > 0, 'Without collateral deposit');
 
     uint256 futureCollateralValue = collateralBalance[msg.sender][token] * collateralFeed.price() / 1 ether;
-    uint256 futureDebtValue = (synthDebt[msg.sender][token] + amount) * feeds[token].price() / 1 ether;
+    uint256 futureDebtValue = (synthDebt[msg.sender][token] + amountToMint) * feeds[token].price() / 1 ether;
     require((futureCollateralValue / futureDebtValue) * 1 ether >= ratio, 'Above max amount');
 
-    token.mint(msg.sender, amount);
-    synthDebt[msg.sender][token] += amount;
+    token.mint(msg.sender, amountToMint);
+    synthDebt[msg.sender][token] += amountToMint;
 
     emit Mint(msg.sender, synthDebt[msg.sender][token]);
   }
