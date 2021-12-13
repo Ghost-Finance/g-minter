@@ -21,7 +21,7 @@ export const bigNumberToFloat = (bNumber: BigNumber) => {
   return parseFloat(etherBalance);
 };
 
-export const bigNumberToString = (bNumber: BigNumber) => {
+export const bigNumberToString = (bNumber: BigNumber | string) => {
   const etherBalance = formatEther(bNumber || BigNumber.from('0'));
   return String(etherBalance);
 };

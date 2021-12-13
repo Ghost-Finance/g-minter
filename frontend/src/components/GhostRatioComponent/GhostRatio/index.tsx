@@ -9,16 +9,17 @@ import {
   SpaceXIcon,
   EtherIcon,
 } from '../../Icons';
+import { useSelector } from '../../../redux/hooks';
+import { bigNumberToString } from '../../../utils/StringUtils';
 import CRatio from '../../CRatio';
 import useStyles from './styles';
 import theme from '../../../theme';
-import { useSelector } from '../../../redux/hooks';
 
 const GhostRatio = () => {
   const classes = useStyles(theme);
 
   const app = useSelector(state => state.app);
-  const { cRatioValue, balanceOfGHO } = app;
+  const { cRatioValue, balanceOfGHO, balanceOfGDAI } = app;
   return (
     <Box component="div" m={1} className={classes.root}>
       <div className={classes.box}>
@@ -37,9 +38,13 @@ const GhostRatio = () => {
           <Token
             icon={<GhostIcon />}
             label="GHO"
-            valueNumber={parseFloat(balanceOfGHO || '')}
+            valueNumber={bigNumberToString(balanceOfGHO || '0')}
           />
-          <Token icon={<DaiIcon />} label="gDAI" valueNumber={15.25} />
+          <Token
+            icon={<DaiIcon />}
+            label="gDAI"
+            valueNumber={bigNumberToString(balanceOfGDAI || '0')}
+          />
           <Token icon={<SynthsIcon />} label="Synths" valueNumber={0.0} />
         </ListSynths>
 

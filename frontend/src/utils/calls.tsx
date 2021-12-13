@@ -91,7 +91,6 @@ export const simulateMint = async (
   amountGHO: string,
   amountGdai: string
 ) => {
-  debugger;
   const ghoAmount = BigNumber.from(parseEther(amountGHO)).toString();
   const gdaiAmount = BigNumber.from(parseEther(amountGdai)).toString();
   return contract.methods

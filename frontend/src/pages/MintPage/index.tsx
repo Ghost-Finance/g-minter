@@ -75,7 +75,6 @@ const MintPage = () => {
         account as string,
         value
       );
-      debugger;
       setValues(value, bigNumberToString(maxGdaiValue));
     } catch (error) {}
   }
@@ -100,7 +99,6 @@ const MintPage = () => {
   }
 
   function stateDisableButton() {
-    debugger;
     if (parseInt(gdaiValue || '0') === 0 || parseInt(ghoValue || '0') === 0) {
       setBtnDisabled(true);
       return true;
