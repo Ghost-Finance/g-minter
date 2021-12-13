@@ -17,8 +17,13 @@ export const shortenAddress = (address: string) => {
  * Converts an ethers.BigNumber to vanilla JS "number"
  */
 export const bigNumberToFloat = (bNumber: BigNumber) => {
-  const etherBalance = formatEther(bNumber);
+  const etherBalance = formatEther(bNumber || BigNumber.from('0'));
   return parseFloat(etherBalance);
+};
+
+export const bigNumberToString = (bNumber: BigNumber | string) => {
+  const etherBalance = formatEther(bNumber || BigNumber.from('0'));
+  return String(etherBalance);
 };
 
 export const stringToBigNumber = (value: string) => {

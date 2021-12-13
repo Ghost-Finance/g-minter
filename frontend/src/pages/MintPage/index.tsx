@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
+import BigNumber from 'bignumber.js';
 import useStyle from './style';
 import hooks from '../../hooks/walletConnect';
 import ButtonForm from '../../components/Button/ButtonForm';
@@ -14,13 +15,18 @@ import {
   mint,
   depositCollateral,
   balanceOf,
+  maximumByCollateral,
+  maximumByDebt,
   simulateMint,
 } from '../../utils/calls';
 import { setTxSucces, setCRatioSimulateMint } from '../../redux/app/actions';
 import ConnectWallet from '../../components/Button/ConnectWallet';
 import { gDaiAddress, ghoAddress, minterAddress } from '../../utils/constants';
-import BigNumber from 'bignumber.js';
-import { bigNumberToFloat } from '../../utils/StringUtils';
+import {
+  bigNumberToFloat,
+  bigNumberToString,
+  stringToBigNumber,
+} from '../../utils/StringUtils';
 
 const MintPage = () => {
   const classes = useStyle();
@@ -38,62 +44,91 @@ const MintPage = () => {
   const [ghoValue, setGhoValue] = useState('');
 
   async function handleMint() {
-    if (validateForm()) {
-      setRedirect(true);
-      dispatch(setTxSucces(false));
-      await approve(ghoContract, account as string, minterAddress, ghoValue);
-      await depositCollateral(
-        gDaiAddress,
-        ghoValue,
-        minterContract,
-        account as string
-      );
-      await mint(gDaiAddress, gdaiValue, minterContract, account as string);
-      setTimeout(() => dispatch(setTxSucces(true)), 5000);
-    }
-  }
+    if (btnDisabled) return;
 
-  async function handleMaxGHO() {
-    let res = await balanceOf(ghoContract, account as string);
-    setGhoValue(
-      new BigNumber(res).dividedBy(new BigNumber(10).pow(18)).toString()
+    setRedirect(true);
+    dispatch(setTxSucces(false));
+    await approve(ghoContract, account as string, minterAddress, ghoValue);
+    await mint(
+      minterContract,
+      gDaiAddress,
+      ghoValue,
+      gdaiValue,
+      account as string
     );
+    setTimeout(() => dispatch(setTxSucces(true)), 5000);
   }
 
-  async function handleMaxDAI() {
-    let res = await balanceOf(gDaiContract, account as string);
-    setGdaiValue(new BigNumber(res).toString());
+  function setValues(ghoValue: string, gdaiValue: string) {
+    setGhoValue(ghoValue);
+    setGdaiValue(gdaiValue);
   }
 
-  function validateForm() {
-    if (gdaiValue === '0' || ghoValue === '0') {
-      return false;
-    }
-    return true;
+  async function handleMaxGHO(e: any) {
+    e.preventDefault();
+    let balanceValue = await balanceOf(ghoContract, account as string);
+    let value = ghoValue ? ghoValue : balanceValue;
+    try {
+      let maxGdaiValue = await maximumByCollateral(
+        minterContract,
+        gDaiAddress,
+        account as string,
+        value
+      );
+      setValues(value, bigNumberToString(maxGdaiValue));
+    } catch (error) {}
   }
 
-  function stateColorButton() {
-    if (gdaiValue !== '' && ghoValue !== '') {
+  async function handleMaxDAI(e: any) {
+    e.preventDefault();
+    let balanceValue = await balanceOf(gDaiContract, account as string);
+
+    let value = gdaiValue
+      ? gdaiValue
+      : bigNumberToString(balanceValue).toString();
+    try {
+      let maxGhoValue = await maximumByDebt(
+        minterContract,
+        gDaiAddress,
+        account as string,
+        value
+      );
+
+      setValues(bigNumberToString(maxGhoValue), value);
+    } catch (error) {}
+  }
+
+  function stateDisableButton() {
+    if (parseInt(gdaiValue || '0') === 0 || parseInt(ghoValue || '0') === 0) {
+      setBtnDisabled(true);
       return true;
     }
+
+    setBtnDisabled(false);
     return false;
   }
 
   useEffect(() => {
-    setBtnDisabled(true);
-    if (parseInt(gdaiValue || '0') === 0 || parseInt(ghoValue || '0') === 0)
-      return;
+    dispatch(setCRatioSimulateMint('0'));
 
-    setBtnDisabled(false);
-    simulateMint(
-      minterContract,
-      gDaiAddress,
-      account as string,
-      ghoValue,
-      gdaiValue
-    ).then(cRatio => {
-      dispatch(setCRatioSimulateMint(((cRatio / 10 ** 18) * 100).toString()));
-    });
+    const timeout = setTimeout(async () => {
+      if (stateDisableButton()) return;
+
+      const cRatio = await simulateMint(
+        minterContract,
+        gDaiAddress,
+        account as string,
+        ghoValue ? ghoValue : '0',
+        gdaiValue ? gdaiValue : '0'
+      );
+      dispatch(
+        setCRatioSimulateMint((bigNumberToFloat(cRatio) * 100).toString())
+      );
+    }, 3000);
+
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [account, minterContract, ghoValue, gdaiValue, dispatch]);
 
   return (
@@ -147,11 +182,16 @@ const MintPage = () => {
                     value={gdaiValue}
                     onChange={e => {
                       setGdaiValue(e.target.value.trim());
+                      setTimeout(() => stateDisableButton, 3000);
                     }}
                   />
 
-                  <div onClick={() => handleMaxDAI()}>
-                    <ButtonForm text="MAX" className={classes.buttonMax} />
+                  <div>
+                    <ButtonForm
+                      text="MAX"
+                      className={classes.buttonMax}
+                      onClick={handleMaxDAI}
+                    />
                   </div>
                 </InputContainer>
 
@@ -164,12 +204,17 @@ const MintPage = () => {
                     type="text"
                     value={ghoValue}
                     onChange={e => {
-                      setGhoValue(e.target.value);
+                      setGhoValue(e.target.value.trim());
+                      setTimeout(() => stateDisableButton, 3000);
                     }}
                   />
 
-                  <div onClick={() => handleMaxGHO()}>
-                    <ButtonForm text="MAX" className={classes.buttonMax} />
+                  <div>
+                    <ButtonForm
+                      text="MAX"
+                      className={classes.buttonMax}
+                      onClick={handleMaxGHO}
+                    />
                   </div>
                 </InputContainer>
 
@@ -181,7 +226,7 @@ const MintPage = () => {
                     className={
                       btnDisabled ? classes.buttonMintGrey : classes.buttonMint
                     }
-                    onClick={() => handleMint()}
+                    onClick={handleMint}
                     disabled={btnDisabled}
                   />
                 </div>
@@ -189,7 +234,7 @@ const MintPage = () => {
             </Box>
             <div
               className={
-                stateColorButton() ? classes.bottomBox : classes.bottomBoxGrey
+                btnDisabled ? classes.bottomBoxGrey : classes.bottomBox
               }
             >
               &nbsp;

@@ -26,17 +26,20 @@ import ConnectWallet from '../../components/Button/ConnectWallet';
 import AlertLeftBar from '../../components/AlertLeftBar';
 import { balanceOf, getCRatio } from '../../utils/calls';
 import { useERC20, useMinter } from '../../hooks/useContract';
-import { setBalanceOfGHO, setCRatio } from '../../redux/app/actions';
+import {
+  setBalanceOfGHO,
+  setBalanceOfGDAI,
+  setCRatio,
+} from '../../redux/app/actions';
 import { ghoAddress, gDaiAddress } from '../../utils/constants';
 import { useSelector } from '../../redux/hooks';
 import { bigNumberToFloat } from '../../utils/StringUtils';
 
 interface Props {
-  account?: string;
   networkName?: string;
 }
 
-const MainPage = ({ account, networkName }: Props) => {
+const MainPage = ({ networkName }: Props) => {
   const pathNameAlert = '/alert';
   const classes = useStyles();
   const location = useLocation();
@@ -44,8 +47,9 @@ const MainPage = ({ account, networkName }: Props) => {
   const [cardsDataArray, setCardsDataArray] = useState(cardsData);
   const minterContract = useMinter();
   const ghoContract = useERC20(ghoAddress);
-  const { balanceOfGDAI } = useSelector(state => state.app);
-
+  const gdaiContract = useERC20(gDaiAddress);
+  const { balanceOfGDAI, balanceOfGHO } = useSelector(state => state.app);
+  const { account } = useSelector(state => state.wallet);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -71,9 +75,10 @@ const MainPage = ({ account, networkName }: Props) => {
         gDaiAddress,
         account as string
       );
-      dispatch(setCRatio(bigNumberToFloat(cRatioValue) * 100));
+      dispatch(setCRatio((bigNumberToFloat(cRatioValue) * 100).toString()));
 
-      let balanceOfGHOValue = await balanceOf(ghoContract, ghoAddress);
+      let balanceOfGHOValue = await balanceOf(ghoContract, account as string);
+      let balanceOfGDAIValue = await balanceOf(gdaiContract, account as string);
       dispatch(
         setBalanceOfGHO(
           new BigNumber(balanceOfGHOValue)
@@ -81,10 +86,27 @@ const MainPage = ({ account, networkName }: Props) => {
             .toString()
         )
       );
+      dispatch(
+        setBalanceOfGDAI(
+          new BigNumber(balanceOfGDAIValue)
+            .dividedBy(new BigNumber(10).pow(18))
+            .toString()
+        )
+      );
     }
-    fetchData();
+
+    account && fetchData();
     organizeCardsData();
-  }, [rootPage, location]);
+  }, [
+    rootPage,
+    location,
+    ghoContract,
+    gdaiContract,
+    account,
+    balanceOfGDAI,
+    minterContract,
+    dispatch,
+  ]);
 
   return (
     <Grid
@@ -128,31 +150,23 @@ const MainPage = ({ account, networkName }: Props) => {
             justify="flex-end"
             alignItems="center"
           >
-            <Grid item style={{ marginTop: 40, marginRight: 30 }}>
+            <Grid
+              item
+              style={{ marginTop: 40, marginRight: 30 }}
+              justify-xs-center="true"
+            >
               <ConnectWallet />
             </Grid>
-
             <Grid item className={classes.columnFixed} justify-xs-center="true">
-              <LinkCard
-                title="🦄 Swap GHO"
-                text="into your wallet"
-                link={`https://app.uniswap.org/#/swap?outputCurrency=${ghoAddress}`}
-              />
-
-              <InfoCard
-                title="Don’t forget, we are"
-                subTitle="on xDAI network"
-                type="error"
-                link={`#`}
-              />
-
-              <InfoCard
-                title="Don’t forget, we are"
-                subTitle="on xDAI network"
-                type="success"
-                link={`#`}
-              />
-
+              {account && balanceOfGHO === '0' ? (
+                <LinkCard
+                  title="🦄 Swap GHO"
+                  text="into your wallet"
+                  link={`https://app.uniswap.org/#/swap?outputCurrency=${ghoAddress}`}
+                />
+              ) : (
+                <></>
+              )}
               <div className={classes.item}>
                 {cardsDataArray.map((props, key) => (
                   <GcardLink {...props} key={key} />

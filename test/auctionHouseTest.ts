@@ -42,18 +42,19 @@ describe('Auction House tests', async function() {
     // account One - liquidated account
     await state.minter
       .connect(accountOne)
-      .depositCollateral(synthTokenAddress, amountToDeposit);
-    await state.minter
-      .connect(accountOne)
-      .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+      .mint(
+        synthTokenAddress,
+        amountToDeposit,
+        BigNumber.from(parseEther('20.0'))
+      );
 
-    // account Two - Keeper
     await state.minter
       .connect(accountTwo)
-      .depositCollateral(synthTokenAddress, amountToDeposit);
-    await state.minter
-      .connect(accountTwo)
-      .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+      .mint(
+        synthTokenAddress,
+        amountToDeposit,
+        BigNumber.from(parseEther('20.0'))
+      );
 
     await state.feed.updatePrice(BigNumber.from(parseEther('0.2')));
     await state.minter

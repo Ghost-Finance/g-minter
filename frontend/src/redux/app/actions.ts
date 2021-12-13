@@ -5,7 +5,7 @@ export const setTxSucces = (txSuccess: null | boolean) => ({
   txSuccess,
 });
 
-export const setCRatio = (cRatioValue: null | number) => ({
+export const setCRatio = (cRatioValue: null | string) => ({
   type: Types.SET_CRATIO,
   cRatioValue,
 });

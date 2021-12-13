@@ -25,8 +25,8 @@ const ButtonForm = ({
       variant="contained"
       disableElevation
       className={`${classes.root} ${className}`}
-      onClick={() => onClick}
-      disabled={disabled}
+      onClick={onClick}
+      {...(disabled ? { disabled: true } : {})}
     >
       {text || children}
     </Button>

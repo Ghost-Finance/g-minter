@@ -3,14 +3,17 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { parseEther } from '@ethersproject/units';
 
 export const mint = async (
-  token: string,
-  amount: string,
   contract: Contract,
+  token: string,
+  amountToDeposit: string,
+  amountToMint: string,
   account: string
 ) => {
-  const bigAmount = BigNumber.from(parseEther(amount));
+  const depositAmount = BigNumber.from(parseEther(amountToDeposit));
+  const mintAmount = BigNumber.from(parseEther(amountToMint));
+
   return contract.methods
-    .mint(token, bigAmount)
+    .mint(token, depositAmount, mintAmount)
     .send({ from: account })
     .on('transactionHash', (tx: any) => {
       return tx.transactionHash;
@@ -48,21 +51,37 @@ export const depositCollateral = async (
 };
 
 export const balanceOf = async (contract: Contract, account: string) => {
-  return contract.methods.balanceOf(account).call((err: any, result: any) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(result);
-    }
-  });
+  return contract.methods.balanceOf(account).call({ from: account });
 };
 
 export const getCRatio = async (
   contract: Contract,
-  token: string, // gdai
+  token: string,
   account: string
 ) => {
   return contract.methods.getCRatio(token).call({ from: account });
+};
+
+export const maximumByCollateral = async (
+  contract: Contract,
+  token: string,
+  account: string,
+  amount: string
+) => {
+  const value = BigNumber.from(parseEther(amount));
+  return contract.methods
+    .maximumByCollateral(token, value)
+    .call({ from: account });
+};
+
+export const maximumByDebt = async (
+  contract: Contract,
+  token: string,
+  account: string,
+  amount: string
+) => {
+  const value = BigNumber.from(parseEther(amount));
+  return contract.methods.maximumByDebt(token, value).call({ from: account });
 };
 
 export const simulateMint = async (
@@ -72,10 +91,9 @@ export const simulateMint = async (
   amountGHO: string,
   amountGdai: string
 ) => {
-  const ghoAmount = BigNumber.from(parseEther(amountGHO));
-  const gdaiAmount = BigNumber.from(parseEther(amountGdai));
-
+  const ghoAmount = BigNumber.from(parseEther(amountGHO)).toString();
+  const gdaiAmount = BigNumber.from(parseEther(amountGdai)).toString();
   return contract.methods
-    .simulateMint(token, ghoAmount, gdaiAmount)
+    .simulateCRatio(token, ghoAmount, gdaiAmount)
     .call({ from: account });
 };

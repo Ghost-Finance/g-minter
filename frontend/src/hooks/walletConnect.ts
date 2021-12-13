@@ -15,7 +15,6 @@ export default () => {
   const wallet = useSelector(state => state.wallet);
   const dispatch = useDispatch();
   const reloadPage = () => window.location.reload();
-
   const changeAccount = (accounts: string[] | null): void => {
     dispatch(setAccount(accounts?.length ? accounts[0] : null));
     dispatch(setConnection(accounts?.length ? accounts?.length > 0 : false));
