@@ -13,20 +13,16 @@ import { useDispatch, useSelector } from '../../redux/hooks';
 import {
   approve,
   mint,
-  depositCollateral,
   balanceOf,
   maximumByCollateral,
   maximumByDebt,
+  positionExposeData,
   simulateMint,
 } from '../../utils/calls';
 import { setTxSucces, setCRatioSimulateMint } from '../../redux/app/actions';
 import ConnectWallet from '../../components/Button/ConnectWallet';
 import { gDaiAddress, ghoAddress, minterAddress } from '../../utils/constants';
-import {
-  bigNumberToFloat,
-  bigNumberToString,
-  stringToBigNumber,
-} from '../../utils/StringUtils';
+import { bigNumberToFloat, bigNumberToString } from '../../utils/StringUtils';
 
 const MintPage = () => {
   const classes = useStyle();
@@ -109,12 +105,12 @@ const MintPage = () => {
   }
 
   useEffect(() => {
-    dispatch(setCRatioSimulateMint('0'));
+    dispatch(setCRatioSimulateMint('0', '0', '0'));
 
     const timeout = setTimeout(async () => {
       if (stateDisableButton()) return;
 
-      const cRatio = await simulateMint(
+      const { cRatio, collateralBalance, synthDebt } = await positionExposeData(
         minterContract,
         gDaiAddress,
         account as string,
@@ -122,7 +118,11 @@ const MintPage = () => {
         gdaiValue ? gdaiValue : '0'
       );
       dispatch(
-        setCRatioSimulateMint((bigNumberToFloat(cRatio) * 100).toString())
+        setCRatioSimulateMint(
+          (bigNumberToFloat(cRatio) * 100).toString(),
+          bigNumberToFloat(collateralBalance).toString(),
+          bigNumberToFloat(synthDebt).toString()
+        )
       );
     }, 3000);
 

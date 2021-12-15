@@ -7,7 +7,6 @@ import {
 import React from 'react';
 import useStyles from './styles';
 import theme from '../../theme';
-import { convertCurrency } from '../utils';
 
 type T = {
   label: string;
@@ -35,10 +34,10 @@ const TokenLight = ({
   const _label = <ListItemText primary={label} />;
 
   const _price = center ? (
-    <ListItemText primary={convertCurrency(valueNumber)} />
+    <ListItemText primary={valueNumber} />
   ) : (
     <ListItemSecondaryAction className={classes.value}>
-      {convertCurrency(valueNumber)}
+      {valueNumber}
     </ListItemSecondaryAction>
   );
 
