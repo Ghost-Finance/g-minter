@@ -38,12 +38,12 @@ const GhostRatio = () => {
           <Token
             icon={<GhostIcon />}
             label="GHO"
-            valueNumber={bigNumberToString(balanceOfGHO || '0')}
+            valueNumber={parseFloat(balanceOfGHO || '0')}
           />
           <Token
             icon={<DaiIcon />}
             label="gDAI"
-            valueNumber={bigNumberToString(balanceOfGDAI || '0')}
+            valueNumber={parseFloat(balanceOfGDAI || '0')}
           />
           <Token icon={<SynthsIcon />} label="Synths" valueNumber={0.0} />
         </ListSynths>

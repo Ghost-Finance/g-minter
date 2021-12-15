@@ -8,17 +8,18 @@ import CRatio from '../../CRatio';
 import useStyles from './styles';
 import theme from '../../../theme';
 import { useSelector } from '../../../redux/hooks';
-import {
-  stringToBigNumber,
-  bigNumberToFloat,
-} from '../../../utils/StringUtils';
+import { collateralBalance, synthDebt } from '../../../utils/calls';
 
 const GhostRatioMint = () => {
   const classes = useStyles(theme);
 
-  const { cRatioSimulateMintValue, balanceOfGHO } = useSelector(
-    state => state.app
-  );
+  const {
+    cRatioSimulateMintValue,
+    balanceOfGHO,
+    balanceOfGDAI,
+    collateralBalance,
+    synthDebt,
+  } = useSelector(state => state.app);
 
   return (
     <Box component="div" m={1} className={classes.root}>
@@ -34,15 +35,28 @@ const GhostRatioMint = () => {
         </div>
 
         <ListSynths label="Position">
-          <TokenLight icon={<DaiIcon />} label="gDAI" valueNumber={15.25} />
-          <TokenLight icon={<GhostIcon />} label="GHO" valueNumber={100.22} />
+          <TokenLight
+            icon={<GhostIcon />}
+            label="GHO"
+            valueNumber={parseFloat(collateralBalance || '0')}
+          />
+          <TokenLight
+            icon={<DaiIcon />}
+            label="gDAI"
+            valueNumber={parseFloat(synthDebt || '0')}
+          />
         </ListSynths>
 
         <ListSynths label="Wallet">
           <TokenBorderLight
             icon={<GhostIcon />}
             label="GHO"
-            valueNumber={String(balanceOfGHO || '')}
+            valueNumber={parseFloat(balanceOfGHO || '0')}
+          />
+          <TokenBorderLight
+            icon={<DaiIcon />}
+            label="gDai"
+            valueNumber={parseFloat(balanceOfGDAI || '0')}
           />
         </ListSynths>
       </div>

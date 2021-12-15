@@ -1,6 +1,6 @@
 import { Contract } from 'web3-eth-contract';
 import { BigNumber } from '@ethersproject/bignumber';
-import { parseEther } from '@ethersproject/units';
+import { parseEther, parseUnits } from '@ethersproject/units';
 
 export const mint = async (
   contract: Contract,
@@ -91,9 +91,48 @@ export const simulateMint = async (
   amountGHO: string,
   amountGdai: string
 ) => {
-  const ghoAmount = BigNumber.from(parseEther(amountGHO)).toString();
-  const gdaiAmount = BigNumber.from(parseEther(amountGdai)).toString();
   return contract.methods
-    .simulateCRatio(token, ghoAmount, gdaiAmount)
+    .simulateCRatio(token, amountGHO, amountGdai)
     .call({ from: account });
+};
+
+export const collateralBalance = async (
+  contract: Contract,
+  token: string,
+  account: string
+) => {
+  return contract.methods
+    .collateralBalance(account, token)
+    .call({ from: account });
+};
+
+export const synthDebt = async (
+  contract: Contract,
+  token: string,
+  account: string
+) => {
+  return contract.methods.synthDebt(account, token).call({ from: account });
+};
+
+export const positionExposeData = (
+  contract: Contract,
+  token: string,
+  account: string,
+  amountGHO: string,
+  amountGdai: string
+) => {
+  const ghoAmount = BigNumber.from(parseUnits(amountGHO)).toString();
+  const gdaiAmount = BigNumber.from(parseUnits(amountGdai)).toString();
+
+  return Promise.all([
+    simulateMint(contract, token, account, ghoAmount, gdaiAmount),
+    collateralBalance(contract, token, account),
+    synthDebt(contract, token, account),
+  ]).then(values => {
+    return {
+      cRatio: values[0],
+      collateralBalance: values[1] + parseInt(ghoAmount),
+      synthDebt: values[2] + parseInt(gdaiAmount),
+    };
+  });
 };

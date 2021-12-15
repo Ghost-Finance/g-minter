@@ -12,6 +12,8 @@ type TState = {
   cRatioSimulateMintValue?: string;
   balanceOfGHO?: string;
   balanceOfGDAI?: string;
+  collateralBalance?: string;
+  synthDebt?: string;
 };
 
 type TAction = {
@@ -24,6 +26,8 @@ const initialState: TState = {
   cRatioSimulateMintValue: '0',
   balanceOfGHO: '0',
   balanceOfGDAI: '0',
+  collateralBalance: '0',
+  synthDebt: '0',
 };
 
 // eslint-disable-next-line import/no-anonymous-default-export
@@ -35,6 +39,8 @@ export default (state: TState = initialState, action: TAction) => {
     cRatioSimulateMintValue,
     balanceOfGHO,
     balanceOfGDAI,
+    collateralBalance,
+    synthDebt,
   } = action;
   switch (type) {
     case Types.SET_TXSUCCESS:
@@ -51,6 +57,8 @@ export default (state: TState = initialState, action: TAction) => {
       return {
         ...state,
         cRatioSimulateMintValue,
+        collateralBalance,
+        synthDebt,
       };
     case Types.SET_BALANCE_OF_GHO:
       return {
