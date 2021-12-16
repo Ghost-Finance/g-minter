@@ -52,6 +52,8 @@ export default (state: TState = initialState, action: TAction) => {
       return {
         ...state,
         cRatioValue,
+        balanceOfGHO,
+        balanceOfGDAI,
       };
     case Types.SET_CRATIO_SIMULATE_MINT:
       return {

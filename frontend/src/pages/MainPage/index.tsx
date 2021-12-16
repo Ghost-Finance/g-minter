@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { Switch, Route, useLocation } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
@@ -17,7 +17,6 @@ import AlertPage from '../AlertPage';
 import GcardLink from '../../components/GcardLink';
 import GhostRatio from '../../components/GhostRatioComponent/GhostRatio';
 import LinkCard from '../../components/LinkCard';
-import InfoCard from '../../components/InfoCard';
 import GhostRatioMint from '../../components/GhostRatioComponent/GhostRatioMint';
 import cardsData from './cardsData';
 import './style.css';
@@ -26,11 +25,7 @@ import ConnectWallet from '../../components/Button/ConnectWallet';
 import AlertLeftBar from '../../components/AlertLeftBar';
 import { balanceOf, getCRatio } from '../../utils/calls';
 import { useERC20, useMinter } from '../../hooks/useContract';
-import {
-  setBalanceOfGHO,
-  setBalanceOfGDAI,
-  setCRatio,
-} from '../../redux/app/actions';
+import { setCRatio } from '../../redux/app/actions';
 import { ghoAddress, gDaiAddress } from '../../utils/constants';
 import { useSelector } from '../../redux/hooks';
 import { bigNumberToFloat } from '../../utils/StringUtils';
@@ -56,17 +51,17 @@ const MainPage = ({ networkName }: Props) => {
     setRootPageChanged(location.pathname === '/');
 
     function organizeCardsData() {
-      if (balanceOfGDAI !== '0') {
-        let cardsDataArrayAfterMint = cardsData.filter(
-          card => card.to !== '/mint' && card.to !== '/stake'
-        );
-        cardsDataArrayAfterMint.unshift({
-          to: '/stake',
-          title: 'Stake Synths',
-          image: <SynthCardIcon />,
-        });
-        setCardsDataArray(cardsDataArrayAfterMint);
-      }
+      if (balanceOfGHO !== '0' && balanceOfGDAI) return;
+
+      let cardsDataArrayAfterMint = cardsData.filter(
+        card => card.to !== '/mint' && card.to !== '/stake'
+      );
+      cardsDataArrayAfterMint.unshift({
+        to: '/stake',
+        title: 'Stake Synths',
+        image: <SynthCardIcon />,
+      });
+      setCardsDataArray(cardsDataArrayAfterMint);
     }
 
     async function fetchData() {
@@ -75,19 +70,15 @@ const MainPage = ({ networkName }: Props) => {
         gDaiAddress,
         account as string
       );
-      dispatch(setCRatio((bigNumberToFloat(cRatioValue) * 100).toString()));
-
       let balanceOfGHOValue = await balanceOf(ghoContract, account as string);
       let balanceOfGDAIValue = await balanceOf(gdaiContract, account as string);
+
       dispatch(
-        setBalanceOfGHO(
+        setCRatio(
+          (bigNumberToFloat(cRatioValue) * 100).toString(),
           new BigNumber(balanceOfGHOValue)
             .dividedBy(new BigNumber(10).pow(18))
-            .toString()
-        )
-      );
-      dispatch(
-        setBalanceOfGDAI(
+            .toString(),
           new BigNumber(balanceOfGDAIValue)
             .dividedBy(new BigNumber(10).pow(18))
             .toString()
@@ -104,6 +95,7 @@ const MainPage = ({ networkName }: Props) => {
     gdaiContract,
     account,
     balanceOfGDAI,
+    balanceOfGHO,
     minterContract,
     dispatch,
   ]);
