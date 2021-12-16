@@ -39,6 +39,7 @@ const MainPage = ({ networkName }: Props) => {
   const classes = useStyles();
   const location = useLocation();
   const [rootPage, setRootPageChanged] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [cardsDataArray, setCardsDataArray] = useState(cardsData);
   const minterContract = useMinter();
   const ghoContract = useERC20(ghoAddress);
@@ -48,10 +49,12 @@ const MainPage = ({ networkName }: Props) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    setLoading(true);
     setRootPageChanged(location.pathname === '/');
 
     function organizeCardsData() {
-      if (balanceOfGHO !== '0' && balanceOfGDAI) return;
+      debugger;
+      if (balanceOfGHO === '0' && balanceOfGDAI === '0') return;
 
       let cardsDataArrayAfterMint = cardsData.filter(
         card => card.to !== '/mint' && card.to !== '/stake'
@@ -88,6 +91,7 @@ const MainPage = ({ networkName }: Props) => {
 
     account && fetchData();
     organizeCardsData();
+    setLoading(false);
   }, [
     rootPage,
     location,
@@ -97,6 +101,7 @@ const MainPage = ({ networkName }: Props) => {
     balanceOfGDAI,
     balanceOfGHO,
     minterContract,
+    setLoading,
     dispatch,
   ]);
 
@@ -160,9 +165,18 @@ const MainPage = ({ networkName }: Props) => {
                 <></>
               )}
               <div className={classes.item}>
-                {cardsDataArray.map((props, key) => (
-                  <GcardLink {...props} key={key} />
-                ))}
+                {loading ? (
+                  <p>Loading...</p>
+                ) : (
+                  cardsDataArray.map((props, key) => (
+                    <GcardLink
+                      to={account ? props.to : '#'}
+                      image={props.image}
+                      title={props.title}
+                      key={key}
+                    />
+                  ))
+                )}
               </div>
             </Grid>
           </Grid>

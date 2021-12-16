@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, makeStyles, Theme } from '@material-ui/core';
+import BigNumber from 'bignumber.js';
 import ListSynths from '../../ListSynths';
 import Token from '../../Token';
 import {
@@ -10,7 +11,6 @@ import {
   EtherIcon,
 } from '../../Icons';
 import { useSelector } from '../../../redux/hooks';
-import { bigNumberToString } from '../../../utils/StringUtils';
 import CRatio from '../../CRatio';
 import useStyles from './styles';
 import theme from '../../../theme';
@@ -20,6 +20,7 @@ const GhostRatio = () => {
 
   const app = useSelector(state => state.app);
   const { cRatioValue, balanceOfGHO, balanceOfGDAI } = app;
+
   return (
     <Box component="div" m={1} className={classes.root}>
       <div className={classes.box}>
@@ -53,7 +54,7 @@ const GhostRatio = () => {
         </ListSynths>
 
         <ListSynths label="ecosystem">
-          <Token center icon={<SynthsIcon />} label="GHO" valueNumber={23.23} />
+          <Token center icon={<SynthsIcon />} label="GHO" valueNumber={0.0} />
           <Token center icon={<EtherIcon />} label="ETH" valueNumber={0.0} />
         </ListSynths>
       </div>
