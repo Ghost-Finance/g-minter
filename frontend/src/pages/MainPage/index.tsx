@@ -14,6 +14,7 @@ import BurnPage from '../BurnPage';
 import RewardPage from '../RewardPage';
 import StakePage from '../StakePage';
 import AlertPage from '../AlertPage';
+import ProgressBar from '../../components/ProgressBar';
 import GcardLink from '../../components/GcardLink';
 import GhostRatio from '../../components/GhostRatioComponent/GhostRatio';
 import LinkCard from '../../components/LinkCard';
@@ -25,7 +26,7 @@ import ConnectWallet from '../../components/Button/ConnectWallet';
 import AlertLeftBar from '../../components/AlertLeftBar';
 import { balanceOf, getCRatio } from '../../utils/calls';
 import { useERC20, useMinter } from '../../hooks/useContract';
-import { setCRatio } from '../../redux/app/actions';
+import { setCRatio, setStatus } from '../../redux/app/actions';
 import { ghoAddress, gDaiAddress } from '../../utils/constants';
 import { useSelector } from '../../redux/hooks';
 import { bigNumberToFloat } from '../../utils/StringUtils';
@@ -39,17 +40,18 @@ const MainPage = ({ networkName }: Props) => {
   const classes = useStyles();
   const location = useLocation();
   const [rootPage, setRootPageChanged] = useState(true);
-  const [loading, setLoading] = useState(true);
   const [cardsDataArray, setCardsDataArray] = useState(cardsData);
   const minterContract = useMinter();
   const ghoContract = useERC20(ghoAddress);
   const gdaiContract = useERC20(gDaiAddress);
-  const { balanceOfGDAI, balanceOfGHO } = useSelector(state => state.app);
+  const { balanceOfGDAI, balanceOfGHO, status } = useSelector(
+    state => state.app
+  );
   const { account } = useSelector(state => state.wallet);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    setLoading(true);
+    dispatch(setStatus('pending'));
     setRootPageChanged(location.pathname === '/');
 
     function organizeCardsData() {
@@ -67,30 +69,38 @@ const MainPage = ({ networkName }: Props) => {
     }
 
     async function fetchData() {
-      let cRatioValue = await getCRatio(
-        minterContract,
-        gDaiAddress,
-        account as string
-      );
-      let balanceOfGHOValue = await balanceOf(ghoContract, account as string);
-      let balanceOfGDAIValue = await balanceOf(gdaiContract, account as string);
+      try {
+        let cRatioValue = await getCRatio(
+          minterContract,
+          gDaiAddress,
+          account as string
+        );
+        let balanceOfGHOValue = await balanceOf(ghoContract, account as string);
+        let balanceOfGDAIValue = await balanceOf(
+          gdaiContract,
+          account as string
+        );
 
-      dispatch(
-        setCRatio(
-          (bigNumberToFloat(cRatioValue) * 100).toString(),
-          new BigNumber(balanceOfGHOValue)
-            .dividedBy(new BigNumber(10).pow(18))
-            .toString(),
-          new BigNumber(balanceOfGDAIValue)
-            .dividedBy(new BigNumber(10).pow(18))
-            .toString()
-        )
-      );
+        dispatch(
+          setCRatio(
+            (bigNumberToFloat(cRatioValue) * 100).toString(),
+            new BigNumber(balanceOfGHOValue)
+              .dividedBy(new BigNumber(10).pow(18))
+              .toString(),
+            new BigNumber(balanceOfGDAIValue)
+              .dividedBy(new BigNumber(10).pow(18))
+              .toString()
+          )
+        );
+        dispatch(setStatus('success'));
+      } catch (error) {
+        console.error(error);
+        dispatch(setStatus('error'));
+      }
     }
 
     account && fetchData();
     organizeCardsData();
-    setLoading(false);
   }, [
     rootPage,
     location,
@@ -100,7 +110,6 @@ const MainPage = ({ networkName }: Props) => {
     balanceOfGDAI,
     balanceOfGHO,
     minterContract,
-    setLoading,
     dispatch,
   ]);
 
@@ -164,9 +173,7 @@ const MainPage = ({ networkName }: Props) => {
                 <></>
               )}
               <div className={classes.item}>
-                {loading ? (
-                  <p>Loading...</p>
-                ) : (
+                {status === 'success' &&
                   cardsDataArray.map((props, key) => (
                     <GcardLink
                       to={account ? props.to : '#'}
@@ -174,8 +181,7 @@ const MainPage = ({ networkName }: Props) => {
                       title={props.title}
                       key={key}
                     />
-                  ))
-                )}
+                  ))}
               </div>
             </Grid>
           </Grid>

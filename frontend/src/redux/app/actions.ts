@@ -27,6 +27,11 @@ export const setCRatioSimulateMint = (
   synthDebt,
 });
 
+export const setStatus = (status: string) => ({
+  type: Types.SET_STATUS,
+  status,
+});
+
 export const setBalanceOfGHO = (balanceOfGHO: null | string) => ({
   type: Types.SET_BALANCE_OF_GHO,
   balanceOfGHO,

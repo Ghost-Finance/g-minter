@@ -1,5 +1,6 @@
 export const Types = {
   SET_TXSUCCESS: '@APP/SET_TXSUCCESS',
+  SET_STATUS: '@APP/SET_STATUS',
   SET_CRATIO: '@APP/SET_CRATIO',
   SET_CRATIO_SIMULATE_MINT: '@APP/SET_CRATIO_SIMULATE_MINT',
   SET_BALANCE_OF_GHO: '@APP/SET_BALANCE_OF_GHO',
@@ -8,6 +9,7 @@ export const Types = {
 
 type TState = {
   txSuccess?: boolean;
+  status?: 'idle' | 'pending' | 'success' | 'error';
   cRatioValue?: string;
   cRatioSimulateMintValue?: string;
   balanceOfGHO?: string;
@@ -22,6 +24,7 @@ type TAction = {
 
 const initialState: TState = {
   txSuccess: false,
+  status: 'idle',
   cRatioValue: '0',
   cRatioSimulateMintValue: '0',
   balanceOfGHO: '0',
@@ -35,6 +38,7 @@ export default (state: TState = initialState, action: TAction) => {
   const {
     type,
     txSuccess,
+    status,
     cRatioValue,
     cRatioSimulateMintValue,
     balanceOfGHO,
@@ -47,6 +51,11 @@ export default (state: TState = initialState, action: TAction) => {
       return {
         ...state,
         txSuccess,
+      };
+    case Types.SET_STATUS:
+      return {
+        ...state,
+        status,
       };
     case Types.SET_CRATIO:
       return {
