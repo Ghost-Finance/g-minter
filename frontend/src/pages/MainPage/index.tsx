@@ -101,6 +101,7 @@ const MainPage = ({ networkName }: Props) => {
 
     account && fetchData();
     organizeCardsData();
+    setTimeout(() => dispatch(setStatus('idle')), 6000);
   }, [
     rootPage,
     location,
