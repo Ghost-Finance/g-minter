@@ -126,6 +126,7 @@ const MainPage = ({ networkName }: Props) => {
       }
     >
       <CssBaseline />
+      {status === 'pending' && <ProgressBar />}
       {rootPage ? (
         <AppMenu />
       ) : (
