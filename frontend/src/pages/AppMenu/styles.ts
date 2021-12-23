@@ -21,7 +21,7 @@ export default makeStyles(theme => ({
     height: '100%',
     backgroundColor: theme.palette.primary.light,
     boxShadow: 'none',
-    padding: theme.spacing(8.8, 1),
+    padding: theme.spacing(6, 1),
     transition: theme.transitions.create(['width', 'margin'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
@@ -29,6 +29,7 @@ export default makeStyles(theme => ({
   },
   appBarShift: {
     marginLeft: 200,
+    backgroundColor: theme.palette.primary.light,
     transition: theme.transitions.create(['width', 'margin'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,

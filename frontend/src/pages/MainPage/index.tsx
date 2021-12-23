@@ -55,7 +55,7 @@ const MainPage = ({ networkName }: Props) => {
     setRootPageChanged(location.pathname === '/');
 
     function organizeCardsData() {
-      if (balanceOfGHO === '0' && balanceOfGDAI === '0') return;
+      if (balanceOfGDAI === '0') return;
 
       let cardsDataArrayAfterMint = cardsData.filter(
         card => card.to !== '/mint' && card.to !== '/stake'
@@ -80,21 +80,15 @@ const MainPage = ({ networkName }: Props) => {
           gdaiContract,
           account as string
         );
-
         dispatch(
           setCRatio(
             (bigNumberToFloat(cRatioValue) * 100).toString(),
-            new BigNumber(balanceOfGHOValue)
-              .dividedBy(new BigNumber(10).pow(18))
-              .toString(),
-            new BigNumber(balanceOfGDAIValue)
-              .dividedBy(new BigNumber(10).pow(18))
-              .toString()
+            bigNumberToFloat(balanceOfGHOValue).toString(),
+            bigNumberToFloat(balanceOfGDAIValue).toString()
           )
         );
         dispatch(setStatus('success'));
       } catch (error) {
-        console.error(error);
         dispatch(setStatus('error'));
       }
     }
@@ -127,7 +121,6 @@ const MainPage = ({ networkName }: Props) => {
       }
     >
       <CssBaseline />
-      {status === 'pending' && <ProgressBar />}
       {rootPage ? (
         <AppMenu />
       ) : (
@@ -175,7 +168,8 @@ const MainPage = ({ networkName }: Props) => {
                 <></>
               )}
               <div className={classes.item}>
-                {status === 'success' &&
+                {status !== 'error' &&
+                  status !== 'pending' &&
                   cardsDataArray.map((props, key) => (
                     <GcardLink
                       to={account ? props.to : '#'}
@@ -206,6 +200,7 @@ const MainPage = ({ networkName }: Props) => {
           </Switch>
         </CSSTransition>
       </TransitionGroup>
+      {status === 'pending' && <ProgressBar />}
     </Grid>
   );
 };

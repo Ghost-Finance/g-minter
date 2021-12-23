@@ -6,8 +6,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
-    maxWidth: 547,
-    maxHeight: 328,
+    width: 547,
+    height: 328,
     [theme.breakpoints.down('md')]: {
       width: '100%',
     },

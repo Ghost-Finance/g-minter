@@ -71,7 +71,8 @@ const MintPage = () => {
   async function handleMaxGHO(e: any) {
     e.preventDefault();
     let balanceValue = await balanceOf(ghoContract, account as string);
-    let value = ghoValue ? ghoValue : balanceValue;
+    let value = ghoValue ? ghoValue : bigNumberToString(balanceValue);
+    debugger;
     try {
       let maxGdaiValue = await maximumByCollateral(
         minterContract,
@@ -126,6 +127,7 @@ const MintPage = () => {
         ghoValue ? ghoValue : '0',
         gdaiValue ? gdaiValue : '0'
       );
+
       dispatch(
         setCRatioSimulateMint(
           (bigNumberToFloat(cRatio) * 100).toString(),

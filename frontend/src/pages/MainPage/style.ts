@@ -38,7 +38,7 @@ export const useStyles = makeStyles((theme: Theme) =>
       height: '100%',
     },
     item: {
-      padding: theme.spacing(20),
+      marginTop: theme.spacing(20),
       [theme.breakpoints.down('md')]: {
         padding: theme.spacing(1),
       },
