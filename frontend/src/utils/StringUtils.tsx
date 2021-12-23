@@ -17,7 +17,9 @@ export const shortenAddress = (address: string) => {
  * Converts an ethers.BigNumber to vanilla JS "number"
  */
 export const bigNumberToFloat = (bNumber: BigNumber) => {
+  debugger;
   const etherBalance = formatEther(bNumber || BigNumber.from('0'));
+  debugger;
   return parseFloat(etherBalance);
 };
 

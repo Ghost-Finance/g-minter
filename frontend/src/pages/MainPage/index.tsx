@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { Switch, Route, useLocation } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
@@ -14,23 +14,18 @@ import BurnPage from '../BurnPage';
 import RewardPage from '../RewardPage';
 import StakePage from '../StakePage';
 import AlertPage from '../AlertPage';
+import ProgressBar from '../../components/ProgressBar';
 import GcardLink from '../../components/GcardLink';
 import GhostRatio from '../../components/GhostRatioComponent/GhostRatio';
 import LinkCard from '../../components/LinkCard';
-import InfoCard from '../../components/InfoCard';
 import GhostRatioMint from '../../components/GhostRatioComponent/GhostRatioMint';
 import cardsData from './cardsData';
 import './style.css';
 import WalletConnectPage from '../WalletConnectPage';
 import ConnectWallet from '../../components/Button/ConnectWallet';
-import AlertLeftBar from '../../components/AlertLeftBar';
 import { balanceOf, getCRatio } from '../../utils/calls';
 import { useERC20, useMinter } from '../../hooks/useContract';
-import {
-  setBalanceOfGHO,
-  setBalanceOfGDAI,
-  setCRatio,
-} from '../../redux/app/actions';
+import { setCRatio, setStatus } from '../../redux/app/actions';
 import { ghoAddress, gDaiAddress } from '../../utils/constants';
 import { useSelector } from '../../redux/hooks';
 import { bigNumberToFloat } from '../../utils/StringUtils';
@@ -48,55 +43,58 @@ const MainPage = ({ networkName }: Props) => {
   const minterContract = useMinter();
   const ghoContract = useERC20(ghoAddress);
   const gdaiContract = useERC20(gDaiAddress);
-  const { balanceOfGDAI, balanceOfGHO } = useSelector(state => state.app);
+  const { balanceOfGDAI, balanceOfGHO, status } = useSelector(
+    state => state.app
+  );
   const { account } = useSelector(state => state.wallet);
   const dispatch = useDispatch();
 
   useEffect(() => {
+    dispatch(setStatus('pending'));
     setRootPageChanged(location.pathname === '/');
 
     function organizeCardsData() {
-      if (balanceOfGDAI !== '0') {
-        let cardsDataArrayAfterMint = cardsData.filter(
-          card => card.to !== '/mint' && card.to !== '/stake'
-        );
-        cardsDataArrayAfterMint.unshift({
-          to: '/stake',
-          title: 'Stake Synths',
-          image: <SynthCardIcon />,
-        });
-        setCardsDataArray(cardsDataArrayAfterMint);
-      }
+      if (balanceOfGDAI === '0') return;
+
+      let cardsDataArrayAfterMint = cardsData.filter(
+        card => card.to !== '/mint' && card.to !== '/stake'
+      );
+      cardsDataArrayAfterMint.unshift({
+        to: '/stake',
+        title: 'Stake Synths',
+        image: <SynthCardIcon />,
+      });
+      setCardsDataArray(cardsDataArrayAfterMint);
     }
 
     async function fetchData() {
-      let cRatioValue = await getCRatio(
-        minterContract,
-        gDaiAddress,
-        account as string
-      );
-      dispatch(setCRatio((bigNumberToFloat(cRatioValue) * 100).toString()));
-
-      let balanceOfGHOValue = await balanceOf(ghoContract, account as string);
-      let balanceOfGDAIValue = await balanceOf(gdaiContract, account as string);
-      dispatch(
-        setBalanceOfGHO(
-          new BigNumber(balanceOfGHOValue)
-            .dividedBy(new BigNumber(10).pow(18))
-            .toString()
-        )
-      );
-      dispatch(
-        setBalanceOfGDAI(
-          new BigNumber(balanceOfGDAIValue)
-            .dividedBy(new BigNumber(10).pow(18))
-            .toString()
-        )
-      );
+      try {
+        let cRatioValue = await getCRatio(
+          minterContract,
+          gDaiAddress,
+          account as string
+        );
+        let balanceOfGHOValue = await balanceOf(ghoContract, account as string);
+        let balanceOfGDAIValue = await balanceOf(
+          gdaiContract,
+          account as string
+        );
+        dispatch(
+          setCRatio(
+            (bigNumberToFloat(cRatioValue) * 100).toString(),
+            bigNumberToFloat(balanceOfGHOValue).toString(),
+            bigNumberToFloat(balanceOfGDAIValue).toString()
+          )
+        );
+        dispatch(setStatus('success'));
+      } catch (error) {
+        dispatch(setStatus('error'));
+      }
     }
 
     account && fetchData();
     organizeCardsData();
+    setTimeout(() => dispatch(setStatus('idle')), 6000);
   }, [
     rootPage,
     location,
@@ -104,6 +102,7 @@ const MainPage = ({ networkName }: Props) => {
     gdaiContract,
     account,
     balanceOfGDAI,
+    balanceOfGHO,
     minterContract,
     dispatch,
   ]);
@@ -137,7 +136,7 @@ const MainPage = ({ networkName }: Props) => {
         {rootPage ? (
           <GhostRatio />
         ) : location.pathname === pathNameAlert ? (
-          <AlertLeftBar />
+          <></>
         ) : (
           <GhostRatioMint />
         )}
@@ -168,9 +167,16 @@ const MainPage = ({ networkName }: Props) => {
                 <></>
               )}
               <div className={classes.item}>
-                {cardsDataArray.map((props, key) => (
-                  <GcardLink {...props} key={key} />
-                ))}
+                {status !== 'error' &&
+                  status !== 'pending' &&
+                  cardsDataArray.map((props, key) => (
+                    <GcardLink
+                      to={account ? props.to : '#'}
+                      image={props.image}
+                      title={props.title}
+                      key={key}
+                    />
+                  ))}
               </div>
             </Grid>
           </Grid>
@@ -193,6 +199,7 @@ const MainPage = ({ networkName }: Props) => {
           </Switch>
         </CSSTransition>
       </TransitionGroup>
+      {status === 'pending' && <ProgressBar />}
     </Grid>
   );
 };

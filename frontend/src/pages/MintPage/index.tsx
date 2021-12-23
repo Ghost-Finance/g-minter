@@ -19,7 +19,11 @@ import {
   positionExposeData,
   simulateMint,
 } from '../../utils/calls';
-import { setTxSucces, setCRatioSimulateMint } from '../../redux/app/actions';
+import {
+  setTxSucces,
+  setStatus,
+  setCRatioSimulateMint,
+} from '../../redux/app/actions';
 import ConnectWallet from '../../components/Button/ConnectWallet';
 import { gDaiAddress, ghoAddress, minterAddress } from '../../utils/constants';
 import { bigNumberToFloat, bigNumberToString } from '../../utils/StringUtils';
@@ -43,6 +47,7 @@ const MintPage = () => {
     if (btnDisabled) return;
 
     setRedirect(true);
+    dispatch(setStatus('pending'));
     dispatch(setTxSucces(false));
     await approve(ghoContract, account as string, minterAddress, ghoValue);
     await mint(
@@ -52,7 +57,10 @@ const MintPage = () => {
       gdaiValue,
       account as string
     );
-    setTimeout(() => dispatch(setTxSucces(true)), 5000);
+    setTimeout(() => {
+      dispatch(setStatus('success'));
+      dispatch(setTxSucces(true));
+    }, 5000);
   }
 
   function setValues(ghoValue: string, gdaiValue: string) {
@@ -63,7 +71,8 @@ const MintPage = () => {
   async function handleMaxGHO(e: any) {
     e.preventDefault();
     let balanceValue = await balanceOf(ghoContract, account as string);
-    let value = ghoValue ? ghoValue : balanceValue;
+    let value = ghoValue ? ghoValue : bigNumberToString(balanceValue);
+    debugger;
     try {
       let maxGdaiValue = await maximumByCollateral(
         minterContract,
@@ -109,6 +118,7 @@ const MintPage = () => {
 
     const timeout = setTimeout(async () => {
       if (stateDisableButton()) return;
+      dispatch(setStatus('pending'));
 
       const { cRatio, collateralBalance, synthDebt } = await positionExposeData(
         minterContract,
@@ -117,6 +127,7 @@ const MintPage = () => {
         ghoValue ? ghoValue : '0',
         gdaiValue ? gdaiValue : '0'
       );
+
       dispatch(
         setCRatioSimulateMint(
           (bigNumberToFloat(cRatio) * 100).toString(),
@@ -124,6 +135,7 @@ const MintPage = () => {
           bigNumberToFloat(synthDebt).toString()
         )
       );
+      dispatch(setStatus('success'));
     }, 3000);
 
     return () => {

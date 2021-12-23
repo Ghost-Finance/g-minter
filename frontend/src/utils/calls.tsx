@@ -51,7 +51,7 @@ export const depositCollateral = async (
 };
 
 export const balanceOf = async (contract: Contract, account: string) => {
-  return contract.methods.balanceOf(account).call({ from: account });
+  return contract.methods.balanceOf(account).call();
 };
 
 export const getCRatio = async (
@@ -59,6 +59,7 @@ export const getCRatio = async (
   token: string,
   account: string
 ) => {
+  debugger;
   return contract.methods.getCRatio(token).call({ from: account });
 };
 
@@ -121,18 +122,24 @@ export const positionExposeData = (
   amountGHO: string,
   amountGdai: string
 ) => {
-  const ghoAmount = BigNumber.from(parseUnits(amountGHO)).toString();
-  const gdaiAmount = BigNumber.from(parseUnits(amountGdai)).toString();
+  const ghoAmount = BigNumber.from(parseUnits(amountGHO));
+  const gdaiAmount = BigNumber.from(parseUnits(amountGdai));
 
   return Promise.all([
-    simulateMint(contract, token, account, ghoAmount, gdaiAmount),
+    simulateMint(
+      contract,
+      token,
+      account,
+      ghoAmount.toString(),
+      gdaiAmount.toString()
+    ),
     collateralBalance(contract, token, account),
     synthDebt(contract, token, account),
   ]).then(values => {
     return {
-      cRatio: values[0],
-      collateralBalance: values[1] + parseInt(ghoAmount),
-      synthDebt: values[2] + parseInt(gdaiAmount),
+      cRatio: values[0].toString(),
+      collateralBalance: BigNumber.from(values[1]).add(ghoAmount),
+      synthDebt: BigNumber.from(values[2]).add(gdaiAmount),
     };
   });
 };

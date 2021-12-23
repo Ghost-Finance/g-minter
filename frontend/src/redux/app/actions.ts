@@ -5,9 +5,15 @@ export const setTxSucces = (txSuccess: null | boolean) => ({
   txSuccess,
 });
 
-export const setCRatio = (cRatioValue: null | string) => ({
+export const setCRatio = (
+  cRatioValue: null | string,
+  balanceOfGHO: null | string,
+  balanceOfGDAI: null | string
+) => ({
   type: Types.SET_CRATIO,
   cRatioValue,
+  balanceOfGHO,
+  balanceOfGDAI,
 });
 
 export const setCRatioSimulateMint = (
@@ -19,6 +25,11 @@ export const setCRatioSimulateMint = (
   cRatioSimulateMintValue,
   collateralBalance,
   synthDebt,
+});
+
+export const setStatus = (status: string) => ({
+  type: Types.SET_STATUS,
+  status,
 });
 
 export const setBalanceOfGHO = (balanceOfGHO: null | string) => ({

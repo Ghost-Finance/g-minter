@@ -12,7 +12,7 @@ export default makeStyles((theme: Theme) => ({
     flexFlow: 'column',
     boxSizing: 'border-box',
     overflowX: 'hidden',
-    marginLeft: '70px',
+    padding: theme.spacing(2, 7),
     [theme.breakpoints.down('md')]: {
       width: '100%',
       height: '100%',
