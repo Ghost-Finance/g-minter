@@ -251,6 +251,72 @@ describe('Minter', async function() {
           )
         ).to.be.true;
       });
+
+      it('#simulateCRatio validates amount is positive', async function() {
+        try {
+          await state.minter.simulateCRatio(synthTokenAddress, 0, 0);
+        } catch (error) {
+          expect(error.message).to.match(/Incorrect values/);
+        }
+      });
+
+      it('#simulateCRatio validates amounts are incorrect', async function() {
+        try {
+          await state.minter.simulateCRatio(
+            synthTokenAddress,
+            BigNumber.from(parseEther('2.0')).toString(),
+            BigNumber.from(parseEther('3.0').toString())
+          );
+        } catch (error) {
+          expect(error.message).to.match(/Incorrect values/);
+        }
+      });
+
+      it('#simulateCRatio Should return a simulate c-Ratio', async function() {
+        const cRatioValue = await state.minter.simulateCRatio(
+          synthTokenAddress,
+          BigNumber.from(parseEther('180.0')).toString(),
+          BigNumber.from(parseEther('20.0').toString())
+        );
+
+        expect(cRatioValue.toString()).to.be.equal(
+          BigNumber.from(parseEther('9.0').toString())
+        );
+      });
+
+      it('#maximumByCollateral validates amount is positive', async function() {
+        try {
+          await state.minter.maximumByCollateral(synthTokenAddress, 0);
+        } catch (error) {
+          expect(error.message).to.match(/Incorrect values/);
+        }
+      });
+
+      it('#maximumByCollateral Should return an expectation debt value', async function() {
+        const value = await state.minter.maximumByCollateral(
+          synthTokenAddress,
+          BigNumber.from(parseEther('180.0'))
+        );
+        expect(value.toString()).to.be.equal(
+          BigNumber.from(parseEther('20.0'))
+        );
+      });
+
+      it('#maximumByDebt validates amount is positive', async function() {
+        try {
+          await state.minter.maximumByDebt(synthTokenAddress, 0);
+        } catch (error) {
+          expect(error.message).to.match(/Incorrect values/);
+        }
+      });
+
+      it('#maximumByDebt Should return an expectation collateral value', async function() {
+        const value = await state.minter.maximumByDebt(
+          synthTokenAddress,
+          BigNumber.from(parseEther('20'))
+        );
+        expect(value.toString()).to.be.equal(BigNumber.from(parseEther('180')));
+      });
     });
 
     describe('Burn', async function() {
