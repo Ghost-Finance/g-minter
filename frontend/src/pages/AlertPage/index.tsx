@@ -82,9 +82,9 @@ const AlertPage = () => {
                 </Link>
               </div>
             )}
-            <div className={classes.bottomBox}>
+            {/* <div className={classes.bottomBox}>
               <div className={classes.topBox}>&nbsp;</div>
-            </div>
+            </div> */}
             {confirmed ? (
               <div className={classes.bottomBoxYellow}>&nbsp;</div>
             ) : null}

@@ -23,7 +23,6 @@ import cardsData from './cardsData';
 import './style.css';
 import WalletConnectPage from '../WalletConnectPage';
 import ConnectWallet from '../../components/Button/ConnectWallet';
-import AlertLeftBar from '../../components/AlertLeftBar';
 import { balanceOf, getCRatio } from '../../utils/calls';
 import { useERC20, useMinter } from '../../hooks/useContract';
 import { setCRatio, setStatus } from '../../redux/app/actions';
@@ -137,7 +136,7 @@ const MainPage = ({ networkName }: Props) => {
         {rootPage ? (
           <GhostRatio />
         ) : location.pathname === pathNameAlert ? (
-          <AlertLeftBar />
+          <></>
         ) : (
           <GhostRatioMint />
         )}
