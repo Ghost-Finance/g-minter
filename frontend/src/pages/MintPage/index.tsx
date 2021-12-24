@@ -144,7 +144,7 @@ const MintPage = () => {
   }, [account, minterContract, ghoValue, gdaiValue, dispatch]);
 
   return (
-    <div className="modal">
+    <div className="modal side-left">
       {redirect ? (
         <Redirect
           to={{
