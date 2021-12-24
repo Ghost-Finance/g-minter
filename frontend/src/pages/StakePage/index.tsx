@@ -9,7 +9,7 @@ const StakePage = () => {
   const classes = useStyle();
 
   return (
-    <div className="modal">
+    <div className="modal side-left">
       <Grid container direction="row" className={classes.root}>
         <div>
           <Link to="/">

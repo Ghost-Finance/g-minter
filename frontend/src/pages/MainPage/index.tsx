@@ -35,7 +35,7 @@ interface Props {
 }
 
 const MainPage = ({ networkName }: Props) => {
-  const pathNameAlert = '/alert';
+  const pagesWithoutNavElement = ['/alert', '/wallet-connect'];
   const classes = useStyles();
   const location = useLocation();
   const [rootPage, setRootPageChanged] = useState(true);
@@ -114,7 +114,7 @@ const MainPage = ({ networkName }: Props) => {
       className={
         rootPage
           ? classes.root
-          : location.pathname === pathNameAlert
+          : pagesWithoutNavElement.includes(location.pathname)
           ? ''
           : classes.pageActived
       }
@@ -125,22 +125,20 @@ const MainPage = ({ networkName }: Props) => {
       ) : (
         <div
           className={
-            location.pathname === pathNameAlert ? '' : classes.pageActivedTop
+            pagesWithoutNavElement.includes(location.pathname)
+              ? ''
+              : classes.pageActivedTop
           }
         ></div>
       )}
-      <NavElement styleWithBackgound={rootPage}>
-        <div>
-          <LogoIcon />
-        </div>
-        {rootPage ? (
-          <GhostRatio />
-        ) : location.pathname === pathNameAlert ? (
-          <></>
-        ) : (
-          <GhostRatioMint />
-        )}
-      </NavElement>
+      {!pagesWithoutNavElement.includes(location.pathname) && (
+        <NavElement styleWithBackgound={rootPage}>
+          <div>
+            <LogoIcon />
+          </div>
+          {rootPage ? <GhostRatio /> : <GhostRatioMint />}
+        </NavElement>
+      )}
       {rootPage && (
         <main className={classes.main}>
           <Grid
