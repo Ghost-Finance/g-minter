@@ -12,15 +12,14 @@ const useStyle = makeStyles((theme: Theme) =>
     paperContent: {
       display: 'flex',
       padding: '50px 50px 0px 50px',
-      // position: 'absolute',
-      alignItems: 'flex-start',
-      flexDirection: 'column',
+      alignItems: 'center',
+      flexFlow: 'column',
       justifyContent: 'space-between',
       height: '100vh',
     },
     cardForm: {
       marginTop: 20,
-      width: 'calc(60%)',
+      width: 'calc(40%)',
     },
     contentCard: {
       display: 'flex',
