@@ -74,7 +74,9 @@ const main = async () => {
     ghoToken.address,
     gDaiAddress,
     auctionHouse.address,
-    minter.address
+    minter.address,
+    feedGho.address,
+    feedGdai.address
   );
 };
 
@@ -88,7 +90,9 @@ const saveFrontendFiles = (
   ghoContractAddress: string,
   gDaiContractAddress: string,
   auctionHouseContractAddress: string,
-  minterContractAddress: string
+  minterContractAddress: string,
+  feedGhoAddress: string,
+  feedGdaiAddress: string
 ) => {
   const contractsDir = __dirname + '/../frontend/src/contracts';
   const typechainSrcDir = __dirname + '/../typechain';
@@ -111,6 +115,8 @@ const saveFrontendFiles = (
         GDAI: gDaiContractAddress,
         AuctionHouse: auctionHouseContractAddress,
         Minter: minterContractAddress,
+        FeedGho: feedGhoAddress,
+        FeedGdai: feedGdaiAddress,
       },
       null,
       2
@@ -144,6 +150,12 @@ const saveFrontendFiles = (
   fs.writeFileSync(
     contractsDir + '/AuctionHouse.json',
     JSON.stringify(AuctionHouseArtifact, null, 2)
+  );
+
+  const FeedArtifact = artifacts.readArtifactSync(feedContractLabelString);
+  fs.writeFileSync(
+    contractsDir + '/Feed.json',
+    JSON.stringify(FeedArtifact, null, 2)
   );
 
   // Copy typechain to /frontend/src/typechain directory
