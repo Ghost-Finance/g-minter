@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import minterAbi from '../contracts/Minter.json';
 import ghoABI from '../contracts/GHO.json';
+import feedABI from '../contracts/Feed.json';
 import useWeb3 from './useWeb3';
 import contractAddress from '../contracts/contract-address.json';
 
@@ -21,6 +22,10 @@ export const useMinter = () => {
 
 export const useERC20 = (address: string) => {
   return useContract(ghoABI.abi, address);
+};
+
+export const useFeed = (feedAddress: string) => {
+  return useContract(feedABI.abi, feedAddress);
 };
 
 export default useContract;

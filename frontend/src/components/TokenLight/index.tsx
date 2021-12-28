@@ -6,11 +6,11 @@ import {
 } from '@material-ui/core';
 import React from 'react';
 import useStyles from './styles';
-import theme from '../../theme';
 
 type T = {
   label: string;
   icon?: JSX.Element;
+  amount?: number | string;
   valueNumber: number | string;
   center?: boolean;
   full?: boolean;
@@ -19,6 +19,7 @@ type T = {
 const TokenLight = ({
   label,
   icon,
+  amount,
   valueNumber,
   center,
   full,
@@ -34,10 +35,11 @@ const TokenLight = ({
   const _label = <ListItemText primary={label} />;
 
   const _price = center ? (
-    <ListItemText primary={valueNumber} />
+    <ListItemText primary={amount} secondary={valueNumber} />
   ) : (
     <ListItemSecondaryAction className={classes.value}>
-      {valueNumber}
+      <span>{amount}</span>
+      <span className={classes.secondaryText}>{valueNumber}</span>
     </ListItemSecondaryAction>
   );
 

@@ -12,10 +12,12 @@ type TState = {
   status?: 'idle' | 'pending' | 'success' | 'error';
   cRatioValue?: string;
   cRatioSimulateMintValue?: string;
-  balanceOfGHO?: string;
-  balanceOfGDAI?: string;
+  balanceOfGho?: string;
+  balanceOfGdai?: string;
   collateralBalance?: string;
   synthDebt?: string;
+  collateralBalancePrice?: string;
+  synthDebtPrice?: string;
 };
 
 type TAction = {
@@ -27,10 +29,12 @@ const initialState: TState = {
   status: 'idle',
   cRatioValue: '0',
   cRatioSimulateMintValue: '0',
-  balanceOfGHO: '0',
-  balanceOfGDAI: '0',
+  balanceOfGho: '0',
+  balanceOfGdai: '0',
   collateralBalance: '0',
   synthDebt: '0',
+  collateralBalancePrice: '0',
+  synthDebtPrice: '0',
 };
 
 // eslint-disable-next-line import/no-anonymous-default-export
@@ -41,10 +45,12 @@ export default (state: TState = initialState, action: TAction) => {
     status,
     cRatioValue,
     cRatioSimulateMintValue,
-    balanceOfGHO,
-    balanceOfGDAI,
+    balanceOfGho,
+    balanceOfGdai,
     collateralBalance,
     synthDebt,
+    collateralBalancePrice,
+    synthDebtPrice,
   } = action;
   switch (type) {
     case Types.SET_TXSUCCESS:
@@ -61,8 +67,12 @@ export default (state: TState = initialState, action: TAction) => {
       return {
         ...state,
         cRatioValue,
-        balanceOfGHO,
-        balanceOfGDAI,
+        balanceOfGho,
+        balanceOfGdai,
+        collateralBalance,
+        synthDebt,
+        collateralBalancePrice,
+        synthDebtPrice,
       };
     case Types.SET_CRATIO_SIMULATE_MINT:
       return {
@@ -74,12 +84,12 @@ export default (state: TState = initialState, action: TAction) => {
     case Types.SET_BALANCE_OF_GHO:
       return {
         ...state,
-        balanceOfGHO,
+        balanceOfGho,
       };
     case Types.SET_BALANCE_OF_GDAI:
       return {
         ...state,
-        balanceOfGDAI,
+        balanceOfGdai,
       };
     default:
       return state;

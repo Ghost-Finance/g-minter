@@ -23,12 +23,24 @@ import cardsData from './cardsData';
 import './style.css';
 import WalletConnectPage from '../WalletConnectPage';
 import ConnectWallet from '../../components/Button/ConnectWallet';
-import { balanceOf, getCRatio } from '../../utils/calls';
-import { useERC20, useMinter } from '../../hooks/useContract';
+import {
+  promiseAll,
+  balanceOf,
+  collateralBalance as collateralBalanceOf,
+  getCRatio,
+  synthDebtOf,
+  feedPrice,
+} from '../../utils/calls';
+import { useERC20, useMinter, useFeed } from '../../hooks/useContract';
 import { setCRatio, setStatus } from '../../redux/app/actions';
-import { ghoAddress, gDaiAddress } from '../../utils/constants';
+import {
+  ghoAddress,
+  gDaiAddress,
+  feedGdaiAddress,
+  feedGhoAddress,
+} from '../../utils/constants';
 import { useSelector } from '../../redux/hooks';
-import { bigNumberToFloat } from '../../utils/StringUtils';
+import { bigNumberToFloat, formatCurrency } from '../../utils/StringUtils';
 
 interface Props {
   networkName?: string;
@@ -41,11 +53,16 @@ const MainPage = ({ networkName }: Props) => {
   const [rootPage, setRootPageChanged] = useState(true);
   const [cardsDataArray, setCardsDataArray] = useState(cardsData);
   const minterContract = useMinter();
+  const feedGhoContract = useFeed(feedGhoAddress);
+  const feedGdaiContract = useFeed(feedGdaiAddress);
   const ghoContract = useERC20(ghoAddress);
   const gdaiContract = useERC20(gDaiAddress);
-  const { balanceOfGDAI, balanceOfGHO, status } = useSelector(
-    state => state.app
-  );
+  const {
+    balanceOfGdai,
+    balanceOfGho,
+    collateralBalance,
+    status,
+  } = useSelector(state => state.app);
   const { account } = useSelector(state => state.wallet);
   const dispatch = useDispatch();
 
@@ -54,7 +71,8 @@ const MainPage = ({ networkName }: Props) => {
     setRootPageChanged(location.pathname === '/');
 
     function organizeCardsData() {
-      if (balanceOfGDAI === '0') return;
+      debugger;
+      if (balanceOfGdai === '0') return;
 
       let cardsDataArrayAfterMint = cardsData.filter(
         card => card.to !== '/mint' && card.to !== '/stake'
@@ -68,28 +86,50 @@ const MainPage = ({ networkName }: Props) => {
     }
 
     async function fetchData() {
-      try {
-        let cRatioValue = await getCRatio(
-          minterContract,
-          gDaiAddress,
-          account as string
-        );
-        let balanceOfGHOValue = await balanceOf(ghoContract, account as string);
-        let balanceOfGDAIValue = await balanceOf(
-          gdaiContract,
-          account as string
-        );
-        dispatch(
-          setCRatio(
-            (bigNumberToFloat(cRatioValue) * 100).toString(),
-            bigNumberToFloat(balanceOfGHOValue).toString(),
-            bigNumberToFloat(balanceOfGDAIValue).toString()
-          )
-        );
-        dispatch(setStatus('success'));
-      } catch (error) {
-        dispatch(setStatus('error'));
-      }
+      promiseAll(
+        [
+          getCRatio(minterContract, gDaiAddress, account as string),
+          balanceOf(ghoContract, account as string),
+          balanceOf(gdaiContract, account as string),
+          collateralBalanceOf(minterContract, gDaiAddress, account as string),
+          synthDebtOf(minterContract, gDaiAddress, account as string),
+          feedPrice(feedGhoContract),
+          feedPrice(feedGdaiContract),
+        ],
+        (data: any) => {
+          const [
+            cRatio,
+            balanceGho,
+            balanceGdai,
+            collateralBalance,
+            synthDebt,
+            feedGhoPrice,
+            feedGdaiPrice,
+          ] = data;
+
+          dispatch(
+            setCRatio({
+              cRatioValue: (bigNumberToFloat(cRatio) * 100).toString(),
+              balanceOfGho: bigNumberToFloat(balanceGho).toString(),
+              balanceOfGdai: bigNumberToFloat(balanceGdai).toString(),
+              collateralBalance: bigNumberToFloat(collateralBalance).toString(),
+              synthDebt: bigNumberToFloat(synthDebt).toString(),
+              collateralBalancePrice: formatCurrency(
+                bigNumberToFloat(collateralBalance) *
+                  bigNumberToFloat(feedGhoPrice)
+              ),
+              synthDebtPrice: formatCurrency(
+                bigNumberToFloat(synthDebt) * bigNumberToFloat(feedGdaiPrice)
+              ),
+            })
+          );
+          dispatch(setStatus('success'));
+        },
+        (error: any) => {
+          console.log(error);
+          dispatch(setStatus('error'));
+        }
+      );
     }
 
     account && fetchData();
@@ -101,8 +141,8 @@ const MainPage = ({ networkName }: Props) => {
     ghoContract,
     gdaiContract,
     account,
-    balanceOfGDAI,
-    balanceOfGHO,
+    balanceOfGdai,
+    balanceOfGho,
     minterContract,
     dispatch,
   ]);
@@ -155,7 +195,7 @@ const MainPage = ({ networkName }: Props) => {
               <ConnectWallet />
             </Grid>
             <Grid item className={classes.columnFixed} justify-xs-center="true">
-              {account && balanceOfGHO === '0' ? (
+              {account && balanceOfGho === '0' && collateralBalance === '0' ? (
                 <LinkCard
                   title="🦄 Swap GHO"
                   text="into your wallet"
