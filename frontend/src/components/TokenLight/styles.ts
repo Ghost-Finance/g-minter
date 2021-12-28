@@ -16,6 +16,10 @@ export default makeStyles(theme => ({
   value: {
     color: theme.palette.secondary.contrastText,
   },
+  secondaryText: {
+    marginLeft: 15,
+    color: theme.palette.secondary.dark,
+  },
   center: {
     flexDirection: 'row',
     display: 'flex',

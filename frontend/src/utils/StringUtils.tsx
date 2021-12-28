@@ -17,9 +17,7 @@ export const shortenAddress = (address: string) => {
  * Converts an ethers.BigNumber to vanilla JS "number"
  */
 export const bigNumberToFloat = (bNumber: BigNumber) => {
-  debugger;
   const etherBalance = formatEther(bNumber || BigNumber.from('0'));
-  debugger;
   return parseFloat(etherBalance);
 };
 
@@ -54,4 +52,18 @@ export const formatBalance = (
     num = bal.toFixed(Math.max(0, ~~n));
 
   return (c ? num.replace('.', c) : num).replace(new RegExp(re, 'g'), '$&' + s);
+};
+
+export const formatCurrency = (
+  value = 0,
+  type = 'en-US',
+  style = 'currency',
+  currency = 'USD'
+) => {
+  debugger;
+  return new Intl.NumberFormat(type, {
+    style: style,
+    currency: currency,
+    useGrouping: true,
+  }).format(value);
 };

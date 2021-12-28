@@ -8,9 +8,9 @@ import React from 'react';
 import useStyles from './styles';
 
 type T = {
-  label: string;
+  label?: string;
   icon?: JSX.Element;
-  valueNumber: number | string;
+  valueNumber?: number | string;
   center?: boolean;
   full?: boolean;
 };

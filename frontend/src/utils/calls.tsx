@@ -1,6 +1,7 @@
 import { Contract } from 'web3-eth-contract';
 import { BigNumber } from '@ethersproject/bignumber';
 import { parseEther, parseUnits } from '@ethersproject/units';
+import { promises } from 'dns';
 
 export const mint = async (
   contract: Contract,
@@ -97,6 +98,10 @@ export const simulateMint = async (
     .call({ from: account });
 };
 
+export const feedPrice = async (contract: Contract) => {
+  return contract.methods.price().call();
+};
+
 export const collateralBalance = async (
   contract: Contract,
   token: string,
@@ -107,7 +112,7 @@ export const collateralBalance = async (
     .call({ from: account });
 };
 
-export const synthDebt = async (
+export const synthDebtOf = async (
   contract: Contract,
   token: string,
   account: string
@@ -134,7 +139,7 @@ export const positionExposeData = (
       gdaiAmount.toString()
     ),
     collateralBalance(contract, token, account),
-    synthDebt(contract, token, account),
+    synthDebtOf(contract, token, account),
   ]).then(values => {
     return {
       cRatio: values[0].toString(),
@@ -142,4 +147,14 @@ export const positionExposeData = (
       synthDebt: BigNumber.from(values[2]).add(gdaiAmount),
     };
   });
+};
+
+export const promiseAll = async (
+  allPromise: any,
+  successCallback: any,
+  errorCallback: any
+) => {
+  return Promise.all(allPromise)
+    .then(successCallback)
+    .catch(errorCallback);
 };

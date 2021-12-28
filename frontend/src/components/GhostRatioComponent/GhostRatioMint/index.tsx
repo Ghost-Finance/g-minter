@@ -8,15 +8,14 @@ import CRatio from '../../CRatio';
 import useStyles from './styles';
 import theme from '../../../theme';
 import { useSelector } from '../../../redux/hooks';
-import { collateralBalance, synthDebt } from '../../../utils/calls';
 
 const GhostRatioMint = () => {
   const classes = useStyles(theme);
 
   const {
     cRatioSimulateMintValue,
-    balanceOfGHO,
-    balanceOfGDAI,
+    balanceOfGho,
+    balanceOfGdai,
     collateralBalance,
     synthDebt,
   } = useSelector(state => state.app);
@@ -51,12 +50,12 @@ const GhostRatioMint = () => {
           <TokenBorderLight
             icon={<GhostIcon />}
             label="GHO"
-            valueNumber={parseFloat(balanceOfGHO || '0')}
+            valueNumber={parseFloat(balanceOfGho || '0')}
           />
           <TokenBorderLight
             icon={<DaiIcon />}
             label="gDai"
-            valueNumber={parseFloat(balanceOfGDAI || '0')}
+            valueNumber={parseFloat(balanceOfGdai || '0')}
           />
         </ListSynths>
       </div>

@@ -5,15 +5,23 @@ export const setTxSucces = (txSuccess: null | boolean) => ({
   txSuccess,
 });
 
-export const setCRatio = (
-  cRatioValue: null | string,
-  balanceOfGHO: null | string,
-  balanceOfGDAI: null | string
-) => ({
+export const setCRatio = ({
+  cRatioValue,
+  balanceOfGho,
+  balanceOfGdai,
+  collateralBalance,
+  synthDebt,
+  collateralBalancePrice,
+  synthDebtPrice,
+}: any) => ({
   type: Types.SET_CRATIO,
   cRatioValue,
-  balanceOfGHO,
-  balanceOfGDAI,
+  balanceOfGho,
+  balanceOfGdai,
+  collateralBalance,
+  synthDebt,
+  collateralBalancePrice,
+  synthDebtPrice,
 });
 
 export const setCRatioSimulateMint = (
@@ -32,12 +40,12 @@ export const setStatus = (status: string) => ({
   status,
 });
 
-export const setBalanceOfGHO = (balanceOfGHO: null | string) => ({
+export const setBalanceOfGHO = (balanceOfGho: null | string) => ({
   type: Types.SET_BALANCE_OF_GHO,
-  balanceOfGHO,
+  balanceOfGho,
 });
 
-export const setBalanceOfGDAI = (balanceOfGDAI: null | string) => ({
+export const setBalanceOfGDAI = (balanceOfGDai: null | string) => ({
   type: Types.SET_BALANCE_OF_GDAI,
-  balanceOfGDAI,
+  balanceOfGDai,
 });
