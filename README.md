@@ -23,7 +23,7 @@
 
 # Setup checklist
 
-[ ] Clone UMA protocol from [here](https://github.com/Ghost-Finance/protocol)
+[ ] Node 14.15.0
 
 # Setup environment variables
 
@@ -33,33 +33,23 @@
 4. Generate a 12 word mnemonic seed phrase (can use ganache to get one or ask project admin for current seed used for remote envs)
 5. Paste 12 word mnemonic seed phrase as value for `MNEMONIC_SEED` key
 6. Go to https://alchemyapi.io/ and setup an account then take the api key for the relevant network (like mainnet, kovan or ropsten) or ask the team for an existing API key and paste under `ALCHEMY_KEY`
-7. When setting up locally, under Quickstart - Step 6 paste the emp address as value to `FINANCIAL_CONTRACT_ADDRESS`
-8. When setting up locally, under Quickstart - Step 7, paste the `collateralToken.address` as value to `DAI_CONTRACT_ADDRESS`
-9. When setting up locally, under Quickstart - Step 8, paste the `syntheticToken.address` as value to `UBE_CONTRACT_ADDRESS`
-10. When setting up locally, paste `LOCALHOST` as value to `CHAIN_NETWORK`. Other values are `KOVAN` or `MAINNET` (we are not on other testnets atm)
+7. When setting up locally, paste `LOCALHOST` as value to `CHAIN_NETWORK`. Other values are `KOVAN` or `MAINNET` (we are not on other testnets atm)
 
 # Metamask
 
 1. Be sure to have metamask plugin installed in your browser (recommended browser is Chrome)
-2. Login to Metamask and point the network to localhost and port 9545 before starting the frontend app
+2. Login to Metamask and point the network to localhost and port 7545 before starting the frontend app
+3. Install ganache `https://trufflesuite.com/ganache/`.
 
 ## Quickstart: Running local
 
-1. Setup UMA locally by running `git clone https://github.com/Ghost-Finance/protocol` and following the quick start steps in that repo
-2. Run the Ganache node using this command `npx ganache-cli -p 9545 -e 1000000 -l 10000000` (don't forget to note down the `account[0]` private key and wallet address somewhere)
-3. While still in the `protocol` project root, run `yarn truffle console --network test` to enter the truffle console.
-4. Run `migrate` to migrate UMA contract in local Ganache node inside the truffle console.
-5. Make an EMP following steps 3-8 [here](https://docs.umaproject.org/build-walkthrough/mint-locally#parameterize-and-deploy-a-contract)
-6. Get the emp address by entering `emp.address`
-7. Create an instance of the collateral token to get its address. Run `const collateralToken = await TestnetERC20.deployed()` then `collateralToken.address`
-8. Create an instance of the synthetic token to get its address. Run `const syntheticToken = await SyntheticToken.at(await emp.tokenCurrency())` then `syntheticToken.address`
-9. Open a new terminal window and run `git clone https://github.com/Ghost-Finance/g-minter && cd g-minter`
-10. run `npm i` to install backend dependencies
-11. run `npm run test:local` to run contract test suite to run smart contract test cases
-12. run `npm run deploy:local` to compile and deploy the Minter contract to the ganache node that UMA was deployed on
-13. cd to frontend `cd frontend`
-14. run `npm i` to install frontend dependencies
-15. run `npm start` to serve the app locally
+1. Open a new terminal window and run `git clone https://github.com/Ghost-Finance/g-minter && cd g-minter`
+2. run `npm i` to install backend dependencies
+3. run `npm run test:local` to run contract test suite to run smart contract test cases
+4. run `npm run deploy:local` to compile and deploy the Minter contract to the ganache node that UMA was deployed on
+5. cd to frontend `cd frontend`
+6. run `npm i` or `yarn` to install frontend dependencies
+7. run `npm run start` to serve the app locally
 
 ## Environment Setup
 
@@ -128,7 +118,7 @@
 
 5. UMA tests don't run due to `No tests configured` err: try `npm uninstall -g ganache-cli`, make sure `yarn ganache-cli --version` returns `Ganache CLI v6.12.2 (ganache-core: 2.13.2)` (or the same version as specified in `protocol` repo's root package.json) then run `yarn test` again
 
-
 ## Guidelines:
-  - Use Github Flow. (https://guides.github.com/introduction/flow/)
-  - Name your branches starting with your initials + issue number on the backlog. Ex. I'm Luan Pontolio, my branches are named as lp-git-123 or lp-doing-something.
+
+- Use Github Flow. (https://guides.github.com/introduction/flow/)
+- Name your branches starting with your initials + issue number on the backlog. Ex. I'm Luan Pontolio, my branches are named as lp-git-123 or lp-doing-something.
