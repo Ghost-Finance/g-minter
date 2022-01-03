@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import useStyles from './styles';
 import MainPage from '../MainPage';
 
-export default (): React.ReactElement => {
+const App = (): React.ReactElement => {
   const classes = useStyles();
 
   return (
@@ -18,3 +18,5 @@ export default (): React.ReactElement => {
     </div>
   );
 };
+
+export default App;

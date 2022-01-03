@@ -18,14 +18,14 @@ const RenderProvider = ({ provider }: T) => {
   return (
     <Grid item>
       <Card className={classes.providerRoot} variant="outlined">
-        <a className={classes.providerAction} onClick={onClick}>
+        <div className={classes.providerAction} onClick={onClick}>
           <div className={classes.providerImgContainer}>
-            <img className={classes.providerImg} src={image} />
+            <img className={classes.providerImg} src={image} alt="Provider" />
           </div>
           <div className={classes.providerLabelContainer}>
             <Typography className={classes.providerLabel}>{label}</Typography>
           </div>
-        </a>
+        </div>
       </Card>
     </Grid>
   );

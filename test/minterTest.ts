@@ -1,490 +1,529 @@
-import { ethers } from 'hardhat'
-import { assert, expect } from 'chai'
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address'
-import { BigNumber, Contract } from 'ethers'
-import { deployContract, isValidContract } from './util/DeployContract'
+import { ethers } from 'hardhat';
+import { expect } from 'chai';
+import { BigNumber } from 'ethers';
+import { parseEther } from 'ethers/lib/utils';
 import {
-  checkChangedFinancialContractAddressEvent,
+  checkBurnEvent,
+  checkCreateSynthEvent,
   checkDepositEvent,
-  checkWithdrawalEvent
-} from './util/CheckEvent'
-import { parseEther } from 'ethers/lib/utils'
+  checkMintEvent,
+  checkWithdrawalEvent,
+} from './util/CheckEvent';
+import setup from './util/setup';
 
-// CONTRACT ADDRESSES
-let empContractAddress: string
-let collateralAddressUMA: string
-let ubeAddressUma: string
+describe('Minter', async function() {
+  let state, amount;
 
-const network = process.env.CHAIN_NETWORK
+  beforeEach(async function() {
+    state = await setup();
+    amount = BigNumber.from(parseEther('500.0'));
+  });
 
-// For Kovan & Mainnet, get contract addresses from env (as they already exists in the chain)
-if (network.toLowerCase() !== 'localhost') {
-  empContractAddress = process.env.FINANCIAL_CONTRACT_ADDRESS
-  collateralAddressUMA = process.env.DAI_CONTRACT_ADDRESS
-  ubeAddressUma = process.env.UBE_CONTRACT_ADDRESS
-  console.log('financialContractAddress: ', empContractAddress)
-  console.log('collateralAddressUMA: ', collateralAddressUMA)
-  console.log('ubeAddressUma: ', ubeAddressUma)
-}
+  describe('Create a Synths', async function() {
+    it('Should return error to create a synth if is not a owner', async function() {
+      const feedSynth = await state.Feed.deploy(amount, 'Feed Coin');
+      const account = state.contractAccounts[0];
 
-// Helper vars
-let nonCollateralAddress: string,
-  expandedERC20LabelString: string = 'ExpandedERC20',
-  // name not as impt, since does not have an artifact to reference since auto deployed by TokenFactory
-  ubeContractLabelString: string = 'SyntheticToken',
-  minterContractLabelString: string = 'Minter',
-  empContractLabelString: string = 'ExpiringMultiParty'
-
-// account that signs deploy txs
-let contractCreatorAccount: SignerWithAddress
-
-// Constants
-
-// Contract variables that store deployed Contracts
-let ubeContract: Contract,
-  minterContract: Contract,
-  daiContract: Contract,
-  dumContract: Contract,
-  empContract: Contract
-
-// Fake DAI Collaeral details
-const nonCollateralTokenDetails = {
-  name: 'DUM Dummy Token',
-  symbol: 'DUM',
-  decimals: '18'
-}
-
-// Constant values
-const collateralRawValue = 1500
-const collateralToRedeemRawValue = 30
-const tokensRawValue = 500
-const collateralDeposit = BigNumber.from(parseEther(`${collateralRawValue}`)) // total collateral to be deposited
-const collateralToRedeem = BigNumber.from(
-  parseEther(`${collateralToRedeemRawValue}`)
-)
-const tokensToMint = BigNumber.from(parseEther(`${tokensRawValue}`))
-const tokensToMintNumber = BigNumber.from(`${tokensRawValue * 100}`)
-const collateralDepositNumber = BigNumber.from(`${collateralRawValue * 100}`) // padded with 2 extra zeroes
-const collateralToRedeemNumber = BigNumber.from(
-  `${collateralToRedeemRawValue * 100}`
-) // padded with 2 extra zeroes
-
-const intialCollateral = parseEther('100000')
-const expectedUserCollateralLeft = BigNumber.from(parseEther('1410'))
-const expectedUserUBELeft = BigNumber.from(parseEther('470'))
-
-// single run per test setup
-before(async () => {
-  const accounts = await ethers.getSigners()
-  contractCreatorAccount = accounts[0]
-
-  if (network.toLowerCase() === 'localhost') {
-    /**
-     * UMA setup for localhost testing
-     *
-     * We need to go through the process of deploying a UMA EMP as described here:
-     * https://docs.umaproject.org/build-walkthrough/mint-locally
-     */
-    it('Can deploy and get ref to UMA contracts', async () => {
-      const umaContractAddresses = require('./uma-contract-address.json')
-      const collateralAddress = umaContractAddresses['TestnetERC20']
-
-      /**
-       * 1. Create an instance of the ExpiringMultiParty creator (the contract factory
-       * for synthetic tokens)
-       */
-      const empCreator = await ethers.getContractAt(
-        'ExpiringMultiPartyCreator',
-        umaContractAddresses['ExpiringMultiPartyCreator']
-      )
-
-      /**
-       * 2. Define the parameters for the synthetic tokens you would like to create
-       */
-      const constructorParams = {
-        expirationTimestamp: '1706780800',
-        collateralAddress: collateralAddress,
-        priceFeedIdentifier: ethers.utils.formatBytes32String('PHPDAI'),
-        syntheticName: 'UBE Synthetic Token',
-        syntheticSymbol: 'UBE',
-        collateralRequirement: { rawValue: ethers.utils.parseEther('1.5') },
-        disputeBondPercentage: { rawValue: ethers.utils.parseEther('0.1') },
-        sponsorDisputeRewardPercentage: {
-          rawValue: ethers.utils.parseEther('0.1')
-        },
-        disputerDisputeRewardPercentage: {
-          rawValue: ethers.utils.parseEther('0.1')
-        },
-        minSponsorTokens: { rawValue: '100000000000000' },
-        timerAddress: umaContractAddresses['Timer'],
-        withdrawalLiveness: 7200,
-        liquidationLiveness: 7200,
-        excessTokenBeneficiary: '0x0000000000000000000000000000000000000000',
-        financialProductLibraryAddress:
-          '0x0000000000000000000000000000000000000000'
+      try {
+        await state.minter
+          .connect(account)
+          .createSynth(
+            'Test coin',
+            'COIN',
+            amount,
+            100,
+            200,
+            feedSynth.address
+          );
+      } catch (error) {
+        expect(error.message).to.match(/unauthorized/);
       }
+    });
 
-      /**
-       * 3. Before the contract for the synthetic tokens can be created, the price
-       * identifier for the synthetic tokens must be registered with IdentifierWhitelist.
-       * This is important to ensure that the UMA DVM can resolve any disputes for these
-       * synthetic tokens.
-       */
-      const idWhitelist = await ethers.getContractAt(
-        'IdentifierWhitelist',
-        umaContractAddresses['IdentifierWhitelist']
-      )
-      await idWhitelist.addSupportedIdentifier(
-        constructorParams.priceFeedIdentifier
-      )
-      console.log('step 3 done')
+    it('Should return error if cRatioPassive is less or equal a cRatioActive', async function() {
+      const feedSynth = await state.Feed.deploy(amount, 'Feed Coin');
 
-      /**
-       * 4. We also need to register the empCreator factory with the registry to give
-       * it permission to create new ExpiringMultiParty (EMP) synthetic tokens.
-       */
-      const registry = await ethers.getContractAt(
-        'Registry',
-        umaContractAddresses['Registry']
-      )
-      await registry.addMember(1, empCreator.address)
-      console.log('step 4 done')
-
-      /**
-       * 5. We also need to register the collateral token with the collateralTokenWhitelist.
-       */
-      const addressWhitelist = await ethers.getContractAt(
-        'AddressWhitelist',
-        umaContractAddresses['AddressWhitelist']
-      )
-      await addressWhitelist.addToWhitelist(collateralAddress)
-      console.log('step 5 done')
-
-      /**
-       * 6. Now, we can create a new ExpiringMultiParty synthetic token with the factory instance.
-       */
-      const txResult = await empCreator.createExpiringMultiParty(
-        constructorParams
-      )
-
-      // Execute txResult.wait() in able to see the logs/events
-      const receipt = await txResult.wait()
-
-      // Filter the events, to find the EMP address
-      let empAddress: string
-      for (const event of receipt.events) {
-        if (event.event === 'CreatedExpiringMultiParty') {
-          empAddress = event.args.expiringMultiPartyAddress
-          break
-        }
+      try {
+        await state.minter.createSynth(
+          'Test coin',
+          'COIN',
+          amount,
+          300,
+          200,
+          feedSynth.address
+        );
+      } catch (error) {
+        expect(error.message).to.match(/Invalid cRatioActive/);
       }
+    });
 
-      const expiringMultiParty = await ethers.getContractAt(
-        'ExpiringMultiParty',
-        empAddress
-      )
+    it('Success on create a new Synth', async function() {
+      const feedSynth = await state.Feed.deploy(amount, 'Feed GDAI');
 
-      // Assign addresses to our variables
-      empContractAddress = expiringMultiParty.address
-      collateralAddressUMA = collateralAddress
-      ubeAddressUma = await expiringMultiParty.tokenCurrency()
-      console.log('financialContractAddress: ', empContractAddress)
-      console.log('collateralAddressUMA: ', collateralAddressUMA)
-      console.log('ubeAddressUma: ', ubeAddressUma)
-    })
-  }
-})
+      await state.minter.createSynth(
+        'Test coin',
+        'COIN',
+        amount,
+        200,
+        300,
+        feedSynth.address
+      );
 
-describe('should delpoy and get references of needed contracts from the blockchain', async () => {
-  // create the collateral token (this should be the existing DAI contract not created by us)
-  it('Can deploy and get ref to DAI Contract', async () => {
-    // deploy Contract with 'expect' assurances
-    const daiContractReference = await ethers.getContractAt(
-      'TestnetERC20',
-      collateralAddressUMA
-    )
-
-    daiContract = await daiContractReference.deployed()
-
-    expect(await isValidContract(daiContract, 'TestnetERC20')).to.be.true
-
-    await daiContract.allocateTo(
-      contractCreatorAccount.address,
-      intialCollateral
-    )
-    // get balance
-    const daiBalance = BigNumber.from(
-      await daiContract.balanceOf(contractCreatorAccount.address)
-    )
-
-    // test if values are equal
-    expect(
-      daiBalance.gte(intialCollateral),
-      'Collateral to mint is not equal to dai balance'
-    ).to.be.true
-  })
-
-  it('Get refto the EMP contract', async () => {
-    const empContractReference = await ethers.getContractAt(
-      empContractLabelString,
-      empContractAddress
-    )
-
-    empContract = await empContractReference.deployed()
-
-    expect(await isValidContract(empContract, empContractLabelString)).to.be
-      .true
-  })
-
-  it('Get ref to the UBE contract', async () => {
-    const ubeContractReference = await ethers.getContractAt(
-      expandedERC20LabelString,
-      ubeAddressUma
-    )
-
-    ubeContract = await ubeContractReference.deployed()
-
-    expect(await isValidContract(ubeContract, ubeContractLabelString)).to.be
-      .true
-  })
-
-  it('Can deploy and get ref to Minter Contract', async () => {
-    const Minter = await ethers.getContractFactory(minterContractLabelString)
-
-    const minterContractDeploy = await Minter.deploy(
-      ubeAddressUma,
-      empContractAddress
-    )
-
-    minterContract = await minterContractDeploy.deployed()
-
-    expect(await isValidContract(minterContract, minterContractLabelString)).to
-      .be.true
-
-    await minterContract.initialize()
-  })
-
-  it('Can whitelist collateral address to minter contract', async () => {
-    // whitelist DAI collateral address
-    await minterContract.addCollateralAddress(collateralAddressUMA)
-    expect(await minterContract.isWhitelisted(collateralAddressUMA)).to.be.true
-  })
-
-  it('Can deploy a non-collateral ERC token for testing', async () => {
-    dumContract = await deployContract(
-      expandedERC20LabelString,
-      nonCollateralTokenDetails
-    )
-
-    // (to check) assign dai address
-    nonCollateralAddress = dumContract.address
-
-    // add address as minter - contractCreatorAddress not automatically added as minter for some reason
-    await dumContract.addMinter(contractCreatorAccount.address)
-
-    // mint token
-    await dumContract.mint(contractCreatorAccount.address, intialCollateral)
-
-    // get balance
-    const dumBalance = BigNumber.from(
-      await daiContract.balanceOf(contractCreatorAccount.address)
-    )
-
-    // test if values are equal
-    expect(dumBalance.gte(intialCollateral)).to.be.true
-  })
-})
-
-describe('Can accept collateral and mint synthetic', async () => {
-  beforeEach(async () => {})
-
-  it('sending collateral ERC20 to deposit func should mint UBE, return UBE to msg.sender', async () => {
-    await daiContract.approve(minterContract.address, collateralDeposit)
-    // deposit collateral to minter contract
-    const depositTxn = await minterContract.depositByCollateralAddress(
-      collateralDepositNumber,
-      tokensToMintNumber,
-      collateralAddressUMA
-    )
-
-    await depositTxn.wait()
-
-    expect(
-      await checkDepositEvent(
-        minterContract,
-        contractCreatorAccount.address,
-        collateralAddressUMA,
-        collateralDeposit,
-        tokensToMint
-      )
-    ).to.be.true
-  })
-
-  it('sending non collateral ERC20 to deposit func should not mint UBE, not return UBE to msg.sender and return error', async () => {
-    // check that noncollateral contract is not whitelsited in the contract
-    expect(await minterContract.isWhitelisted(nonCollateralAddress)).to.be.false
-
-    try {
-      await minterContract.depositByCollateralAddress(
-        collateralDeposit,
-        collateralDepositNumber,
-        nonCollateralAddress
-      )
-      assert(false, 'Error is not thrown')
-    } catch (err) {
-      expect(err.message).to.be.equal(
-        'VM Exception while processing transaction: revert This is not allowed as collateral.'
-      )
-    }
-  })
-})
-
-describe('Can redeem synth for original ERC20 collateral', async () => {
-  it('sending synth and calling redeem func should burn synth, return ERC20 collateral to msg.sender', async () => {
-    await ubeContract.approve(minterContract.address, collateralToRedeem)
-
-    const redeemTxn = await minterContract.redeemByCollateralAddress(
-      collateralToRedeemNumber,
-      collateralAddressUMA
-    )
-
-    await redeemTxn.wait()
-
-    expect(
-      await checkWithdrawalEvent(
-        minterContract,
-        contractCreatorAccount.address,
-        daiContract.address,
-        BigNumber.from(parseEther('90')),
-        BigNumber.from(parseEther('30'))
-      )
-    ).to.be.true
-  })
-
-  it('sending invalid synth and calling redeem func should not burn synth, not return ERC20 collateral to msg.sender, and return err', async () => {
-    // check that noncollateral contract is not whitelsited in the contract
-    expect(await minterContract.isWhitelisted(nonCollateralAddress)).to.be.false
-
-    try {
-      await minterContract.redeemByCollateralAddress(
-        collateralToRedeem,
-        nonCollateralAddress
-      )
-      assert(false, 'Error is not thrown')
-    } catch (err) {
-      expect(err.message).to.be.equal(
-        'VM Exception while processing transaction: revert This is not allowed as collateral.'
-      )
-    }
-  })
-})
-
-describe('Can call view functions from the contract', () => {
-  it('Get total collateral deposited to the financial contract of a collateral', async () => {
-    expect(
-      (
-        await minterContract.getTotalCollateralByCollateralAddress(
-          collateralAddressUMA
+      expect(
+        await checkCreateSynthEvent(
+          state.minter,
+          'Test coin',
+          'COIN',
+          feedSynth.address
         )
-      ).gte(expectedUserCollateralLeft)
-    ).to.be.true
-  })
+      ).to.be.true;
+      expect(await feedSynth.name()).to.equal('Feed GDAI');
+      expect(await state.minter.getSynth(0)).to.exist;
+    });
+  });
 
-  it('Get user total collateral deposited to the financial contract of a collateral', async () => {
-    expect(
-      await minterContract.getUserCollateralByCollateralAddress(
-        collateralAddressUMA
-      )
-    ).to.equal(expectedUserCollateralLeft)
-  })
+  describe('Deposit Collateral', async function() {
+    let synthTokenAddress, amountToDeposit, accountOne;
 
-  it('Get user total minted tokens', async () => {
-    expect(
-      await minterContract.getUserTotalMintedTokensByCollateralAddress(
-        collateralAddressUMA
-      )
-    ).to.equal(expectedUserUBELeft)
-  })
+    beforeEach(async function() {
+      accountOne = state.contractAccounts[0];
+      amountToDeposit = BigNumber.from(parseEther('180.0'));
+      const feedSynth = await state.Feed.deploy(amount, 'Feed Coin');
+      await state.minter.createSynth(
+        'Test coin',
+        'COIN',
+        amount,
+        200,
+        300,
+        feedSynth.address
+      );
 
-  it('Does not return the balance of the collateral and returns an error if not whitelisted', async () => {
-    try {
-      await minterContract.getTotalCollateralByCollateralAddress(
-        dumContract.address
-      )
-      assert(false, 'Error is not thrown')
-    } catch (err) {
-      expect(err.message).to.be.equal(
-        'VM Exception while processing transaction: revert Collateral address is not whitelisted.'
-      )
-    }
-  })
+      synthTokenAddress = await state.minter.getSynth(0);
+      await state.token
+        .connect(accountOne)
+        .approve(state.minter.address, amountToDeposit);
+    });
 
-  it('Does not return userBalance and teturns an error if the collateral address is not whitelisted', async () => {
-    try {
-      await minterContract.getUserCollateralByCollateralAddress(
-        dumContract.address
-      )
-      assert(false, 'Error is not thrown')
-    } catch (err) {
-      expect(err.message).to.be.equal(
-        'VM Exception while processing transaction: revert Collateral address is not whitelisted.'
-      )
-    }
-  })
+    it('Should return error to deposit collateral if account has not collateral token to deposit', async function() {
+      try {
+        await state.minter
+          .connect(accountOne)
+          .depositCollateral(
+            synthTokenAddress,
+            BigNumber.from(parseEther('1000.0'))
+          );
+      } catch (error) {
+        expect(error.message).to.match(
+          /ERC20: transfer amount exceeds balance/
+        );
+      }
+    });
 
-  it('Does not return userBalance and teturns an error if the collateral address is not whitelisted', async () => {
-    try {
-      await minterContract.getUserTotalMintedTokensByCollateralAddress(
-        dumContract.address
-      )
-      assert(false, 'Error is not thrown')
-    } catch (err) {
-      expect(err.message).to.be.equal(
-        'VM Exception while processing transaction: revert Collateral address is not whitelisted.'
-      )
-    }
-  })
+    it('Should return error to deposit collateral if is a invalid token', async function() {
+      try {
+        await state.minter.depositCollateral(
+          state.token.address,
+          amountToDeposit
+        );
+      } catch (error) {
+        expect(error.message).to.match(/invalid token/);
+      }
+    });
 
-  it('Can get the current conversion rate for the given collateral', async () => {
-    console.log('GCR: ', (await minterContract.getGCR()).toString())
+    it('Should return success when deposit the collateral', async function() {
+      await state.minter.depositCollateral(synthTokenAddress, amountToDeposit);
 
-    expect(
-      BigNumber.from(await minterContract.getGCR()).gt(BigNumber.from(0)),
-      'No position is created to compute GCR'
-    ).to.be.true
-  })
+      expect(
+        await checkDepositEvent(
+          state.minter,
+          state.contractCreatorOwner.address,
+          synthTokenAddress,
+          amountToDeposit
+        )
+      ).to.be.true;
+    });
+  });
 
-  it('Can whitelist a collateral address', async () => {
-    await minterContract.addCollateralAddress(dumContract.address)
-    expect(await minterContract.isWhitelisted(dumContract.address)).to.be.true
-  })
+  describe('Mint/Burn a token', async function() {
+    let synthTokenAddress,
+      amountToMint,
+      amountToDeposit,
+      accountOne,
+      accountTwo;
 
-  it('Can remove a collateral address to the whitelist', async () => {
-    await minterContract.removeCollateralAddress(dumContract.address)
-    expect(await minterContract.isWhitelisted(dumContract.address)).to.be.false
-  })
+    beforeEach(async function() {
+      accountOne = state.contractAccounts[0];
+      accountTwo = state.contractAccounts[1];
+      amountToDeposit = BigNumber.from(parseEther('180.0'));
+      amountToMint = BigNumber.from(parseEther('1'));
+      const feedSynth = await state.Feed.deploy(amountToMint, 'Feed Coin');
+      await state.minter.createSynth(
+        'Test coin',
+        'COIN',
+        amount,
+        200,
+        300,
+        feedSynth.address
+      );
 
-  it('Can check if the given collateral address is in the whitelist', async () => {
-    expect(await minterContract.isWhitelisted(collateralAddressUMA)).to.be.true
-  })
+      synthTokenAddress = await state.minter.getSynth(0);
+      await state.token
+        .connect(accountOne)
+        .approve(state.minter.address, amountToDeposit);
+    });
 
-  it('Can check the current financial contract address', async () => {
-    expect(await minterContract.getFinancialContractAddress()).to.be.equal(
-      empContractAddress
-    )
-  })
+    describe('Smoke tests', async function() {
+      it('validates when is not the owner to update', async function() {
+        try {
+          await state.minter
+            .connect(accountOne)
+            .updateSynthCRatio(synthTokenAddress, 200, 300);
+        } catch (error) {
+          expect(error.message).to.match(/unauthorized/);
+        }
+      });
 
-  it('Can change the financial address as the contract adming', async () => {
-    const dummyEmp = '0xc3E4EDA3c2Da722e7b143773EEd77249584B1782'
-    const changeFinancialTx = await minterContract.setFinancialContractAddress(
-      dummyEmp
-    )
+      it('validates active c-Ratio is bigger than passive c-Ratio', async function() {
+        try {
+          await state.minter.updateSynthCRatio(synthTokenAddress, 400, 300);
+        } catch (error) {
+          expect(error.message).to.match(/invalid cRatio/);
+        }
+      });
 
-    await changeFinancialTx.wait()
-    expect(await minterContract.getFinancialContractAddress()).to.be.equal(
-      dummyEmp
-    )
+      it('Should return success when update cRatios', async function() {
+        await state.minter.updateSynthCRatio(synthTokenAddress, 300, 400);
 
-    checkChangedFinancialContractAddressEvent(minterContract, dummyEmp)
-  })
-})
+        expect(await state.minter.cRatioActive(synthTokenAddress)).to.be.equal(
+          300
+        );
+        expect(await state.minter.cRatioPassive(synthTokenAddress)).to.be.equal(
+          400
+        );
+      });
+    });
+
+    describe('Minter', async function() {
+      it("Should return error to mint if account hasn't the collateral balance", async function() {
+        try {
+          await state.minter
+            .connect(accountOne)
+            .mint(synthTokenAddress, amountToDeposit, amountToMint);
+        } catch (error) {
+          expect(error.message).to.match(/Without collateral deposit/);
+        }
+      });
+
+      it('Should return error to mint if account has below cRatio', async function() {
+        try {
+          await state.minter
+            .connect(accountOne)
+            .mint(synthTokenAddress, amountToDeposit, amountToMint);
+        } catch (error) {
+          expect(error.message).to.match(/Below cRatio/);
+        }
+      });
+
+      it('Should return error to mint if token minted is the same as collateral', async function() {
+        try {
+          await state.minter
+            .connect(accountOne)
+            .mint(state.token.address, amountToDeposit, amountToMint);
+        } catch (error) {
+          expect(error.message).to.match(/invalid token/);
+        }
+      });
+
+      it('Should return success when mint a synth', async function() {
+        await state.minter
+          .connect(accountOne)
+          .mint(
+            synthTokenAddress,
+            amountToDeposit,
+            BigNumber.from(parseEther('20.0'))
+          );
+
+        expect(
+          await checkMintEvent(
+            state.minter,
+            accountOne.address,
+            BigNumber.from(parseEther('20.0'))
+          )
+        ).to.be.true;
+      });
+
+      it('#simulateCRatio validates amount is positive', async function() {
+        try {
+          await state.minter.simulateCRatio(synthTokenAddress, 0, 0);
+        } catch (error) {
+          expect(error.message).to.match(/Incorrect values/);
+        }
+      });
+
+      it('#simulateCRatio validates amounts are incorrect', async function() {
+        try {
+          await state.minter.simulateCRatio(
+            synthTokenAddress,
+            BigNumber.from(parseEther('2.0')).toString(),
+            BigNumber.from(parseEther('3.0').toString())
+          );
+        } catch (error) {
+          expect(error.message).to.match(/Incorrect values/);
+        }
+      });
+
+      it('#simulateCRatio Should return a simulate c-Ratio', async function() {
+        const cRatioValue = await state.minter.simulateCRatio(
+          synthTokenAddress,
+          BigNumber.from(parseEther('180.0')).toString(),
+          BigNumber.from(parseEther('20.0').toString())
+        );
+
+        expect(cRatioValue.toString()).to.be.equal(
+          BigNumber.from(parseEther('9.0').toString())
+        );
+      });
+
+      it('#maximumByCollateral validates amount is positive', async function() {
+        try {
+          await state.minter.maximumByCollateral(synthTokenAddress, 0);
+        } catch (error) {
+          expect(error.message).to.match(/Incorrect values/);
+        }
+      });
+
+      it('#maximumByCollateral Should return an expectation debt value', async function() {
+        const value = await state.minter.maximumByCollateral(
+          synthTokenAddress,
+          BigNumber.from(parseEther('180.0'))
+        );
+        expect(value.toString()).to.be.equal(
+          BigNumber.from(parseEther('20.0'))
+        );
+      });
+
+      it('#maximumByDebt validates amount is positive', async function() {
+        try {
+          await state.minter.maximumByDebt(synthTokenAddress, 0);
+        } catch (error) {
+          expect(error.message).to.match(/Incorrect values/);
+        }
+      });
+
+      it('#maximumByDebt Should return an expectation collateral value', async function() {
+        const value = await state.minter.maximumByDebt(
+          synthTokenAddress,
+          BigNumber.from(parseEther('20'))
+        );
+        expect(value.toString()).to.be.equal(BigNumber.from(parseEther('180')));
+      });
+    });
+
+    describe('Burn', async function() {
+      it('validates when try to burn before mint gDai', async function() {
+        try {
+          await state.minter
+            .connect(accountOne)
+            .burn(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+        } catch (error) {
+          expect(error.message).to.match(
+            /ERC20: transfer amount exceeds balance/
+          );
+        }
+      });
+
+      it('validates when try to burn an amount exceeds the balance', async function() {
+        await state.minter
+          .connect(accountOne)
+          .mint(
+            synthTokenAddress,
+            amountToDeposit,
+            BigNumber.from(parseEther('20.0'))
+          );
+
+        try {
+          await state.minter
+            .connect(accountOne)
+            .burn(synthTokenAddress, BigNumber.from(parseEther('200.0')));
+        } catch (error) {
+          expect(error.message).to.match(
+            /ERC20: transfer amount exceeds balance/
+          );
+        }
+      });
+
+      it('Should burn with success when collateral price going down', async function() {
+        await state.minter
+          .connect(accountOne)
+          .mint(
+            synthTokenAddress,
+            amountToDeposit,
+            BigNumber.from(parseEther('20.0'))
+          );
+        const amountRatioBefore = await state.minter
+          .connect(accountOne)
+          .getCRatio(synthTokenAddress);
+
+        expect(amountRatioBefore.toString()).to.be.equal(
+          BigNumber.from(parseEther('9.0'))
+        );
+
+        // GHO price go down to 50% c-Ratio is 400%
+        await state.feed.updatePrice(BigNumber.from(parseEther('0.5')));
+        const amountRatioAfterPriceDown = await state.minter
+          .connect(accountOne)
+          .getCRatio(synthTokenAddress);
+
+        expect(amountRatioAfterPriceDown.toString()).to.be.equal(
+          BigNumber.from(parseEther('4.0'))
+        );
+
+        // Burn 10 gDai to readjust for 900%
+        await state.Token.attach(synthTokenAddress)
+          .connect(accountOne)
+          .approve(state.minter.address, BigNumber.from(parseEther('10.0')));
+        await state.minter
+          .connect(accountOne)
+          .burn(synthTokenAddress, BigNumber.from(parseEther('10.0')));
+        const amountRatioAfter = await state.minter
+          .connect(accountOne)
+          .getCRatio(synthTokenAddress);
+
+        expect(amountRatioAfter.toString()).to.be.equal(
+          BigNumber.from(parseEther('9.0'))
+        );
+      });
+
+      it('Should return success when burn a small part of gDai', async function() {
+        const burnAmount = BigNumber.from(parseEther('5.0'));
+        await state.minter
+          .connect(accountOne)
+          .mint(
+            synthTokenAddress,
+            amountToDeposit,
+            BigNumber.from(parseEther('20.0'))
+          );
+
+        await state.Token.attach(synthTokenAddress)
+          .connect(accountOne)
+          .approve(state.minter.address, burnAmount);
+        await state.minter
+          .connect(accountOne)
+          .burn(synthTokenAddress, burnAmount);
+        const amountRatio = await state.minter
+          .connect(accountOne)
+          .getCRatio(synthTokenAddress);
+
+        expect(
+          await checkBurnEvent(
+            state.minter,
+            accountOne.address,
+            synthTokenAddress,
+            burnAmount
+          )
+        ).to.be.true;
+        expect(amountRatio.toString()).to.be.equal(
+          BigNumber.from(parseEther('12.0'))
+        );
+      });
+    });
+
+    describe('Withdrawn Collateral', async function() {
+      it('validates account when insufficient amount', async function() {
+        try {
+          await state.minter
+            .connect(accountTwo)
+            .withdrawnCollateral(
+              synthTokenAddress,
+              BigNumber.from(parseEther('100.0'))
+            );
+        } catch (error) {
+          expect(error.message).to.match(/Insufficient quantity/);
+        }
+      });
+
+      it('validates account when amount exceeds allowance', async function() {
+        await state.minter
+          .connect(accountOne)
+          .mint(
+            synthTokenAddress,
+            amountToDeposit,
+            BigNumber.from(parseEther('20.0'))
+          );
+
+        try {
+          await state.minter
+            .connect(accountOne)
+            .withdrawnCollateral(
+              synthTokenAddress,
+              BigNumber.from(parseEther('100.0'))
+            );
+        } catch (error) {
+          expect(error.message).to.match(
+            /ERC20: transfer amount exceeds allowance/
+          );
+        }
+      });
+
+      it('validates withdraw collateral is below C-Ratio', async function() {
+        await state.minter
+          .connect(accountOne)
+          .mint(
+            synthTokenAddress,
+            BigNumber.from(parseEther('100.0')),
+            BigNumber.from(parseEther('10.0'))
+          );
+
+        try {
+          await state.feed.updatePrice(BigNumber.from(parseEther('0.2')));
+          await state.minter
+            .connect(accountOne)
+            .withdrawnCollateral(
+              synthTokenAddress,
+              BigNumber.from(parseEther('10.0'))
+            );
+        } catch (error) {
+          expect(error.message).to.match(/below cRatio/);
+        }
+      });
+
+      it('Should return success when try to withdraw GHO', async function() {
+        await state.minter
+          .connect(accountOne)
+          .mint(
+            synthTokenAddress,
+            amountToDeposit,
+            BigNumber.from(parseEther('20.0'))
+          );
+
+        await state.minter
+          .connect(accountOne)
+          .withdrawnCollateral(
+            synthTokenAddress,
+            BigNumber.from(parseEther('10.0'))
+          );
+        const collateralAmount = await state.token.balanceOf(
+          accountOne.address
+        );
+        const collateralBalanceGdai = await state.minter
+          .connect(accountOne)
+          .collateralBalance(accountOne.address, synthTokenAddress);
+
+        expect(
+          await checkWithdrawalEvent(
+            state.minter,
+            accountOne.address,
+            synthTokenAddress,
+            BigNumber.from(parseEther('10.0'))
+          )
+        ).to.be.true;
+        expect(collateralAmount.toString()).to.be.equal(
+          BigNumber.from(parseEther('10.0'))
+        );
+        expect(collateralBalanceGdai.toString()).to.be.equal(
+          BigNumber.from(parseEther('170.0'))
+        );
+      });
+    });
+  });
+});

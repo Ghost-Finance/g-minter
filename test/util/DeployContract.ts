@@ -48,8 +48,7 @@ const deployContract = async (
   if (tokenDetails) {
     contract = await contractFactory.deploy(
       tokenDetails.name,
-      tokenDetails.symbol,
-      tokenDetails.decimals
+      tokenDetails.symbol
     );
   } else {
     contract = await contractFactory.deploy();
@@ -96,10 +95,6 @@ const isValidERC20 = async (
   expect(await contract.symbol()).to.be.equal(
     tokenDetails.symbol,
     contractName + ' symbol not as expected'
-  );
-  expect((await contract.decimals()).toString()).to.be.equal(
-    tokenDetails.decimals,
-    contractName + ' decimals not as expected'
   );
 
   return true;

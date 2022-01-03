@@ -4,7 +4,8 @@ export default makeStyles((theme: Theme) => ({
   page: {
     backgroundColor: 'rgba(0,0,0,0.5)',
     display: 'flex',
-    flexDirection: 'column',
+    flexFlow: 'row',
+    justifyItems: 'center',
     paddingTop: '80px',
   },
   content: {
@@ -12,14 +13,19 @@ export default makeStyles((theme: Theme) => ({
     backgroundColor: theme.palette.primary.light,
     borderTop: `4px ${theme.palette.secondary.dark} solid`,
     padding: '10%',
-    width: '60%',
+    width: 700,
     display: 'flex',
     flexDirection: 'column',
+    justifyContent: 'center',
     marginLeft: '5%',
     marginRight: '5%',
+    [theme.breakpoints.down('md')]: {
+      width: 'auto',
+    },
   },
   side: {
     width: '10%',
+    paddingLeft: '4%',
   },
   back: {
     padding: '0 15px',

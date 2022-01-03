@@ -1,80 +1,109 @@
-import { artifacts, ethers } from 'hardhat'
-import * as fs from 'fs'
-import * as fse from 'fs-extra'
-import { Contract } from 'ethers'
-import { formatEther } from 'ethers/lib/utils'
+import { artifacts, ethers } from 'hardhat';
+import { BigNumber, ContractFactory } from 'ethers';
+import { parseEther } from 'ethers/lib/utils';
+import * as fs from 'fs';
+import * as fse from 'fs-extra';
+import { formatEther } from 'ethers/lib/utils';
+
+let minterContractLabelString: string = 'Minter';
+let tokenContractLabelString: string = 'GTokenERC20';
+let feedContractLabelString: string = 'Feed';
+let auctionHouseContractLabelString: string = 'AuctionHouse';
+let medianContractLabelString: string = 'MedianSpacex';
+
+const ghoArgs = ['GHO', 'GHO', BigNumber.from(parseEther('200000000.0'))];
+const gDaiArgs = [
+  'GDAI',
+  'GDAI',
+  BigNumber.from(parseEther('200000000.0')),
+  200,
+  300,
+];
+const feedGhoArgs = [parseEther('1'), 'GHO'];
+const feedGdaiArgs = [parseEther('1'), 'GDAI'];
 
 const main = async () => {
-  const [deployer, testUser] = await ethers.getSigners()
+  const [deployer, testUser] = await ethers.getSigners();
 
-  console.log('Account 0 Deployer Address:', deployer.address)
+  console.log('Account 0 Deployer Address:', deployer.address);
   console.log(
     'Account 0 Deployer balance:',
     formatEther(await deployer.getBalance())
-  )
+  );
 
-  console.log('Account 1 user address:', testUser.address)
+  console.log('Account 1 user address:', testUser.address);
+  // Deploy Feed contract
+  const GhoToken = await ethers.getContractFactory(tokenContractLabelString);
+  const Feed = await ethers.getContractFactory(feedContractLabelString);
+  const AuctionHouse = await ethers.getContractFactory(
+    auctionHouseContractLabelString
+  );
+  const Minter = await ethers.getContractFactory(minterContractLabelString);
+  const Median = await ethers.getContractFactory(medianContractLabelString);
 
-  // CONTRACT ADDRESSES
-  const financialContractAddress = process.env.FINANCIAL_CONTRACT_ADDRESS
-  const collateralAddressUMA = process.env.DAI_CONTRACT_ADDRESS
-  const ubeAddressUma = process.env.UBE_CONTRACT_ADDRESS
-  console.log('financialContractAddress: ', financialContractAddress)
-  console.log('collateralAddressUMA: ', collateralAddressUMA)
-  console.log('ubeAddressUma: ', ubeAddressUma)
+  const ghoToken = await deployContracts(GhoToken, ...ghoArgs);
+  const feedGho = await deployContracts(Feed, ...feedGhoArgs);
+  const feedGdai = await deployContracts(Feed, ...feedGdaiArgs);
+  const auctionHouse = await deployContracts(AuctionHouse);
+  const minter = await deployContracts(
+    Minter,
+    ghoToken.address,
+    feedGho.address,
+    auctionHouse.address
+  );
+  const median = await deployContracts(Median);
 
-  // Deploy Minter contract
-  const minterFactory = await ethers.getContractFactory('Minter')
-  //   const collateralToken = await ethers.getContractAt(
-  //     'DAI',
-  //     collateralAddressUMA,
-  //     deployer
-  //   )
+  // Generate synths
+  const synthArgs = [].concat(gDaiArgs, feedGdai.address);
+  await minter.createSynth(...synthArgs);
+  console.log(`Minter address contract: ${minter.address}`);
+  let gDaiAddress = await minter.getSynth(0);
 
-  let minterContract = await minterFactory.deploy(
-    ubeAddressUma,
-    financialContractAddress
-  )
-  minterContract = await minterContract.deployed()
-  console.log('minterContract created at address: ', minterContract.address)
+  await median.lift(testUser.address);
 
-  // Initialize minter & add DAI collateral
-  await minterContract.initialize()
-  console.log('minterContract initialised')
-  await minterContract.addCollateralAddress(collateralAddressUMA)
-  console.log('DAI collateral added to minterContract')
-
-  // Remove on kovan, added to compensate for conversion problems
-  //await collateralToken.allocateTo(minterContract.address, parseEther('10000'))
-
-  console.log(
-    'Minter address successfully deployed, initialised and collateral whitelisted'
-  )
+  console.log(`Feed address contract: ${feedGho.address}`);
+  console.log(`Feed 2 address contract: ${feedGdai.address}`);
+  console.log(`Token address contract: ${ghoToken.address}`);
+  console.log(`AuctionHouse address contract: ${auctionHouse.address}`);
+  console.log(`Minter address contract: ${minter.address}`);
+  console.log(`GDai address: ${gDaiAddress}`);
+  console.log(`MedianSpacex addresss ${median.address}`);
+  console.log(`Oracle address ${testUser.address}`);
 
   saveFrontendFiles(
-    collateralAddressUMA,
-    ubeAddressUma,
-    financialContractAddress,
-    minterContract
-  )
-}
+    ghoToken.address,
+    gDaiAddress,
+    auctionHouse.address,
+    minter.address,
+    feedGho.address,
+    feedGdai.address
+  );
+};
+
+const deployContracts = async (contractFactory: ContractFactory, ...args) => {
+  const contract = await contractFactory.deploy(...args);
+
+  return contract;
+};
 
 const saveFrontendFiles = (
-  daiContract: string,
-  phmContract: string,
-  perpetualContract: string,
-  minterContract: Contract
+  ghoContractAddress: string,
+  gDaiContractAddress: string,
+  auctionHouseContractAddress: string,
+  minterContractAddress: string,
+  feedGhoAddress: string,
+  feedGdaiAddress: string
 ) => {
-  const contractsDir = __dirname + '/../frontend/src/contracts'
-  const typechainSrcDir = __dirname + '/../typechain'
-  const typechainDestDir = __dirname + '/../frontend/src/typechain'
+  const contractsDir = __dirname + '/../frontend/src/contracts';
+  const typechainSrcDir = __dirname + '/../typechain';
+  const typechainDestDir = __dirname + '/../frontend/src/typechain';
 
   // Create target folders if doesn't exists
   if (!fs.existsSync(contractsDir)) {
-    fs.mkdirSync(contractsDir)
+    fs.mkdirSync(contractsDir);
   }
   if (!fs.existsSync(typechainDestDir)) {
-    fs.mkdirSync(typechainDestDir)
+    fs.mkdirSync(typechainDestDir);
   }
 
   // Copy contract addresses to /frontend/src/contracts/contract-address.json directory
@@ -82,50 +111,62 @@ const saveFrontendFiles = (
     contractsDir + '/contract-address.json',
     JSON.stringify(
       {
-        DAI: daiContract,
-        UBE: phmContract,
-        Minter: minterContract.address,
-        PerpetualContract: perpetualContract
+        GHO: ghoContractAddress,
+        GDAI: gDaiContractAddress,
+        AuctionHouse: auctionHouseContractAddress,
+        Minter: minterContractAddress,
+        FeedGho: feedGhoAddress,
+        FeedGdai: feedGdaiAddress,
       },
       null,
       2
     )
-  )
+  );
 
   // Copy contract abi's to /frontend/src/contracts/* directory
-  const ERC20Artifact = artifacts.readArtifactSync('ExpandedERC20')
+  const ERC20GhoArtifact = artifacts.readArtifactSync(tokenContractLabelString);
   fs.writeFileSync(
-    contractsDir + '/DAI.json',
-    JSON.stringify(ERC20Artifact, null, 2)
-  )
+    contractsDir + '/GHO.json',
+    JSON.stringify(ERC20GhoArtifact, null, 2)
+  );
 
-  const IERC20Artifact = artifacts.readArtifactSync('ExpandedIERC20')
+  const ERC20GdaiArtifact = artifacts.readArtifactSync(
+    tokenContractLabelString
+  );
   fs.writeFileSync(
-    contractsDir + '/UBE.json',
-    JSON.stringify(IERC20Artifact, null, 2)
-  )
+    contractsDir + '/GDAI.json',
+    JSON.stringify(ERC20GdaiArtifact, null, 2)
+  );
 
-  const MinterArtifact = artifacts.readArtifactSync('Minter')
+  const MinterArtifact = artifacts.readArtifactSync(minterContractLabelString);
   fs.writeFileSync(
     contractsDir + '/Minter.json',
     JSON.stringify(MinterArtifact, null, 2)
-  )
+  );
 
-  const PerpetualArtifact = artifacts.readArtifactSync('Perpetual')
+  const AuctionHouseArtifact = artifacts.readArtifactSync(
+    auctionHouseContractLabelString
+  );
   fs.writeFileSync(
-    contractsDir + '/Perpetual.json',
-    JSON.stringify(PerpetualArtifact, null, 2)
-  )
+    contractsDir + '/AuctionHouse.json',
+    JSON.stringify(AuctionHouseArtifact, null, 2)
+  );
+
+  const FeedArtifact = artifacts.readArtifactSync(feedContractLabelString);
+  fs.writeFileSync(
+    contractsDir + '/Feed.json',
+    JSON.stringify(FeedArtifact, null, 2)
+  );
 
   // Copy typechain to /frontend/src/typechain directory
-  fse.copySync(typechainSrcDir, typechainDestDir)
+  fse.copySync(typechainSrcDir, typechainDestDir);
 
-  console.log('Deploy script finished successfully!')
-}
+  console.log('Deploy script finished successfully!');
+};
 
 main()
   .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error)
-    process.exit(1)
-  })
+  .catch(error => {
+    console.error(error);
+    process.exit(1);
+  });
