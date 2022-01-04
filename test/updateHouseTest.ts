@@ -30,7 +30,8 @@ describe('#UpdateHouse', async function() {
     accountThree,
     others,
     synthTokenAddress,
-    state;
+    state,
+    initialPrice;
 
   beforeEach(async function() {
     state = await setup();
@@ -81,9 +82,9 @@ describe('#UpdateHouse', async function() {
     // Simulate add a new current price for a synth
     await median.poke(BigNumber.from(parseEther('3.0')));
     // If return success when adds a new price, it will be possible to read.
-    const price = await gSpot.connect(accountOne).read(gSpacexKey);
-    console.log(price.toString());
-    expect(price.toString()).to.be.equal(
+    initialPrice = await gSpot.connect(accountOne).read(gSpacexKey);
+    console.log(initialPrice.toString());
+    expect(initialPrice.toString()).to.be.equal(
       BigNumber.from(parseEther('3.0')).toString()
     );
 
@@ -143,6 +144,26 @@ describe('#UpdateHouse', async function() {
           BigNumber.from(parseEther('2.0')).toString()
         )
       ).to.be.true;
+    });
+
+    it.only('#finish should return ', async function() {
+      const amount = BigNumber.from(parseEther('2.0'));
+      await state.token
+        .attach(synthTokenAddress)
+        .connect(accountOne)
+        .approve(updateHouse.address, amount);
+
+      await updateHouse.connect(accountOne).add(amount, gSpacexKey, 1);
+
+      const positionData = await updateHouse.data(0);
+      expect(positionData.account).to.be.equal(accountOne.address);
+      expect(positionData.direction).to.be.equal(1); // Short
+      expect(positionData.initialPrice.toString()).to.be.equal(
+        initialPrice.toString()
+      );
+      expect(positionData.synthTokenAmount.toString()).to.be.equal(
+        (amount.toString() / initialPrice).toString()
+      );
     });
   });
 });

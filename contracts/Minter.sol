@@ -91,7 +91,7 @@ contract Minter {
   function withdrawnCollateral(GTokenERC20 token, uint256 amount) external {
     require(collateralBalance[msg.sender][token] >= amount, 'Insufficient quantity');
     uint256 futureCollateralValue = (collateralBalance[msg.sender][token] - amount) * collateralFeed.price() / 1 ether;
-    uint256 debtValue = globalDebt(token) * feeds[token].price() / 1 ether;
+    uint256 debtValue = globalAccountDebt(token, address(msg.sender)) * feeds[token].price() / 1 ether;
     require(futureCollateralValue >= debtValue * cRatioActive[token] / 100, 'below cRatio');
 
     collateralBalance[msg.sender][token] -= amount;
@@ -109,7 +109,7 @@ contract Minter {
 
     require(collateralBalance[msg.sender][token] > 0, 'Without collateral deposit');
     uint256 futureCollateralValue = collateralBalance[msg.sender][token] * collateralFeed.price() / 1 ether;
-    uint256 futureDebtValue = (synthDebt[msg.sender][token] + amountToMint) * feeds[token].price() / 1 ether;
+    uint256 futureDebtValue = (globalAccountDebt(token, address(msg.sender)) + amountToMint) * feeds[token].price() / 1 ether;
     require((futureCollateralValue / futureDebtValue) * 1 ether >= ratio, 'Above max amount');
 
     token.mint(msg.sender, amountToMint);
@@ -137,10 +137,10 @@ contract Minter {
     token.burn(amount);
   }
 
-  function globalDebt(GTokenERC20 token) internal returns (uint256) {
+  function globalAccountDebt(GTokenERC20 token, address account) internal returns (uint256) {
     uint poolDebtPerToken = synthDebt[address(debtPool)][token] / (token.totalSupply() - synthDebt[address(debtPool)][token]);
 
-    return synthDebt[msg.sender][token] + (synthDebt[msg.sender][token] * poolDebtPerToken);
+    return synthDebt[account][token] + (synthDebt[account][token] * poolDebtPerToken);
   }
 
   function liquidate(address user, GTokenERC20 token) external isValidKeeper(user) {
@@ -148,7 +148,8 @@ contract Minter {
     Feed syntFeed = feeds[token];
     uint256 priceFeed = collateralFeed.price();
     uint256 collateralValue = (collateralBalance[user][token] * priceFeed) / 1 ether;
-    uint256 debtValue = synthDebt[user][token] * syntFeed.price() / 1 ether;
+    // uint256 debtValue = synthDebt[user][token] * syntFeed.price() / 1 ether;
+    uint256 debtValue = globalAccountDebt(token, address(user)) * syntFeed.price() / 1 ether;
     require((collateralValue < debtValue * cRatioActive[token] / 100) || (collateralValue < debtValue * cRatioPassive[token] / 100 && plrDelay[user][token] < block.timestamp), 'above cRatio');
 
     collateralToken.approve(address(auctionHouse), collateralBalance[user][token]);

@@ -32,13 +32,12 @@ contract UpdateHouse is CoreMath {
 
   uint positionCount;
 
-  mapping (uint => PositionData) data;
+  mapping (uint => PositionData) public data;
 
   event Add(address account, PositionData data);
   event Finish(address account, uint256 currentPrice, Direction direction);
 
   constructor(GTokenERC20 token_, GSpot spot_, DebtPool debtPool_) {
-    // vault = vault_; // verificar com Jairzera
     token = GTokenERC20(token_);
     spot = GSpot(spot_);
     debtPool = DebtPool(debtPool_);
@@ -71,12 +70,26 @@ contract UpdateHouse is CoreMath {
     emit Add(msg.sender, dataPosition);
   }
 
-  function editPosition(bytes32 synthKey, PositionData memory data) external {}
+  // a new method finishAndOpen
 
-  function finishPosition(uint index, bytes32 synthKey) external {
+  // ((saldo antigo/saldo atual)* preçoAntigo) + ((saldoNovo/saldoAtual) * preçoAtual)
+  function increasePosition(uint index, uint256 deltaAmount) external {
     PositionData storage dataPosition = data[index];
     require(dataPosition.account == msg.sender && dataPosition.status != Status.FINISHED);
-    uint256 currentPrice = spot.read(synthKey);
+    uint256 currentPrice = spot.read(dataPosition.synth);
+
+    uint256 currentTokenAmount = dataPosition.tokenAmount + deltaAmount;
+    uint256 oldPrice = (dataPosition.tokenAmount / currentTokenAmount) * dataPosition.initialPrice;
+    uint256 newPrice = (deltaAmount / currentTokenAmount) * currentPrice;
+    uint256 currentInitialPrice = newPrice + oldPrice;
+
+    dataPosition.initialPrice = currentInitialPrice;
+  }
+
+  function finishPosition(uint index) external {
+    PositionData storage dataPosition = data[index];
+    require(dataPosition.account == msg.sender && dataPosition.status != Status.FINISHED);
+    uint256 currentPrice = spot.read(dataPosition.synth);
     require(currentPrice > 0);
 
     uint256 positionFixValue = (dataPosition.synthTokenAmount * currentPrice - dataPosition.synthTokenAmount * dataPosition.initialPrice);
