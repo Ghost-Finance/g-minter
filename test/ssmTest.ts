@@ -55,20 +55,22 @@ describe('SSM', async function() {
     }
   });
 
-  it('#start Should start method poke', async function() {
+  it('#start Should start method poke and return the first current value', async function() {
+    await gValue.poke(BigNumber.from(parseEther('3')));
+
     await ssm.stop();
     expect(await ssm.stopped()).to.be.equal(1);
 
     await ssm.start();
     expect(await ssm.stopped()).to.be.equal(0);
 
-    await ssm.poke();
+    await ssm.connect(accountOne).poke();
 
     expect(
       await checkAddPriceEvent(
         ssm,
         accountOne.address,
-        BigNumber.from(parseEther('3'))
+        BigNumber.from(parseEther('0'))
       )
     ).to.be.true;
   });
@@ -156,17 +158,14 @@ describe('SSM', async function() {
 
   it('#poke Should return success when one hour pass to add next price', async function() {
     await gValue.poke(BigNumber.from(parseEther('3')));
-    ssm
-      .connect(accountOne)
-      .poke()
-      .then(_ => {
-        checkAddPriceEvent(
-          ssm,
-          accountOne.address,
-          BigNumber.from(parseEther('3'))
-        ).then(isValid => expect(isValid).to.be.true);
-      })
-      .catch(error => new Error(error.message));
+    ssm.connect(accountOne).poke();
+    expect(
+      await checkAddPriceEvent(
+        ssm,
+        accountOne.address,
+        BigNumber.from(parseEther('0'))
+      )
+    ).to.be.true;
 
     const [priceOne, validOne] = await ssm.connect(accountOne).peek();
     expect(priceOne.toString()).to.be.equal(BigNumber.from(parseEther('0')));

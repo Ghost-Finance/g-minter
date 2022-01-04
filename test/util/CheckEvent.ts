@@ -298,7 +298,6 @@ export const checkAddPriceEvent = async (
 ): Promise<boolean> => {
   let addPriceEvent = new Promise<AddPriceEvent>((resolve, reject) => {
     contract.on('AddPrice', (sender, price) => {
-      console.log(sender);
       resolve({
         sender: sender,
         price: price,
@@ -307,12 +306,14 @@ export const checkAddPriceEvent = async (
 
     setTimeout(() => {
       reject(new Error('timeout'));
-    }, 100000);
+    }, 60000);
   });
 
   let eventAddPrice = await addPriceEvent;
   expect(eventAddPrice.sender).to.be.equal(sender);
   expect(eventAddPrice.price.toString()).to.be.equal(price.toString());
+
+  contract.removeAllListeners();
 
   return true;
 };

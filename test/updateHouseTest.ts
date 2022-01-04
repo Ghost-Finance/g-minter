@@ -120,7 +120,6 @@ describe('#UpdateHouse', async function() {
           .connect(accountOne)
           .add(BigNumber.from(parseEther('50.0')), gSpacexKey, 2);
       } catch (error) {
-        console.log(error.message);
         expect(error.message).to.match(/transfer amount exceeds balance/);
       }
     });
@@ -146,7 +145,7 @@ describe('#UpdateHouse', async function() {
       ).to.be.true;
     });
 
-    it.only('#finish should return ', async function() {
+    it('#finish should return ', async function() {
       const amount = BigNumber.from(parseEther('2.0'));
       await state.token
         .attach(synthTokenAddress)
@@ -162,7 +161,7 @@ describe('#UpdateHouse', async function() {
         initialPrice.toString()
       );
       expect(positionData.synthTokenAmount.toString()).to.be.equal(
-        (amount.toString() / initialPrice).toString()
+        amount.div(initialPrice).toString()
       );
     });
   });
