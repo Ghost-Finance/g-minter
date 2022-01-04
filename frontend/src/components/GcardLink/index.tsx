@@ -11,7 +11,6 @@ interface Props {
 
 const GcardLink = ({ title, to, image, callback }: Props) => {
   const classes = useStyles();
-
   return (
     <Link to={to} className={classes.root} onClick={callback}>
       <Card title={title} className={classes.card}>

@@ -113,9 +113,10 @@ describe('Minter', async function() {
       try {
         await state.minter
           .connect(accountOne)
-          .depositCollateral(
+          .mint(
             synthTokenAddress,
-            BigNumber.from(parseEther('1000.0'))
+            BigNumber.from(parseEther('1000.0')),
+            BigNumber.from(parseEther('10.0'))
           );
       } catch (error) {
         expect(error.message).to.match(
@@ -126,26 +127,14 @@ describe('Minter', async function() {
 
     it('Should return error to deposit collateral if is a invalid token', async function() {
       try {
-        await state.minter.depositCollateral(
+        await state.minter.mint(
           state.token.address,
-          amountToDeposit
+          amountToDeposit,
+          BigNumber.from(parseEther('20.0'))
         );
       } catch (error) {
         expect(error.message).to.match(/invalid token/);
       }
-    });
-
-    it('Should return success when deposit the collateral', async function() {
-      await state.minter.depositCollateral(synthTokenAddress, amountToDeposit);
-
-      expect(
-        await checkDepositEvent(
-          state.minter,
-          state.contractCreatorOwner.address,
-          synthTokenAddress,
-          amountToDeposit
-        )
-      ).to.be.true;
     });
   });
 
@@ -219,37 +208,27 @@ describe('Minter', async function() {
         try {
           await state.minter
             .connect(accountOne)
-            .mint(synthTokenAddress, amountToMint);
+            .mint(synthTokenAddress, amountToDeposit, amountToMint);
         } catch (error) {
           expect(error.message).to.match(/Without collateral deposit/);
         }
       });
 
       it('Should return error to mint if account has below cRatio', async function() {
-        await state.minter
-          .connect(accountOne)
-          .depositCollateral(synthTokenAddress, amountToDeposit);
-        await state.feed.updatePrice(parseEther('50'));
-
         try {
           await state.minter
             .connect(accountOne)
-            .mint(synthTokenAddress, amountToMint);
+            .mint(synthTokenAddress, amountToDeposit, amountToMint);
         } catch (error) {
           expect(error.message).to.match(/Below cRatio/);
         }
       });
 
       it('Should return error to mint if token minted is the same as collateral', async function() {
-        await state.minter.depositCollateral(
-          synthTokenAddress,
-          amountToDeposit
-        );
-
         try {
           await state.minter
             .connect(accountOne)
-            .mint(state.token.address, amountToMint);
+            .mint(state.token.address, amountToDeposit, amountToMint);
         } catch (error) {
           expect(error.message).to.match(/invalid token/);
         }
@@ -258,11 +237,11 @@ describe('Minter', async function() {
       it('Should return success when mint a synth', async function() {
         await state.minter
           .connect(accountOne)
-          .depositCollateral(synthTokenAddress, amountToDeposit);
-
-        await state.minter
-          .connect(accountOne)
-          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+          .mint(
+            synthTokenAddress,
+            amountToDeposit,
+            BigNumber.from(parseEther('20.0'))
+          );
 
         expect(
           await checkMintEvent(
@@ -271,6 +250,72 @@ describe('Minter', async function() {
             BigNumber.from(parseEther('20.0'))
           )
         ).to.be.true;
+      });
+
+      it('#simulateCRatio validates amount is positive', async function() {
+        try {
+          await state.minter.simulateCRatio(synthTokenAddress, 0, 0);
+        } catch (error) {
+          expect(error.message).to.match(/Incorrect values/);
+        }
+      });
+
+      it('#simulateCRatio validates amounts are incorrect', async function() {
+        try {
+          await state.minter.simulateCRatio(
+            synthTokenAddress,
+            BigNumber.from(parseEther('2.0')).toString(),
+            BigNumber.from(parseEther('3.0').toString())
+          );
+        } catch (error) {
+          expect(error.message).to.match(/Incorrect values/);
+        }
+      });
+
+      it('#simulateCRatio Should return a simulate c-Ratio', async function() {
+        const cRatioValue = await state.minter.simulateCRatio(
+          synthTokenAddress,
+          BigNumber.from(parseEther('180.0')).toString(),
+          BigNumber.from(parseEther('20.0').toString())
+        );
+
+        expect(cRatioValue.toString()).to.be.equal(
+          BigNumber.from(parseEther('9.0').toString())
+        );
+      });
+
+      it('#maximumByCollateral validates amount is positive', async function() {
+        try {
+          await state.minter.maximumByCollateral(synthTokenAddress, 0);
+        } catch (error) {
+          expect(error.message).to.match(/Incorrect values/);
+        }
+      });
+
+      it('#maximumByCollateral Should return an expectation debt value', async function() {
+        const value = await state.minter.maximumByCollateral(
+          synthTokenAddress,
+          BigNumber.from(parseEther('180.0'))
+        );
+        expect(value.toString()).to.be.equal(
+          BigNumber.from(parseEther('20.0'))
+        );
+      });
+
+      it('#maximumByDebt validates amount is positive', async function() {
+        try {
+          await state.minter.maximumByDebt(synthTokenAddress, 0);
+        } catch (error) {
+          expect(error.message).to.match(/Incorrect values/);
+        }
+      });
+
+      it('#maximumByDebt Should return an expectation collateral value', async function() {
+        const value = await state.minter.maximumByDebt(
+          synthTokenAddress,
+          BigNumber.from(parseEther('20'))
+        );
+        expect(value.toString()).to.be.equal(BigNumber.from(parseEther('180')));
       });
     });
 
@@ -290,10 +335,11 @@ describe('Minter', async function() {
       it('validates when try to burn an amount exceeds the balance', async function() {
         await state.minter
           .connect(accountOne)
-          .depositCollateral(synthTokenAddress, amountToDeposit);
-        await state.minter
-          .connect(accountOne)
-          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+          .mint(
+            synthTokenAddress,
+            amountToDeposit,
+            BigNumber.from(parseEther('20.0'))
+          );
 
         try {
           await state.minter
@@ -309,10 +355,11 @@ describe('Minter', async function() {
       it('Should burn with success when collateral price going down', async function() {
         await state.minter
           .connect(accountOne)
-          .depositCollateral(synthTokenAddress, amountToDeposit);
-        await state.minter
-          .connect(accountOne)
-          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+          .mint(
+            synthTokenAddress,
+            amountToDeposit,
+            BigNumber.from(parseEther('20.0'))
+          );
         const amountRatioBefore = await state.minter
           .connect(accountOne)
           .getCRatio(synthTokenAddress);
@@ -351,10 +398,11 @@ describe('Minter', async function() {
         const burnAmount = BigNumber.from(parseEther('5.0'));
         await state.minter
           .connect(accountOne)
-          .depositCollateral(synthTokenAddress, amountToDeposit);
-        await state.minter
-          .connect(accountOne)
-          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+          .mint(
+            synthTokenAddress,
+            amountToDeposit,
+            BigNumber.from(parseEther('20.0'))
+          );
 
         await state.Token.attach(synthTokenAddress)
           .connect(accountOne)
@@ -397,10 +445,11 @@ describe('Minter', async function() {
       it('validates account when amount exceeds allowance', async function() {
         await state.minter
           .connect(accountOne)
-          .depositCollateral(synthTokenAddress, amountToDeposit);
-        await state.minter
-          .connect(accountOne)
-          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+          .mint(
+            synthTokenAddress,
+            amountToDeposit,
+            BigNumber.from(parseEther('20.0'))
+          );
 
         try {
           await state.minter
@@ -419,13 +468,11 @@ describe('Minter', async function() {
       it('validates withdraw collateral is below C-Ratio', async function() {
         await state.minter
           .connect(accountOne)
-          .depositCollateral(
+          .mint(
             synthTokenAddress,
-            BigNumber.from(parseEther('100.0'))
+            BigNumber.from(parseEther('100.0')),
+            BigNumber.from(parseEther('10.0'))
           );
-        await state.minter
-          .connect(accountOne)
-          .mint(synthTokenAddress, BigNumber.from(parseEther('10.0')));
 
         try {
           await state.feed.updatePrice(BigNumber.from(parseEther('0.2')));
@@ -443,10 +490,11 @@ describe('Minter', async function() {
       it('Should return success when try to withdraw GHO', async function() {
         await state.minter
           .connect(accountOne)
-          .depositCollateral(synthTokenAddress, amountToDeposit);
-        await state.minter
-          .connect(accountOne)
-          .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+          .mint(
+            synthTokenAddress,
+            amountToDeposit,
+            BigNumber.from(parseEther('20.0'))
+          );
 
         await state.minter
           .connect(accountOne)

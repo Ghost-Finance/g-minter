@@ -21,7 +21,6 @@ contract CoreMath {
   function rad() public pure returns (uint256) {
     return RAD;
   }
-
   function radiv(uint256 dividend, uint256 divisor) public pure returns (uint256) {
     return div(div(dividend * RAD, divisor), RAY);
   }

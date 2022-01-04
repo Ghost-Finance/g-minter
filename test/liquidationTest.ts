@@ -44,17 +44,19 @@ describe('Liquidation tests', async function() {
 
     await state.minter
       .connect(accountOne)
-      .depositCollateral(synthTokenAddress, amountToDeposit);
-    await state.minter
-      .connect(accountOne)
-      .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+      .mint(
+        synthTokenAddress,
+        amountToDeposit,
+        BigNumber.from(parseEther('20.0'))
+      );
 
     await state.minter
       .connect(accountTwo)
-      .depositCollateral(synthTokenAddress, amountToDeposit);
-    await state.minter
-      .connect(accountTwo)
-      .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
+      .mint(
+        synthTokenAddress,
+        amountToDeposit,
+        BigNumber.from(parseEther('20.0'))
+      );
 
     await state.feed.updatePrice(BigNumber.from(parseEther('0.2')));
   });
@@ -162,8 +164,7 @@ describe('Liquidation tests', async function() {
         .approve(state.minter.address, amountToDeposit);
       await state.minter
         .connect(accountOne)
-        .depositCollateral(synthTokenAddress, amountToDeposit);
-      await state.minter.connect(accountOne).mint(synthTokenAddress, amount);
+        .mint(synthTokenAddress, amountToDeposit, amount);
 
       const balance = await state.minter.synthDebt(
         accountOne.address,

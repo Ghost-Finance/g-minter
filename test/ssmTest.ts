@@ -62,15 +62,15 @@ describe('SSM', async function() {
     await ssm.start();
     expect(await ssm.stopped()).to.be.equal(0);
 
-    ssm
-      .poke()
-      .then(_ =>
-        checkAddPriceEvent(
-          ssm,
-          accountOne.address,
-          BigNumber.from(parseEther('3'))
-        ).then(isValid => expect(isValid).to.be.true)
-      );
+    await ssm.poke();
+
+    expect(
+      await checkAddPriceEvent(
+        ssm,
+        accountOne.address,
+        BigNumber.from(parseEther('3'))
+      )
+    ).to.be.true;
   });
 
   it('#step validates account has the admin role', async function() {

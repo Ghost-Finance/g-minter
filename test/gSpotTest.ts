@@ -33,8 +33,10 @@ describe('GSpot', async function() {
   });
 
   it('#addSsm validates only owner can add new Ssm contract', async function() {
+    const key: any = ethers.utils.formatBytes32String('GSPACEX');
+
     try {
-      await gSpot.connect(accountOne).addSsm('GSPACEX', ssm.address);
+      await gSpot.connect(accountOne).addSsm(key, ssm.address);
     } catch (error) {
       expect(error.message).to.match(/caller is not the owner/);
     }

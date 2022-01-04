@@ -1,12 +1,13 @@
-import { makeStyles, Theme } from '@material-ui/core'
+import { makeStyles, Theme } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
+    margin: '0 auto',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
-    maxWidth: 547,
-    maxHeight: 328,
+    width: 547,
+    height: 328,
     [theme.breakpoints.down('md')]: {
       width: '100%',
     },
@@ -24,6 +25,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: '100%',
     paddingTop: '1%',
   },
-}))
+}));
 
-export default useStyles
+export default useStyles;

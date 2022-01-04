@@ -88,15 +88,6 @@ contract Minter {
     emit CreateSynth(name, symbol, address(feed));
   }
 
-  function depositCollateral(GTokenERC20 token, uint256 amount) external isCollateral(token) {
-    collateralToken.approve(msg.sender, amount);
-    require(collateralToken.transferFrom(msg.sender, address(this), amount), 'transfer failed');
-    collateralBalance[msg.sender][token] += amount;
-    collateralBalance[address(this)][token] += amount;
-
-    emit DepositedCollateral(msg.sender, address(token), amount);
-  }
-
   function withdrawnCollateral(GTokenERC20 token, uint256 amount) external {
     require(collateralBalance[msg.sender][token] >= amount, 'Insufficient quantity');
     uint256 futureCollateralValue = (collateralBalance[msg.sender][token] - amount) * collateralFeed.price() / 1 ether;
@@ -109,18 +100,24 @@ contract Minter {
     emit WithdrawnCollateral(msg.sender, address(token), amount);
   }
 
-  function mint(GTokenERC20 token, uint256 amount) external isCollateral(token) {
-    require(collateralBalance[msg.sender][token] > 0, 'Without collateral deposit');
+  function mint(GTokenERC20 token, uint256 amountToDeposit, uint256 amountToMint) external isCollateral(token) {
+    collateralToken.approve(msg.sender, amountToDeposit);
+    require(collateralToken.transferFrom(msg.sender, address(this), amountToDeposit), 'transfer failed');
+    collateralBalance[msg.sender][token] += amountToDeposit;
 
+    emit DepositedCollateral(msg.sender, address(token), amountToDeposit);
+
+    require(collateralBalance[msg.sender][token] > 0, 'Without collateral deposit');
     uint256 futureCollateralValue = collateralBalance[msg.sender][token] * collateralFeed.price() / 1 ether;
-    uint256 futureDebtValue = (synthDebt[msg.sender][token] + amount) * feeds[token].price() / 1 ether;
+    uint256 futureDebtValue = (synthDebt[msg.sender][token] + amountToMint) * feeds[token].price() / 1 ether;
     require((futureCollateralValue / futureDebtValue) * 1 ether >= ratio, 'Above max amount');
 
-    token.mint(msg.sender, amount);
-    synthDebt[msg.sender][token] += amount;
+    token.mint(msg.sender, amountToMint);
+    synthDebt[msg.sender][token] += amountToMint;
 
     emit Mint(msg.sender, synthDebt[msg.sender][token]);
   }
+
 
   function burn(GTokenERC20 token, uint256 amount) external {
     require(token.transferFrom(msg.sender, address(this), amount), 'transfer failed');
@@ -144,12 +141,6 @@ contract Minter {
     uint poolDebtPerToken = synthDebt[address(debtPool)][token] / (token.totalSupply() - synthDebt[address(debtPool)][token]);
 
     return synthDebt[msg.sender][token] + (synthDebt[msg.sender][token] * poolDebtPerToken);
-  }
-
-  function getCRatio(GTokenERC20 token) external payable returns (uint256) {
-    uint256 collateralValue = collateralBalance[msg.sender][token] * collateralFeed.price() / 1 ether;
-    uint256 debtValue = globalDebt(token) * feeds[token].price() / 1 ether;
-    return (collateralValue / debtValue) * 1 ether;
   }
 
   function liquidate(address user, GTokenERC20 token) external isValidKeeper(user) {
@@ -231,5 +222,38 @@ contract Minter {
     require(token.transfer(address(keeper), keeperAmount), 'failed transfer incentive');
     // token.transfer(address(riskReserveAddress), restAmount);
     // token.transfer(address(liquidationVaultAddress), restAmount);
+  }
+
+  function getCRatio(GTokenERC20 token) external view returns (uint256) {
+    if (collateralBalance[msg.sender][token] == 0 || synthDebt[msg.sender][token] == 0) {
+      return 0;
+    }
+
+    uint256 collateralValue = collateralBalance[msg.sender][token] * collateralFeed.price() / 1 ether;
+    uint256 debtValue = synthDebt[msg.sender][token] * feeds[token].price() / 1 ether;
+
+    return (collateralValue / debtValue) * 1 ether;
+  }
+
+  function maximumByCollateral(GTokenERC20 token, uint256 amount) external view returns (uint256) {
+    require(amount != 0, 'Incorrect values');
+    uint256 collateralValue = (collateralBalance[msg.sender][token] + amount) * collateralFeed.price() / 1 ether;
+
+    return (collateralValue / ratio) * 1 ether;
+  }
+
+  function maximumByDebt(GTokenERC20 token, uint256 amount) external view returns (uint256) {
+    require(amount != 0, 'Incorrect values');
+    uint256 debtValue = (synthDebt[msg.sender][token] + amount) * feeds[token].price() / 1 ether;
+
+    return (debtValue * ratio) / 1 ether;
+  }
+
+  function simulateCRatio(GTokenERC20 token, uint256 amountGHO, uint256 amountGDAI) external view returns (uint256) {
+    require(amountGHO != 0 || amountGDAI != 0, 'Incorrect values');
+    uint256 collateralValue = (collateralBalance[msg.sender][token] + amountGHO) * collateralFeed.price() / 1 ether;
+    uint256 debtValue = (synthDebt[msg.sender][token] + amountGDAI) * feeds[token].price() / 1 ether;
+
+    return (collateralValue / debtValue) * 1 ether;
   }
 }

@@ -353,6 +353,7 @@ export const checkAddPositionEvent = async (
 ): Promise<boolean> => {
   let addEvent = new Promise<AddPositionEvent>((resolve, reject) => {
     contract.on('Add', (sender, data) => {
+      console.log('entrouu akkkkkkk');
       resolve({
         account: sender,
         data: data,

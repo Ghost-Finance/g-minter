@@ -58,11 +58,8 @@ const main = async () => {
   const synthArgs = [].concat(gDaiArgs, feedGdai.address);
   await minter.createSynth(...synthArgs);
   console.log(`Minter address contract: ${minter.address}`);
-  let gDaiAddress;
-  minter
-    .getSynth(0)
-    .then(data => (gDaiAddress = data))
-    .catch(error => console.log(error.message));
+
+  let gDaiAddress = await minter.getSynth(0);
 
   await median.lift(testUser.address);
 
@@ -71,7 +68,7 @@ const main = async () => {
   console.log(`Token address contract: ${ghoToken.address}`);
   console.log(`AuctionHouse address contract: ${auctionHouse.address}`);
   console.log(`Minter address contract: ${minter.address}`);
-  // console.log(`GDai address: ${gDaiAddress}`);
+  console.log(`GDai address: ${gDaiAddress}`);
   console.log(`MedianSpacex addresss ${median.address}`);
   console.log(`Oracle address ${testUser.address}`);
 
@@ -79,7 +76,9 @@ const main = async () => {
     ghoToken.address,
     gDaiAddress,
     auctionHouse.address,
-    minter.address
+    minter.address,
+    feedGho.address,
+    feedGdai.address
   );
 };
 
@@ -93,7 +92,9 @@ const saveFrontendFiles = (
   ghoContractAddress: string,
   gDaiContractAddress: string,
   auctionHouseContractAddress: string,
-  minterContractAddress: string
+  minterContractAddress: string,
+  feedGhoAddress: string,
+  feedGdaiAddress: string
 ) => {
   const contractsDir = __dirname + '/../frontend/src/contracts';
   const typechainSrcDir = __dirname + '/../typechain';
@@ -116,6 +117,8 @@ const saveFrontendFiles = (
         GDAI: gDaiContractAddress,
         AuctionHouse: auctionHouseContractAddress,
         Minter: minterContractAddress,
+        FeedGho: feedGhoAddress,
+        FeedGdai: feedGdaiAddress,
       },
       null,
       2
@@ -149,6 +152,12 @@ const saveFrontendFiles = (
   fs.writeFileSync(
     contractsDir + '/AuctionHouse.json',
     JSON.stringify(AuctionHouseArtifact, null, 2)
+  );
+
+  const FeedArtifact = artifacts.readArtifactSync(feedContractLabelString);
+  fs.writeFileSync(
+    contractsDir + '/Feed.json',
+    JSON.stringify(FeedArtifact, null, 2)
   );
 
   // Copy typechain to /frontend/src/typechain directory

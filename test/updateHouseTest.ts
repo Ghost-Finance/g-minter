@@ -11,7 +11,7 @@ let gSpotContractLabel: string = 'GSpot';
 let ssmContractLabel: string = 'Ssm';
 let medianTestContractLabel: string = 'GValueTest';
 
-describe.only('#UpdateHouse', async function() {
+describe('#UpdateHouse', async function() {
   let UpdateHouse,
     DebtPool,
     GSpot,
@@ -55,13 +55,11 @@ describe.only('#UpdateHouse', async function() {
       .approve(state.minter.address, BigNumber.from(parseEther('180.0')));
     await state.minter
       .connect(accountOne)
-      .depositCollateral(
+      .mint(
         synthTokenAddress,
-        BigNumber.from(parseEther('180.0'))
+        BigNumber.from(parseEther('180.0')),
+        BigNumber.from(parseEther('20.0'))
       );
-    await state.minter
-      .connect(accountOne)
-      .mint(synthTokenAddress, BigNumber.from(parseEther('20.0')));
 
     Ssm = await ethers.getContractFactory(ssmContractLabel);
     Median = await ethers.getContractFactory(medianTestContractLabel);
@@ -70,7 +68,6 @@ describe.only('#UpdateHouse', async function() {
     UpdateHouse = await ethers.getContractFactory(updateHouseContractLabel);
 
     median = await Median.deploy();
-    // ssm = await Ssm.deploy(median.address);
     gSpot = await GSpot.deploy();
     debtPool = await DebtPool.deploy(synthTokenAddress, state.minter.address);
     updateHouse = await UpdateHouse.deploy(
@@ -80,24 +77,9 @@ describe.only('#UpdateHouse', async function() {
     );
 
     gSpacexKey = ethers.utils.formatBytes32String('GSPACEX');
-    // // Add READER rule for accountOne and gSpot contract
-    // await ssm.grantRole(await ssm.READER_ROLE(), accountOne.address);
-    // await ssm.grantRole(await ssm.READER_ROLE(), gSpot.address);
-    // Add contract ssm for gSpot
     await gSpot.addSsm(gSpacexKey, median.address);
     // Simulate add a new current price for a synth
     await median.poke(BigNumber.from(parseEther('3.0')));
-    // await network.provider.send('evm_increaseTime', [
-    //   (await ssm.zzz()).toNumber() + 3600,
-    // ]);
-    // await ssm.connect(accountOne).poke();
-
-    // await median.poke(BigNumber.from(parseEther('3.0')));
-    // await network.provider.send('evm_increaseTime', [
-    //   (await ssm.zzz()).toNumber() + 3600,
-    // ]);
-    // await ssm.connect(accountOne).poke();
-
     // If return success when adds a new price, it will be possible to read.
     const price = await gSpot.connect(accountOne).read(gSpacexKey);
     console.log(price.toString());
@@ -142,7 +124,7 @@ describe.only('#UpdateHouse', async function() {
       }
     });
 
-    it.only('#add should return success to add a new SHORT position', async function() {
+    it('#add should return success to add a new SHORT position', async function() {
       await state.token
         .attach(synthTokenAddress)
         .connect(accountOne)

@@ -8,7 +8,7 @@ import useStyle from './style';
 const RewardPage = () => {
   const classes = useStyle();
   return (
-    <div className="modal">
+    <div className="modal side-left">
       <Grid container direction="row" className={classes.root}>
         <div>
           <Link to="/">
