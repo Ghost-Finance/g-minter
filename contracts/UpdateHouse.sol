@@ -79,30 +79,24 @@ contract UpdateHouse is CoreMath {
     uint256 currentPrice = spot.read(dataPosition.synth);
     require(currentPrice > 0);
 
-    console.log("calculation data:");
-    console.log(dataPosition.synthTokenAmount);
-    console.log(currentPrice);
-    console.log(dataPosition.synthTokenAmount);
-    console.log(dataPosition.initialPrice);
-    uint256 positionFixValue = (dataPosition.synthTokenAmount * currentPrice - dataPosition.synthTokenAmount * dataPosition.initialPrice);
+    uint256 positionFixValue = (((dataPosition.synthTokenAmount * currentPrice) / WAD) - ((dataPosition.synthTokenAmount * dataPosition.initialPrice) / WAD));
     uint256 currentPricePosition;
-    console.log("calculation here:");
-    console.log(positionFixValue);
     if (dataPosition.direction == Direction.LONG) {
-      currentPricePosition = dataPosition.tokenAmount + positionFixValue;
+      currentPricePosition = (dataPosition.tokenAmount + positionFixValue);
     } else if (dataPosition.direction == Direction.SHORT) {
       currentPricePosition = orderToSub(dataPosition.tokenAmount, positionFixValue);
     }
 
+    require(debtPool.update(dataPosition.tokenAmount, currentPricePosition), "Fail to update debtPool");
+    console.log("transfer from:");
     console.log(currentPricePosition);
+    token.transferFrom(address(debtPool), address(msg.sender), currentPricePosition);
+
     dataPosition.status = Status.FINISHED;
     dataPosition.updated_at = block.timestamp;
     data[index] = dataPosition;
 
-    require(debtPool.update(dataPosition.tokenAmount, currentPricePosition));
-    token.transferFrom(address(debtPool), address(msg.sender), currentPricePosition);
-
-    emit Finish(msg.sender, currentPricePosition, dataPosition.direction);
+    emit Finish(address(msg.sender), currentPricePosition, dataPosition.direction);
   }
 
   function _create(address account, Direction direction, bytes32 synthKey, uint256 initialPrice, uint256 amount) internal returns (PositionData memory) {
@@ -114,7 +108,7 @@ contract UpdateHouse is CoreMath {
       initialPrice,
       0,
       amount,
-      uint(amount) / uint(initialPrice) * 10**64,
+      radiv(amount, initialPrice),
       block.timestamp,
       block.timestamp
     );

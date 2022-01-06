@@ -57,7 +57,9 @@ contract Minter {
   }
 
   modifier onlyDebtPool() {
-    require(address(debtPool) != address(msg.sender), 'Only permitted contract!');
+    console.logAddress(address(debtPool));
+    console.logAddress(address(msg.sender));
+    require(address(debtPool) == address(msg.sender), 'Only permitted contract!');
     _;
   }
 
@@ -129,7 +131,6 @@ contract Minter {
   }
 
   function debtPoolMint(GTokenERC20 token, uint256 amount) public onlyDebtPool {
-    console.log("debt pool");
     synthDebt[msg.sender][token] += amount;
     token.mint(msg.sender, amount);
   }

@@ -73,6 +73,7 @@ describe('#UpdateHouse', async function() {
 
     median = await Median.deploy();
     gSpot = await GSpot.deploy();
+    console.log(state.minter.address);
     debtPool = await DebtPool.deploy(synthTokenAddress, state.minter.address);
     updateHouse = await UpdateHouse.deploy(
       synthTokenAddress,
@@ -91,6 +92,7 @@ describe('#UpdateHouse', async function() {
     );
 
     await debtPool.addUpdatedHouse(updateHouse.address);
+    await state.minter.addDebtPool(debtPool.address);
   });
 
   describe('Add a new position', async function() {
@@ -148,7 +150,7 @@ describe('#UpdateHouse', async function() {
     });
   });
 
-  describe.only('#finish Alice postion', async function() {
+  describe('#finish Alice postion', async function() {
     let amount, positionData, balanceOf, synthDebt;
 
     beforeEach(async function() {
@@ -179,8 +181,10 @@ describe('#UpdateHouse', async function() {
       expect(positionData.initialPrice.toString()).to.be.equal(
         initialPrice.toString()
       );
-      expect(positionData.synthTokenAmount.toString()).to.be.equal(
-        amount.div(initialPrice).toString()
+      const synthTokenAmountResult =
+        (amount.toString() / initialPrice.toString()) * 10 ** 18;
+      expect(positionData.synthTokenAmount.toString() / 10 ** 18).to.be.equal(
+        synthTokenAmountResult / 10 ** 18
       );
     });
 
@@ -199,7 +203,7 @@ describe('#UpdateHouse', async function() {
       expect(
         await checkFinishPositionEvent(
           updateHouse,
-          alice,
+          alice.address,
           BigNumber.from(parseEther('21.998')).toString(),
           1
         )
