@@ -5,6 +5,7 @@ import './GTokenERC20.sol';
 import './AuctionHouse.sol';
 import './base/Feed.sol';
 import './DebtPool.sol';
+import 'hardhat/console.sol';
 
 contract Minter {
   address public owner;
@@ -128,6 +129,7 @@ contract Minter {
   }
 
   function debtPoolMint(GTokenERC20 token, uint256 amount) public onlyDebtPool {
+    console.log("debt pool");
     synthDebt[msg.sender][token] += amount;
     token.mint(msg.sender, amount);
   }

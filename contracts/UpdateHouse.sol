@@ -5,6 +5,7 @@ import './oracle/GSpot.sol';
 import './base/CoreMath.sol';
 import './DebtPool.sol';
 import './GTokenERC20.sol';
+import 'hardhat/console.sol';
 
 contract UpdateHouse is CoreMath {
 
@@ -51,21 +52,7 @@ contract UpdateHouse is CoreMath {
     uint256 initialPrice = spot.read(synthKey);
     require(initialPrice > 0);
 
-    PositionData memory dataPosition = PositionData(
-      msg.sender,
-      direction_,
-      Status.OPEN,
-      synthKey,
-      initialPrice,
-      0,
-      amount,
-      amount / initialPrice,
-      block.timestamp,
-      block.timestamp
-    );
-
-    data[positionCount] = dataPosition;
-    positionCount++;
+    PositionData memory dataPosition = _create(msg.sender, direction_, synthKey, initialPrice, amount);
 
     emit Add(msg.sender, dataPosition);
   }
@@ -92,14 +79,22 @@ contract UpdateHouse is CoreMath {
     uint256 currentPrice = spot.read(dataPosition.synth);
     require(currentPrice > 0);
 
+    console.log("calculation data:");
+    console.log(dataPosition.synthTokenAmount);
+    console.log(currentPrice);
+    console.log(dataPosition.synthTokenAmount);
+    console.log(dataPosition.initialPrice);
     uint256 positionFixValue = (dataPosition.synthTokenAmount * currentPrice - dataPosition.synthTokenAmount * dataPosition.initialPrice);
     uint256 currentPricePosition;
+    console.log("calculation here:");
+    console.log(positionFixValue);
     if (dataPosition.direction == Direction.LONG) {
       currentPricePosition = dataPosition.tokenAmount + positionFixValue;
     } else if (dataPosition.direction == Direction.SHORT) {
       currentPricePosition = orderToSub(dataPosition.tokenAmount, positionFixValue);
     }
 
+    console.log(currentPricePosition);
     dataPosition.status = Status.FINISHED;
     dataPosition.updated_at = block.timestamp;
     data[index] = dataPosition;
@@ -108,5 +103,25 @@ contract UpdateHouse is CoreMath {
     token.transferFrom(address(debtPool), address(msg.sender), currentPricePosition);
 
     emit Finish(msg.sender, currentPricePosition, dataPosition.direction);
+  }
+
+  function _create(address account, Direction direction, bytes32 synthKey, uint256 initialPrice, uint256 amount) internal returns (PositionData memory) {
+    PositionData memory dataPosition = PositionData(
+      address(account),
+      direction,
+      Status.OPEN,
+      synthKey,
+      initialPrice,
+      0,
+      amount,
+      uint(amount) / uint(initialPrice) * 10**64,
+      block.timestamp,
+      block.timestamp
+    );
+
+    data[positionCount] = dataPosition;
+    positionCount++;
+
+    return dataPosition;
   }
 }

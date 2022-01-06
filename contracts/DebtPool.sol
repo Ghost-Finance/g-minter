@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import './GTokenERC20.sol';
 import './UpdateHouse.sol';
 import './Minter.sol';
+import 'hardhat/console.sol';
 
 contract DebtPool is Ownable {
 
@@ -27,11 +28,16 @@ contract DebtPool is Ownable {
   }
 
   function update(uint256 amount, uint256 currentAmount) public onlyHouse returns (bool) {
+    console.log(currentAmount);
+    console.log(amount);
     if (currentAmount > amount) {
       // mint
+      console.log("entrouuu no mint");
       minter.debtPoolMint(token, currentAmount - amount);
     } else {
       // burn
+      console.log("entrouuu no burn");
+      console.log(amount - currentAmount);
       minter.debtPoolBurn(token, amount - currentAmount);
     }
 

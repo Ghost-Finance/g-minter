@@ -52,6 +52,12 @@ type DepositedCollateralEvent = {
   amount: number;
 };
 
+type FinishPositionEvent = {
+  account: string;
+  amount: string;
+  direction: Number;
+};
+
 type MintEvent = {
   user: string;
   amountTotal: number;
@@ -96,6 +102,7 @@ export {
   CreateSynthEvent,
   ChangeMedianEvent,
   DepositedCollateralEvent,
+  FinishPositionEvent,
   AddPositionEvent,
   MintEvent,
   LiquidateEvent,

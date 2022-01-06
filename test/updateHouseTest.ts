@@ -2,7 +2,10 @@ import { ethers, network } from 'hardhat';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
-import { checkAddPositionEvent } from './util/CheckEvent';
+import {
+  checkAddPositionEvent,
+  checkFinishPositionEvent,
+} from './util/CheckEvent';
 import setup from './util/setup';
 
 let updateHouseContractLabel: string = 'UpdateHouse';
@@ -25,9 +28,9 @@ describe('#UpdateHouse', async function() {
     median,
     owner,
     accounts,
-    accountOne,
-    accountTwo,
-    accountThree,
+    alice,
+    bob,
+    josh,
     others,
     synthTokenAddress,
     state,
@@ -36,7 +39,7 @@ describe('#UpdateHouse', async function() {
   beforeEach(async function() {
     state = await setup();
     [owner, ...accounts] = await ethers.getSigners();
-    [accountOne, accountTwo, accountThree, ...others] = accounts;
+    [alice, bob, josh, ...others] = accounts;
 
     const feedSynth = await state.Feed.deploy(
       parseEther('1'),
@@ -52,10 +55,10 @@ describe('#UpdateHouse', async function() {
     );
     synthTokenAddress = await state.minter.getSynth(0);
     await state.token
-      .connect(accountOne)
+      .connect(alice)
       .approve(state.minter.address, BigNumber.from(parseEther('180.0')));
     await state.minter
-      .connect(accountOne)
+      .connect(alice)
       .mint(
         synthTokenAddress,
         BigNumber.from(parseEther('180.0')),
@@ -80,12 +83,11 @@ describe('#UpdateHouse', async function() {
     gSpacexKey = ethers.utils.formatBytes32String('GSPACEX');
     await gSpot.addSsm(gSpacexKey, median.address);
     // Simulate add a new current price for a synth
-    await median.poke(BigNumber.from(parseEther('3.0')));
+    await median.poke(BigNumber.from(parseEther('74')));
     // If return success when adds a new price, it will be possible to read.
-    initialPrice = await gSpot.connect(accountOne).read(gSpacexKey);
-    console.log(initialPrice.toString());
+    initialPrice = await gSpot.connect(alice).read(gSpacexKey);
     expect(initialPrice.toString()).to.be.equal(
-      BigNumber.from(parseEther('3.0')).toString()
+      BigNumber.from(parseEther('74')).toString()
     );
 
     await debtPool.addUpdatedHouse(updateHouse.address);
@@ -117,7 +119,7 @@ describe('#UpdateHouse', async function() {
     it('#add validates if account has enough balance to make a move', async function() {
       try {
         await updateHouse
-          .connect(accountOne)
+          .connect(alice)
           .add(BigNumber.from(parseEther('50.0')), gSpacexKey, 2);
       } catch (error) {
         expect(error.message).to.match(/transfer amount exceeds balance/);
@@ -127,16 +129,16 @@ describe('#UpdateHouse', async function() {
     it('#add should return success to add a new SHORT position', async function() {
       await state.token
         .attach(synthTokenAddress)
-        .connect(accountOne)
+        .connect(alice)
         .approve(updateHouse.address, BigNumber.from(parseEther('2.0')));
       await updateHouse
-        .connect(accountOne)
+        .connect(alice)
         .add(BigNumber.from(parseEther('2.0')), gSpacexKey, 1);
 
       expect(
         await checkAddPositionEvent(
           updateHouse,
-          accountOne.address,
+          alice.address,
           1,
           1,
           gSpacexKey,
@@ -144,24 +146,63 @@ describe('#UpdateHouse', async function() {
         )
       ).to.be.true;
     });
+  });
 
-    it('#finish should return ', async function() {
-      const amount = BigNumber.from(parseEther('2.0'));
+  describe.only('#finish Alice postion', async function() {
+    let amount, positionData, balanceOf, synthDebt;
+
+    beforeEach(async function() {
+      amount = BigNumber.from(parseEther('20.0'));
       await state.token
         .attach(synthTokenAddress)
-        .connect(accountOne)
+        .connect(alice)
         .approve(updateHouse.address, amount);
 
-      await updateHouse.connect(accountOne).add(amount, gSpacexKey, 1);
+      // Add new position with all gDai from Alice
+      await updateHouse.connect(alice).add(amount, gSpacexKey, 2);
+      balanceOf = await state.token
+        .attach(synthTokenAddress)
+        .balanceOf(alice.address);
+      synthDebt = await state.minter
+        .connect(alice)
+        .synthDebt(alice.address, synthTokenAddress);
+      console.log(
+        `Alice balanceOf after buy a synth position ${balanceOf.toString()}`
+      );
+      console.log(
+        `Alice synthDebt after buy a synth position ${synthDebt.toString()}`
+      );
 
-      const positionData = await updateHouse.data(0);
-      expect(positionData.account).to.be.equal(accountOne.address);
-      expect(positionData.direction).to.be.equal(1); // Short
+      positionData = await updateHouse.data(0);
+      expect(positionData.account).to.be.equal(alice.address);
+      expect(positionData.direction).to.be.equal(2); // Long postion
       expect(positionData.initialPrice.toString()).to.be.equal(
         initialPrice.toString()
       );
       expect(positionData.synthTokenAmount.toString()).to.be.equal(
         amount.div(initialPrice).toString()
+      );
+    });
+
+    it('#finish should transfer 30 gDai if Alice purchase 20 gSpx before the price increase 10%', async function() {
+      // Increse the price of gSpx in 10%
+      await median.poke(BigNumber.from(parseEther('81.4')));
+      let currentPrice = await gSpot.connect(alice).read(gSpacexKey);
+      expect(currentPrice.toString()).to.be.equal(
+        BigNumber.from(parseEther('81.4'))
+      );
+
+      // Alice call finish operation
+      await updateHouse.connect(alice).finishPosition(0);
+
+      // Check event Finish
+      expect(
+        await checkFinishPositionEvent(
+          updateHouse,
+          alice,
+          BigNumber.from(parseEther('21.998')).toString(),
+          1
+        )
       );
     });
   });
