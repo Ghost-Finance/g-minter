@@ -20,7 +20,7 @@ contract DebtPool is Ownable {
 
   constructor(address token_, address minter_) {
     token = GTokenERC20(token_);
-    minter = Minter(minter);
+    minter = Minter(minter_);
   }
 
   function addUpdatedHouse(address updated_) public onlyOwner {
@@ -28,8 +28,6 @@ contract DebtPool is Ownable {
   }
 
   function update(uint256 amount, uint256 currentAmount) public onlyHouse returns (bool) {
-    console.log(currentAmount);
-    console.log(amount);
     if (currentAmount > amount) {
       // mint
       console.log("entrouuu no mint");
