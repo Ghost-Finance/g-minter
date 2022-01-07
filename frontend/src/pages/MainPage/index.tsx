@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { Switch, Route, useLocation } from 'react-router-dom';
-import { Grid } from '@material-ui/core';
+import { Grid, Typography } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import BigNumber from 'bignumber.js';
 import { LogoIcon, SynthCardIcon } from '../../components/Icons';
@@ -187,11 +187,7 @@ const MainPage = ({ networkName }: Props) => {
             justify="flex-end"
             alignItems="center"
           >
-            <Grid
-              item
-              style={{ marginTop: 40, marginRight: 30 }}
-              justify-xs-center="true"
-            >
+            <Grid item style={{ marginTop: 40 }} justify-xs-center="true">
               <ConnectWallet />
             </Grid>
             <Grid item className={classes.columnFixed} justify-xs-center="true">
@@ -204,18 +200,29 @@ const MainPage = ({ networkName }: Props) => {
               ) : (
                 <></>
               )}
-              <div className={classes.item}>
-                {status !== 'error' &&
-                  status !== 'pending' &&
-                  cardsDataArray.map((props, key) => (
-                    <GcardLink
-                      to={account ? props.to : '#'}
-                      image={props.image}
-                      title={props.title}
-                      key={key}
-                    />
-                  ))}
-              </div>
+              <Grid container item className={classes.item}>
+                <Grid item xs={12} spacing={3}>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    className={classes.text}
+                  >
+                    Explore
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} spacing={3} className={classes.content}>
+                  {status !== 'error' &&
+                    status !== 'pending' &&
+                    cardsDataArray.map((props, key) => (
+                      <GcardLink
+                        to={account ? props.to : '#'}
+                        image={props.image}
+                        title={props.title}
+                        key={key}
+                      />
+                    ))}
+                </Grid>
+              </Grid>
             </Grid>
           </Grid>
         </main>

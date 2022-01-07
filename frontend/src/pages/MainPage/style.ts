@@ -7,6 +7,7 @@ export const useStyles = makeStyles((theme: Theme) =>
       width: '100%',
       height: '100%',
       flexDirection: 'row',
+      flexFlow: 'row',
     },
     pageActived: {
       display: 'flex',
@@ -23,8 +24,28 @@ export const useStyles = makeStyles((theme: Theme) =>
     },
     main: {
       flexGrow: 1,
-      paddingLeft: theme.spacing(3),
-      paddingRight: theme.spacing(3),
+      paddingLeft: theme.spacing(25),
+      paddingRight: theme.spacing(25),
+      [theme.breakpoints.down('md')]: {
+        paddingLeft: theme.spacing(3),
+        paddingRight: theme.spacing(3),
+      },
+    },
+    content: {
+      margin: '0 auto',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
+    text: {
+      color: theme.palette.primary.contrastText,
+      fontSize: '1.125rem',
+      paddingLeft: 10,
+      lineHeight: 2,
+      [theme.breakpoints.down('md')]: {
+        paddingLeft: 0,
+        fontSize: '1rem',
+      },
     },
     column: {
       minHeight: '0',
