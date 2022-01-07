@@ -11,6 +11,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import NavElement from '../../components/NavElement';
 import MintPage from '../MintPage';
 import BurnPage from '../BurnPage';
+import MintAndBurnPage from '../MintAndBurnPage';
 import RewardPage from '../RewardPage';
 import StakePage from '../StakePage';
 import AlertPage from '../AlertPage';
@@ -236,7 +237,7 @@ const MainPage = ({ networkName }: Props) => {
         >
           <Switch location={location}>
             <Route path="/mint" children={<MintPage />} />
-            <Route path="/mint-burn" children={<BurnPage />} />
+            <Route path="/mint-burn" children={<MintAndBurnPage />} />
             <Route path="/rewards" children={<RewardPage />} />
             <Route path="/stake" children={<StakePage />} />
             <Route path="/wallet-connect" children={<WalletConnectPage />} />
