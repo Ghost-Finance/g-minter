@@ -21,6 +21,22 @@ export const mint = async (
     });
 };
 
+export const burn = async (
+  contract: Contract,
+  token: string,
+  amount: string,
+  account: string
+) => {
+  const burnAmount = BigNumber.from(parseEther(amount));
+
+  return contract.methods
+    .burn(token, burnAmount)
+    .send({ from: account })
+    .on('transactionHash', (tx: any) => {
+      return tx.transactionHash;
+    });
+};
+
 export const approve = async (
   contract: Contract,
   sender: string,
