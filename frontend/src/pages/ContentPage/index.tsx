@@ -30,9 +30,6 @@ const ContentPage = (props: Props) => {
 
         <div className={classes.topBox}>&nbsp;</div>
         {props.children}
-        <div className={btnDisabled ? classes.disabled : classes.active}>
-          &nbsp;
-        </div>
       </Grid>
     </div>
   );
