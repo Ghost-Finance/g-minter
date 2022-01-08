@@ -72,7 +72,6 @@ const MintPage = () => {
     e.preventDefault();
     let balanceValue = await balanceOf(ghoContract, account as string);
     let value = ghoValue ? ghoValue : bigNumberToString(balanceValue);
-    debugger;
     try {
       let maxGdaiValue = await maximumByCollateral(
         minterContract,

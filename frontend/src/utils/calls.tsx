@@ -76,7 +76,6 @@ export const getCRatio = async (
   token: string,
   account: string
 ) => {
-  debugger;
   return contract.methods.getCRatio(token).call({ from: account });
 };
 

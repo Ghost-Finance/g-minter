@@ -7,18 +7,18 @@ import GhostIcon from '../../components/Icons/GhoIcon';
 import { useMinter, useERC20 } from '../../hooks/useContract';
 import { useDispatch, useSelector } from '../../redux/hooks';
 import { gDaiAddress, minterAddress } from '../../utils/constants';
-import { burn, approve } from '../../utils/calls';
+import { balanceOf, burn, approve } from '../../utils/calls';
 import { setTxSucces, setStatus } from '../../redux/app/actions';
+import { bigNumberToFloat } from '../../utils/StringUtils';
 import useStyle from '../style';
 
 const BurnPage = () => {
   const classes = useStyle();
   const minterContract = useMinter();
   const gDaiContract = useERC20(gDaiAddress);
+  const [availableBtn, setAvailableBtn] = useState(false);
 
-  const dispatch = useDispatch();
   const { account } = useSelector(state => state.wallet);
-  const { active } = useSelector(state => state.app);
   const dispatch = useDispatch();
 
   const [redirect, setRedirect] = useState(false);
@@ -26,7 +26,7 @@ const BurnPage = () => {
   const [gdaiValue, setGdaiValue] = useState('');
 
   async function handleBurn() {
-    if (active) return;
+    if (!availableBtn) return;
 
     setRedirect(true);
     dispatch(setStatus('pending'));
@@ -40,15 +40,16 @@ const BurnPage = () => {
     }, 5000);
   }
 
-  function stateDisableButton() {
-    if (parseInt(gdaiValue || '0') === 0) {
-      dispatch(setBtnDisabled(true));
-      return true;
-    }
+  async function handleMaxDAI(e: any) {
+    e.preventDefault();
+    let value = await balanceOf(gDaiContract, account as string);
 
-    dispatch(setBtnDisabled(false));
-    return false;
+    setGdaiValue(bigNumberToFloat(value).toString());
   }
+
+  useEffect(() => {
+    setAvailableBtn(!(parseInt(gdaiValue || '0') === 0));
+  }, [gdaiValue]);
 
   return (
     <>
@@ -83,7 +84,6 @@ const BurnPage = () => {
               value={gdaiValue}
               onChange={e => {
                 setGdaiValue(e.target.value.trim());
-                setTimeout(() => stateDisableButton, 3000);
               }}
             />
 
@@ -91,7 +91,7 @@ const BurnPage = () => {
               <ButtonForm
                 text="MAX"
                 className={classes.buttonMax}
-                // onClick={handleMaxDAI}
+                onClick={handleMaxDAI}
               />
             </div>
           </InputContainer>
@@ -101,10 +101,9 @@ const BurnPage = () => {
           <div>
             <ButtonForm
               text="Burn gDAI"
-              // className={btnDisabled ? classes.disabled : classes.active}
-              className={classes.active}
+              className={availableBtn ? classes.active : classes.disabled}
               onClick={handleBurn}
-              // disabled={btnDisabled}
+              disabled={!availableBtn}
             />
           </div>
         </div>
