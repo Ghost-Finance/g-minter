@@ -71,7 +71,6 @@ const MainPage = ({ networkName }: Props) => {
     setRootPageChanged(location.pathname === '/');
 
     function organizeCardsData() {
-      debugger;
       if (balanceOfGdai === '0') return;
 
       let cardsDataArrayAfterMint = cardsData.filter(

@@ -60,7 +60,6 @@ export const formatCurrency = (
   style = 'currency',
   currency = 'USD'
 ) => {
-  debugger;
   return new Intl.NumberFormat(type, {
     style: style,
     currency: currency,
