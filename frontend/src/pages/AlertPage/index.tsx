@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
-import useStyle from './style';
+import useStyle from './index.style';
 import ButtonForm from '../../components/Button/ButtonForm';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import DoneIcon from '@material-ui/icons/Done';
@@ -11,7 +11,7 @@ const AlertPage = () => {
   const classes = useStyle();
   const [confirmed, setConfirmed] = useState(false);
 
-  const app = useSelector(state => state.app);
+  const app = useSelector((state) => state.app);
   const { txSuccess } = app;
 
   return (

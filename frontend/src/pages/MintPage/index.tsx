@@ -3,7 +3,7 @@ import { Link, Redirect } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
 import BigNumber from 'bignumber.js';
-import useStyle from './style';
+import useStyle from './index.style';
 import hooks from '../../hooks/walletConnect';
 import ButtonForm from '../../components/Button/ButtonForm';
 import InputContainer from '../../components/InputContainer';
