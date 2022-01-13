@@ -1,12 +1,12 @@
-import useStyles from './styles';
-import theme from '../../theme';
+import { useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
+import useStyles from './index.style';
+import theme from '../../theme.style';
 import arrow from '../../assets/arrow.png';
 import { Link } from 'react-router-dom';
 import { Typography, Grid, Card } from '@material-ui/core';
 import Providers from './Providers';
 import hooks from '../../hooks/walletConnect';
-import { useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
 
 type T = {
   provider: any;

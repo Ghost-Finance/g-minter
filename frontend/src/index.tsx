@@ -1,19 +1,19 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
-import './index.css'
-import reportWebVitals from './reportWebVitals'
-import AppTheme from './AppTheme'
+import React from 'react';
+import { hydrate, render } from 'react-dom';
+import './index.module.css';
+import AppTheme from './AppTheme';
 import { Provider } from 'react-redux';
 import store from './redux/store';
 
-ReactDOM.render(
+let root = document.getElementById('root');
+let Root = () => (
   <Provider store={store}>
     <AppTheme />
-  </Provider>,
-  document.getElementById('root')
-)
+  </Provider>
+);
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals()
+if (root?.hasChildNodes()) {
+  hydrate(<Root />, root);
+} else {
+  render(<Root />, root);
+}

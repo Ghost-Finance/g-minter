@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import useStyles from './styles';
+import useStyles from './index.style';
 import MainPage from '../MainPage';
 
 const App = (): React.ReactElement => {
