@@ -57,7 +57,7 @@ const config: HardhatUserConfig = {
       live: true,
       saveDeployments: true,
       gas: 12500000,
-      gasPrice: 1100000026,
+      gasPrice: 1000000012,
     },
     hardhat: {
       chainId: 1337,

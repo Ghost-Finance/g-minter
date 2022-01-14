@@ -7,6 +7,10 @@
     "prettier": "^1.19.1",
     "pretty-quick": "^2.0.1"
   },
+  "engines": {
+    "node": "14.x",
+    "npm": "6.x"
+  },
   "dependencies": {
     "@material-ui/core": "^4.11.2",
     "@material-ui/icons": "^4.11.2",
@@ -41,6 +45,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "heroku-postbuild": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "clean:contracts": "rm -rf src/contracts && rm -rf src/typechain",

@@ -8,7 +8,7 @@ import {
 } from '@material-ui/core'
 import ConnectButton from '../Button/ConnectButton'
 import Account from '../Account'
-import theme from '../../theme'
+import theme from '../../theme.style'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

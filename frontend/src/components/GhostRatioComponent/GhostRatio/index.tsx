@@ -15,13 +15,13 @@ import {
 import { useSelector } from '../../../redux/hooks';
 import CRatio from '../../CRatio';
 import useStyles from './styles';
-import theme from '../../../theme';
+import theme from '../../../theme.style';
 
 const GhostRatio = () => {
   const classes = useStyles(theme);
   const [position, setPosition] = useState(0);
-  const { account } = useSelector(state => state.wallet);
-  const app = useSelector(state => state.app);
+  const { account } = useSelector((state) => state.wallet);
+  const app = useSelector((state) => state.app);
   const {
     cRatioValue,
     balanceOfGho,

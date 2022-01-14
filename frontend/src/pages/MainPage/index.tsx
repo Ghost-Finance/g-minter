@@ -5,7 +5,7 @@ import { Grid } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import BigNumber from 'bignumber.js';
 import { LogoIcon, SynthCardIcon } from '../../components/Icons';
-import { useStyles } from './style';
+import { useStyles } from './index.style';
 import AppMenu from '../AppMenu';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import NavElement from '../../components/NavElement';
@@ -20,7 +20,7 @@ import GhostRatio from '../../components/GhostRatioComponent/GhostRatio';
 import LinkCard from '../../components/LinkCard';
 import GhostRatioMint from '../../components/GhostRatioComponent/GhostRatioMint';
 import cardsData from './cardsData';
-import './style.css';
+import './main.css';
 import WalletConnectPage from '../WalletConnectPage';
 import ConnectWallet from '../../components/Button/ConnectWallet';
 import {
@@ -71,7 +71,6 @@ const MainPage = ({ networkName }: Props) => {
     setRootPageChanged(location.pathname === '/');
 
     function organizeCardsData() {
-      debugger;
       if (balanceOfGdai === '0') return;
 
       let cardsDataArrayAfterMint = cardsData.filter(

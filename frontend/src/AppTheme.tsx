@@ -2,7 +2,7 @@ import React from 'react'
 import App from './pages/App'
 import { CssBaseline, makeStyles, ThemeProvider } from '@material-ui/core'
 import { SnackbarProvider } from 'notistack'
-import theme from './theme'
+import theme from './theme.style'
 
 const useStyles = makeStyles({
   root: {

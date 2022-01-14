@@ -29,7 +29,7 @@ contract Minter {
   mapping (address => mapping (GTokenERC20 => uint256)) public plrDelay;
 
   // Events
-  event CreateSynth(string name, string symbol, address feed);
+  event CreateSynth(address token, string name, string symbol, address feed);
   event Mint(address indexed account, uint256 totalAmount);
   event Burn(address indexed account, address token, uint256 amount);
   event WithdrawnCollateral(address indexed account, address token, uint amount);
@@ -88,7 +88,7 @@ contract Minter {
     cRatioPassive[synths[id]] = cRatioPassive_;
     feeds[synths[id]] = feed;
 
-    emit CreateSynth(name, symbol, address(feed));
+    emit CreateSynth(address(token), name, symbol, address(feed));
   }
 
   function withdrawnCollateral(GTokenERC20 token, uint256 amount) external {

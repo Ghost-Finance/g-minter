@@ -4,6 +4,7 @@ import { parseEther } from 'ethers/lib/utils';
 import * as fs from 'fs';
 import * as fse from 'fs-extra';
 import { formatEther } from 'ethers/lib/utils';
+import { CreateSynthEvent } from '../test/types/types';
 
 let minterContractLabelString: string = 'Minter';
 let tokenContractLabelString: string = 'GTokenERC20';
@@ -56,10 +57,23 @@ const main = async () => {
 
   // Generate synths
   const synthArgs = [].concat(gDaiArgs, feedGdai.address);
-  await minter.createSynth(...synthArgs);
-  console.log(`Minter address contract: ${minter.address}`);
+  await minter.connect(deployer).createSynth(...synthArgs);
 
-  let gDaiAddress = await minter.getSynth(0);
+  let createSynthEvent = new Promise<CreateSynthEvent>((resolve, reject) => {
+    minter.on('CreateSynth', (address, name, symbol, feed) => {
+      resolve({
+        address: address,
+        name: name,
+        symbol: symbol,
+        feed: feed,
+      });
+    });
+
+    setTimeout(() => {
+      reject(new Error('timeout'));
+    }, 60000);
+  });
+  const eventCreateSynth = await createSynthEvent;
 
   await median.lift(testUser.address);
 
@@ -68,13 +82,13 @@ const main = async () => {
   console.log(`Token address contract: ${ghoToken.address}`);
   console.log(`AuctionHouse address contract: ${auctionHouse.address}`);
   console.log(`Minter address contract: ${minter.address}`);
-  console.log(`GDai address: ${gDaiAddress}`);
+  console.log(`GDai address: ${eventCreateSynth.address}`);
   console.log(`MedianSpacex addresss ${median.address}`);
   console.log(`Oracle address ${testUser.address}`);
 
   saveFrontendFiles(
     ghoToken.address,
-    gDaiAddress,
+    eventCreateSynth.address,
     auctionHouse.address,
     minter.address,
     feedGho.address,
@@ -168,7 +182,7 @@ const saveFrontendFiles = (
 
 main()
   .then(() => process.exit(0))
-  .catch(error => {
+  .catch((error) => {
     console.error(error);
     process.exit(1);
   });

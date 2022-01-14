@@ -1,7 +1,7 @@
 import { Badge, Button, Typography } from '@material-ui/core';
 import React, { MouseEventHandler } from 'react';
-import useStyles from './styles';
-import theme from '../../../theme';
+import useStyles from './index.style';
+import theme from '../../../theme.style';
 import hooks from '../../../hooks/walletConnect';
 import { Link } from 'react-router-dom';
 
