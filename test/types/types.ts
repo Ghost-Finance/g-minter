@@ -11,11 +11,6 @@ type AddPriceEvent = {
   price: BigNumber;
 };
 
-type AddPositionEvent = {
-  account: string;
-  data: Object;
-};
-
 type ApproveEvent = {
   to: string;
   from: string;
@@ -38,6 +33,11 @@ type BurnEvent = {
 type ChangeMedianEvent = {
   sender: string;
   contractAddress: string;
+};
+
+type CreatePositionEvent = {
+  account: string;
+  data: Object;
 };
 
 type CreateSynthEvent = {
@@ -104,7 +104,7 @@ export {
   ChangeMedianEvent,
   DepositedCollateralEvent,
   FinishPositionEvent,
-  AddPositionEvent,
+  CreatePositionEvent,
   MintEvent,
   LiquidateEvent,
   StartAuctionHouseEvent,

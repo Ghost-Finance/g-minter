@@ -10,7 +10,7 @@ import {
   BurnEvent,
   DepositedCollateralEvent,
   FinishPositionEvent,
-  AddPositionEvent,
+  CreatePositionEvent,
   MintEvent,
   LiquidateEvent,
   StartAuctionHouseEvent,
@@ -346,7 +346,7 @@ export const checkChangeEvent = async (
   return true;
 };
 
-export const checkAddPositionEvent = async (
+export const checkCreatePositionEvent = async (
   contract: Contract,
   account: string,
   direction: Number,
@@ -354,9 +354,8 @@ export const checkAddPositionEvent = async (
   synthKey: string,
   amount: string
 ): Promise<boolean> => {
-  let addEvent = new Promise<AddPositionEvent>((resolve, reject) => {
-    contract.on('Add', (sender, data) => {
-      console.log('entrouu akkkkkkk');
+  let addEvent = new Promise<CreatePositionEvent>((resolve, reject) => {
+    contract.on('Create', (sender, data) => {
       resolve({
         account: sender,
         data: data,

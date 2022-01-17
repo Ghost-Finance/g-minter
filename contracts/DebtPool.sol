@@ -27,37 +27,15 @@ contract DebtPool is Ownable {
     updateHouse = UpdateHouse(updated_);
   }
 
-  function update(uint256 amount, uint256 currentAmount) public onlyHouse returns (bool) {
-    uint value;
-    if (currentAmount > amount) {
-      // mint
-      console.log("entrouuu no mint");
-      uint256 value = currentAmount - amount
-      minter.debtPoolMint(token, value);
-    } else {
-      // burn
-      console.log("entrouuu no burn");
-      console.log(amount - currentAmount);
-      value = amount - currentAmount;
-      minter.debtPoolBurn(token, value);
-    }
+  function mint(uint256 amount) public onlyHouse {
+    minter.debtPoolMint(token, amount);
+  }
 
-    _transferToUpdateHouse(currentAmount, value);
-    return true;
+  function burn(uint256 amount) public onlyHouse {
+    minter.debtPoolBurn(token, amount);
   }
 
   function getSynthDebt() public returns (uint256) {
     return minter.synthDebt(address(this), token);
   }
-
-  function _transferTo(uint amoutToApprove, uint256 amountToTransfer) internal returns (bool) {
-    token.approve(address(updateHouse), amoutToApprove);
-    require(token.transfer(address(updateHouse), amountToTransfer));
-
-    return true;
-  }
-
-  // PositionVault
-    // - Chamado quando precisa de debto
-    // - Chamado quando precisa queimar
 }

@@ -57,8 +57,6 @@ contract Minter {
   }
 
   modifier onlyDebtPool() {
-    console.logAddress(address(debtPool));
-    console.logAddress(address(msg.sender));
     require(address(debtPool) == address(msg.sender), 'Only permitted contract!');
     _;
   }

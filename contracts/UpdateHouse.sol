@@ -5,15 +5,17 @@ import './oracle/GSpot.sol';
 import './base/CoreMath.sol';
 import './DebtPool.sol';
 import './GTokenERC20.sol';
+import './PositionVault.sol';
+import "@openzeppelin/contracts/access/Ownable.sol";
 import 'hardhat/console.sol';
 
-contract UpdateHouse is CoreMath {
+contract UpdateHouse is CoreMath, Ownable {
 
-  GTokenERC20 token;
-  GSpot spot;
-  DebtPool debtPool;
+  GTokenERC20 public token;
+  GSpot public spot;
+  DebtPool public debtPool;
+  PositionVault public vault;
   address staker;
-  address vault;
 
   enum Direction{ UNSET, SHORT, LONG }
   enum Status { UNSET, OPEN, FINISHED }
@@ -35,8 +37,8 @@ contract UpdateHouse is CoreMath {
 
   mapping (uint => PositionData) public data;
 
-  event Add(address account, PositionData data);
-  event Finish(address account, uint256 currentPrice, Direction direction);
+  event Create(address account, PositionData data);
+  event Finish(address account, PositionData data);
 
   constructor(GTokenERC20 token_, GSpot spot_, DebtPool debtPool_) {
     token = GTokenERC20(token_);
@@ -44,40 +46,62 @@ contract UpdateHouse is CoreMath {
     debtPool = DebtPool(debtPool_);
   }
 
-  function add(uint256 amount, bytes32 synthKey, Direction direction_) external {
+  function setVault() public onlyOwner {
+    vault = new PositionVault(token, address(this));
+  }
+
+  function getVault() public view returns (address) {
+    return address(vault);
+  }
+
+  function createPosition(uint256 amount, bytes32 synthKey, Direction direction_) external {
     require(amount > 0, 'Invalid amount');
     require(direction_ == Direction.SHORT || direction_ == Direction.LONG, "Invalid position option");
-    require(token.transferFrom(msg.sender, address(this), amount), "");
 
     uint256 initialPrice = spot.read(synthKey);
     require(initialPrice > 0);
 
     PositionData memory dataPosition = _create(msg.sender, direction_, synthKey, initialPrice, amount);
+    console.log(positionCount);
+    _addPositionVault(positionCount, address(msg.sender), amount);
 
-    emit Add(msg.sender, dataPosition);
+    emit Create(msg.sender, dataPosition);
   }
 
-  // a new method finishAndOpen
-
-  // ((saldo antigo/saldo atual)* preçoAntigo) + ((saldoNovo/saldoAtual) * preçoAtual)
   function increasePosition(uint index, uint256 deltaAmount) external {
     PositionData storage dataPosition = data[index];
     require(dataPosition.account == msg.sender && dataPosition.status != Status.FINISHED);
     uint256 currentPrice = spot.read(dataPosition.synth);
+    _addPositionVault(index, address(msg.sender), deltaAmount);
 
-    uint256 currentTokenAmount = dataPosition.tokenAmount + deltaAmount;
+    uint256 newSynthAmount = radiv(deltaAmount, currentPrice);
+    uint256 oldSynthPrice = dataPosition.synthTokenAmount * dataPosition.initialPrice;
+    uint256 newSynthPrice = newSynthAmount * currentPrice;
+    uint256 medianPrice = (newSynthPrice + oldSynthPrice) / (dataPosition.tokenAmount + newSynthAmount);
+
+    dataPosition.initialPrice = medianPrice;
+  }
+
+  function decreasePosition(uint index, uint256 deltaAmount) external {
+    PositionData storage dataPosition = data[index];
+    require(dataPosition.account == msg.sender && dataPosition.status != Status.FINISHED);
+    uint256 currentPrice = spot.read(dataPosition.synth);
+    _removePositionVault(index, address(msg.sender), deltaAmount);
+
+    uint256 currentTokenAmount = dataPosition.tokenAmount - deltaAmount;
     uint256 oldPrice = (dataPosition.tokenAmount / currentTokenAmount) * dataPosition.initialPrice;
     uint256 newPrice = (deltaAmount / currentTokenAmount) * currentPrice;
-    uint256 currentInitialPrice = newPrice + oldPrice;
+    uint256 currentInitialPrice = orderToSub(newPrice, oldPrice);
 
     dataPosition.initialPrice = currentInitialPrice;
   }
 
   function finishPosition(uint index) external {
     PositionData storage dataPosition = data[index];
-    require(dataPosition.account == msg.sender && dataPosition.status != Status.FINISHED);
+    console.log("entrou no metodo");
+    require(dataPosition.account == msg.sender && dataPosition.status != Status.FINISHED, 'Invalid account or position already finished!');
     uint256 currentPrice = spot.read(dataPosition.synth);
-    require(currentPrice > 0);
+    require(currentPrice > 0, 'Current price not valid!');
 
     uint256 positionFixValue = (((dataPosition.synthTokenAmount * currentPrice) / WAD) - ((dataPosition.synthTokenAmount * dataPosition.initialPrice) / WAD));
     uint256 currentPricePosition;
@@ -87,16 +111,29 @@ contract UpdateHouse is CoreMath {
       currentPricePosition = orderToSub(dataPosition.tokenAmount, positionFixValue);
     }
 
-    require(debtPool.update(dataPosition.tokenAmount, currentPricePosition), "Fail to update debtPool");
-    console.log("transfer from:");
-    console.log(currentPricePosition);
-    token.transferFrom(address(debtPool), address(msg.sender), currentPricePosition);
+    uint256 amount = vault.withdrawFullDeposit(index);
+    if (currentPricePosition > dataPosition.tokenAmount) {
+      uint256 value = currentPricePosition - dataPosition.tokenAmount;
+      console.log('winner will mint to debtPool !!');
+      debtPool.mint(value);
+      console.log(amount);
+      token.transferFrom(address(vault), address(msg.sender), amount);
+      console.log(value);
+      // token.approve(address())
+      token.transferFrom(address(debtPool), address(msg.sender), value);
+    } else {
+      uint value = amount - currentPricePosition;
+      token.transferFrom(address(vault), address(debtPool), value);
+      debtPool.burn(value);
+
+      token.transferFrom(address(vault), address(msg.sender), currentPricePosition);
+    }
 
     dataPosition.status = Status.FINISHED;
     dataPosition.updated_at = block.timestamp;
     data[index] = dataPosition;
 
-    emit Finish(address(msg.sender), currentPricePosition, dataPosition.direction);
+    emit Finish(address(msg.sender), dataPosition);
   }
 
   function _create(address account, Direction direction, bytes32 synthKey, uint256 initialPrice, uint256 amount) internal returns (PositionData memory) {
@@ -112,10 +149,17 @@ contract UpdateHouse is CoreMath {
       block.timestamp,
       block.timestamp
     );
-
-    data[positionCount] = dataPosition;
     positionCount++;
+    data[positionCount] = dataPosition;
 
     return dataPosition;
+  }
+
+  function _addPositionVault(uint index, address account, uint amount) internal {
+    vault.addDeposit(index, account, amount);
+  }
+
+  function _removePositionVault(uint index, address account, uint amount) internal {
+    vault.removeDeposit(index, account, amount);
   }
 }
