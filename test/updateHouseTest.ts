@@ -1,10 +1,11 @@
 import { ethers, network } from 'hardhat';
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
-import { parseEther } from 'ethers/lib/utils';
+import * as BN from 'bignumber.js';
+import { parseEther, parseUnits } from 'ethers/lib/utils';
 import {
   checkCreatePositionEvent,
-  checkFinishPositionEvent,
+  checkFinishPositionWithWinnerEvent,
 } from './util/CheckEvent';
 import setup from './util/setup';
 
@@ -14,7 +15,7 @@ let gSpotContractLabel: string = 'GSpot';
 let ssmContractLabel: string = 'Ssm';
 let medianTestContractLabel: string = 'GValueTest';
 
-describe.only('#UpdateHouse', async function() {
+describe('#UpdateHouse', async function() {
   let UpdateHouse,
     DebtPool,
     GSpot,
@@ -26,6 +27,7 @@ describe.only('#UpdateHouse', async function() {
     updateHouse,
     ssm,
     median,
+    vault,
     owner,
     accounts,
     alice,
@@ -83,6 +85,7 @@ describe.only('#UpdateHouse', async function() {
       debtPool.address
     );
     await updateHouse.setVault();
+    vault = await updateHouse.getVault();
 
     gSpacexKey = ethers.utils.formatBytes32String('GSPACEX');
     await gSpot.addSsm(gSpacexKey, median.address);
@@ -100,8 +103,6 @@ describe.only('#UpdateHouse', async function() {
 
   describe('Add a new position', async function() {
     it('#createPosition validates amount is positive', async function() {
-      console.log(updateHouse.Position);
-
       try {
         await updateHouse.createPosition(
           BigNumber.from(parseEther('0.0')),
@@ -139,7 +140,7 @@ describe.only('#UpdateHouse', async function() {
       await state.token
         .attach(synthTokenAddress)
         .connect(alice)
-        .approve(updateHouse.getVault(), BigNumber.from(parseEther('10.0')));
+        .approve(vault, BigNumber.from(parseEther('10.0')));
       await updateHouse
         .connect(alice)
         .createPosition(BigNumber.from(parseEther('10.0')), gSpacexKey, 1);
@@ -157,7 +158,7 @@ describe.only('#UpdateHouse', async function() {
       await state.token
         .attach(synthTokenAddress)
         .connect(bob)
-        .approve(updateHouse.getVault(), BigNumber.from(parseEther('10.0')));
+        .approve(vault, BigNumber.from(parseEther('10.0')));
       await updateHouse
         .connect(bob)
         .createPosition(BigNumber.from(parseEther('10.0')), gSpacexKey, 2);
@@ -175,7 +176,7 @@ describe.only('#UpdateHouse', async function() {
     });
   });
 
-  describe.only('#finish Alice postion', async function() {
+  describe('#finish Alice postion', async function() {
     let amount, positionData, balanceOf, synthDebt;
 
     beforeEach(async function() {
@@ -183,7 +184,7 @@ describe.only('#UpdateHouse', async function() {
       await state.token
         .attach(synthTokenAddress)
         .connect(alice)
-        .approve(await updateHouse.getVault(), amount);
+        .approve(vault, amount);
 
       // Add new position with all gDai from Alice
       await updateHouse.connect(alice).createPosition(amount, gSpacexKey, 2);
@@ -201,7 +202,6 @@ describe.only('#UpdateHouse', async function() {
       );
 
       positionData = await updateHouse.data(1);
-      console.log(positionData);
       expect(positionData.account).to.be.equal(alice.address);
       expect(positionData.direction).to.be.equal(2); // Long postion
       expect(positionData.initialPrice.toString()).to.be.equal(
@@ -227,11 +227,11 @@ describe.only('#UpdateHouse', async function() {
 
       // Check event Finish
       expect(
-        await checkFinishPositionEvent(
+        await checkFinishPositionWithWinnerEvent(
           updateHouse,
           alice.address,
-          BigNumber.from(parseEther('21.998')).toString(),
-          1
+          2,
+          '21999999999999999998'
         )
       );
     });

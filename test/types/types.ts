@@ -55,8 +55,7 @@ type DepositedCollateralEvent = {
 
 type FinishPositionEvent = {
   account: string;
-  amount: string;
-  direction: Number;
+  status: number;
 };
 
 type MintEvent = {
@@ -88,6 +87,11 @@ type TransferEvent = {
   amount: number;
 };
 
+type WinnerEvent = {
+  account: string;
+  amountToReceive: string;
+};
+
 type WithdrawnCollateralEvent = {
   account: string;
   token: string;
@@ -110,5 +114,6 @@ export {
   StartAuctionHouseEvent,
   TokenDetails,
   TransferEvent,
+  WinnerEvent,
   WithdrawnCollateralEvent,
 };

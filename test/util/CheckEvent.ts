@@ -14,6 +14,7 @@ import {
   MintEvent,
   LiquidateEvent,
   StartAuctionHouseEvent,
+  WinnerEvent,
   WithdrawnCollateralEvent,
 } from '../types/types';
 
@@ -378,18 +379,17 @@ export const checkCreatePositionEvent = async (
   return true;
 };
 
-export const checkFinishPositionEvent = async (
+export const checkFinishPositionWithWinnerEvent = async (
   contract: Contract,
   account: string,
-  amount: string,
-  direction: Number
+  status: number,
+  amountToReceive: string
 ): Promise<boolean> => {
-  let finishEvent = new Promise<FinishPositionEvent>((resolve, reject) => {
-    contract.on('Finish', (account, amount, direction) => {
+  let winnerEvent = new Promise<WinnerEvent>((resolve, reject) => {
+    contract.on('Winner', (sender, amountToReceive) => {
       resolve({
-        account,
-        amount,
-        direction,
+        account: sender,
+        amountToReceive: amountToReceive,
       });
     });
 
@@ -398,10 +398,27 @@ export const checkFinishPositionEvent = async (
     }, 60000);
   });
 
+  let finishEvent = new Promise<FinishPositionEvent>((resolve, reject) => {
+    contract.on('Finish', (sender, status) => {
+      resolve({
+        account: sender,
+        status: status,
+      });
+    });
+
+    setTimeout(() => {
+      reject(new Error('timeout'));
+    }, 60000);
+  });
+
+  const eventWinner = await winnerEvent;
+  expect(eventWinner.account).to.be.equal(account);
+  expect(eventWinner.amountToReceive.toString()).to.be.equal(amountToReceive);
+
   const eventFinish = await finishEvent;
   expect(eventFinish.account).to.be.equal(account);
-  expect(eventFinish.amount.toString()).to.be.equal(amount.toString());
-  expect(eventFinish.direction).to.be.equal(direction);
+  expect(eventFinish.status).to.be.equal(status);
+
   contract.removeAllListeners();
 
   return true;
