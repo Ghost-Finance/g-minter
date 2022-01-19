@@ -6,7 +6,7 @@ import TokenBorderLight from '../../TokenBorderLight';
 import { GhostIcon, DaiIcon } from '../../Icons';
 import CRatio from '../../CRatio';
 import useStyles from './styles';
-import theme from '../../../theme';
+import theme from '../../../theme.style';
 import { useSelector } from '../../../redux/hooks';
 
 const GhostRatioMint = () => {
@@ -18,7 +18,7 @@ const GhostRatioMint = () => {
     balanceOfGdai,
     collateralBalance,
     synthDebt,
-  } = useSelector(state => state.app);
+  } = useSelector((state) => state.app);
 
   return (
     <Box component="div" m={1} className={classes.root}>

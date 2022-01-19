@@ -3,7 +3,7 @@ import { Link, Redirect } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
 import BigNumber from 'bignumber.js';
-import useStyle from './style';
+import useStyle from './index.style';
 import hooks from '../../hooks/walletConnect';
 import ButtonForm from '../../components/Button/ButtonForm';
 import InputContainer from '../../components/InputContainer';
@@ -35,7 +35,7 @@ const MintPage = () => {
   const gDaiContract = useERC20(gDaiAddress);
 
   const dispatch = useDispatch();
-  const { account } = useSelector(state => state.wallet);
+  const { account } = useSelector((state) => state.wallet);
 
   const [redirect, setRedirect] = useState(false);
   const [redirectHome, setRedirectHome] = useState(false);
@@ -191,7 +191,7 @@ const MintPage = () => {
                     className={classes.input}
                     type="text"
                     value={gdaiValue}
-                    onChange={e => {
+                    onChange={(e) => {
                       setGdaiValue(e.target.value.trim());
                       setTimeout(() => stateDisableButton, 3000);
                     }}
@@ -214,7 +214,7 @@ const MintPage = () => {
                     className={classes.input}
                     type="text"
                     value={ghoValue}
-                    onChange={e => {
+                    onChange={(e) => {
                       setGhoValue(e.target.value.trim());
                       setTimeout(() => stateDisableButton, 3000);
                     }}

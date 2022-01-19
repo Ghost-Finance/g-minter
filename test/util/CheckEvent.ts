@@ -22,8 +22,9 @@ export const checkCreateSynthEvent = async (
   feedAddress: Contract
 ): Promise<boolean> => {
   let createSynthEvent = new Promise<CreateSynthEvent>((resolve, reject) => {
-    contract.on('CreateSynth', (name, symbol, feed) => {
+    contract.on('CreateSynth', (address, name, symbol, feed) => {
       resolve({
+        address: address,
         name: name,
         symbol: symbol,
         feed: feed,

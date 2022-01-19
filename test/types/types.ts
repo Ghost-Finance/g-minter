@@ -36,6 +36,7 @@ type ChangeMedianEvent = {
 };
 
 type CreateSynthEvent = {
+  address: string;
   name: string;
   symbol: string;
   feed: string;

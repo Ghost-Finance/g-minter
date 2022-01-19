@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
-import theme from '../../theme';
-import useStyles from './styles';
+import theme from '../../theme.style';
+import useStyles from './index.style';
 import {
   CssBaseline,
   AppBar,

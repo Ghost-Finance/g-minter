@@ -155,7 +155,7 @@ export const positionExposeData = (
     ),
     collateralBalance(contract, token, account),
     synthDebtOf(contract, token, account),
-  ]).then(values => {
+  ]).then((values) => {
     return {
       cRatio: values[0].toString(),
       collateralBalance: BigNumber.from(values[1]).add(ghoAmount),
@@ -169,7 +169,5 @@ export const promiseAll = async (
   successCallback: any,
   errorCallback: any
 ) => {
-  return Promise.all(allPromise)
-    .then(successCallback)
-    .catch(errorCallback);
+  return Promise.all(allPromise).then(successCallback).catch(errorCallback);
 };

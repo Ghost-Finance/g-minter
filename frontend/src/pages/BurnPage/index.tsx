@@ -18,7 +18,7 @@ const BurnPage = () => {
   const gDaiContract = useERC20(gDaiAddress);
   const [availableBtn, setAvailableBtn] = useState(false);
 
-  const { account } = useSelector(state => state.wallet);
+  const { account } = useSelector((state) => state.wallet);
   const dispatch = useDispatch();
 
   const [redirect, setRedirect] = useState(false);
@@ -82,7 +82,7 @@ const BurnPage = () => {
               className={classes.input}
               type="text"
               value={gdaiValue}
-              onChange={e => {
+              onChange={(e) => {
                 setGdaiValue(e.target.value.trim());
               }}
             />

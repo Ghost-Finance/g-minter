@@ -6,7 +6,7 @@ import {
 } from '@material-ui/core';
 import React from 'react';
 import useStyles from './styles';
-import theme from '../../theme';
+import theme from '../../theme.style';
 import { convertCurrency } from '../utils';
 
 type T = {
