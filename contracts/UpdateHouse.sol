@@ -7,7 +7,6 @@ import './DebtPool.sol';
 import './GTokenERC20.sol';
 import './PositionVault.sol';
 import "@openzeppelin/contracts/access/Ownable.sol";
-import 'hardhat/console.sol';
 
 contract UpdateHouse is CoreMath, Ownable {
 
@@ -38,7 +37,9 @@ contract UpdateHouse is CoreMath, Ownable {
   mapping (uint => PositionData) public data;
 
   event Create(address account, PositionData data);
-  event Finish(address account, PositionData data);
+  event Finish(address account, Status status);
+  event Winner(address account, uint256 amount);
+  event Loser(address account, uint256 amount);
 
   constructor(GTokenERC20 token_, GSpot spot_, DebtPool debtPool_) {
     token = GTokenERC20(token_);
@@ -62,7 +63,6 @@ contract UpdateHouse is CoreMath, Ownable {
     require(initialPrice > 0);
 
     PositionData memory dataPosition = _create(msg.sender, direction_, synthKey, initialPrice, amount);
-    console.log(positionCount);
     _addPositionVault(positionCount, address(msg.sender), amount);
 
     emit Create(msg.sender, dataPosition);
@@ -98,7 +98,6 @@ contract UpdateHouse is CoreMath, Ownable {
 
   function finishPosition(uint index) external {
     PositionData storage dataPosition = data[index];
-    console.log("entrou no metodo");
     require(dataPosition.account == msg.sender && dataPosition.status != Status.FINISHED, 'Invalid account or position already finished!');
     uint256 currentPrice = spot.read(dataPosition.synth);
     require(currentPrice > 0, 'Current price not valid!');
@@ -112,28 +111,30 @@ contract UpdateHouse is CoreMath, Ownable {
     }
 
     uint256 amount = vault.withdrawFullDeposit(index);
+    uint256 amountToReceive;
     if (currentPricePosition > dataPosition.tokenAmount) {
-      uint256 value = currentPricePosition - dataPosition.tokenAmount;
-      console.log('winner will mint to debtPool !!');
-      debtPool.mint(value);
-      console.log(amount);
-      token.transferFrom(address(vault), address(msg.sender), amount);
-      console.log(value);
-      // token.approve(address())
-      token.transferFrom(address(debtPool), address(msg.sender), value);
-    } else {
-      uint value = amount - currentPricePosition;
-      token.transferFrom(address(vault), address(debtPool), value);
-      debtPool.burn(value);
+      amountToReceive = currentPricePosition - dataPosition.tokenAmount;
+      debtPool.mint(amountToReceive);
 
-      token.transferFrom(address(vault), address(msg.sender), currentPricePosition);
+      vault.transferFrom(address(msg.sender), amount);
+      debtPool.transferFrom(address(msg.sender), amountToReceive);
+
+      emit Winner(address(msg.sender), amount + amountToReceive);
+    } else {
+      amountToReceive = amount - currentPricePosition;
+      vault.transferFrom(address(debtPool), amountToReceive);
+      debtPool.burn(amountToReceive);
+
+      vault.transferFrom(address(msg.sender), currentPricePosition);
+
+      emit Loser(address(msg.sender), currentPricePosition);
     }
 
     dataPosition.status = Status.FINISHED;
     dataPosition.updated_at = block.timestamp;
     data[index] = dataPosition;
 
-    emit Finish(address(msg.sender), dataPosition);
+    emit Finish(address(msg.sender), dataPosition.status);
   }
 
   function _create(address account, Direction direction, bytes32 synthKey, uint256 initialPrice, uint256 amount) internal returns (PositionData memory) {

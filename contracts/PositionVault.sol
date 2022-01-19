@@ -32,4 +32,9 @@ contract PositionVault {
 
     return positionVaultData[position];
   }
+
+  function transferFrom(address receiver, uint256 amount) public onlyOwner {
+    token.approve(receiver, amount);
+    token.transfer(receiver, amount);
+  }
 }

@@ -5,7 +5,6 @@ import './GTokenERC20.sol';
 import './AuctionHouse.sol';
 import './base/Feed.sol';
 import './DebtPool.sol';
-import 'hardhat/console.sol';
 
 contract Minter {
   address public owner;

@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import './GTokenERC20.sol';
 import './UpdateHouse.sol';
 import './Minter.sol';
-import 'hardhat/console.sol';
 
 contract DebtPool is Ownable {
 
@@ -33,6 +32,11 @@ contract DebtPool is Ownable {
 
   function burn(uint256 amount) public onlyHouse {
     minter.debtPoolBurn(token, amount);
+  }
+
+  function transferFrom(address receiver, uint256 amount) public onlyHouse {
+    token.approve(receiver, amount);
+    token.transfer(receiver, amount);
   }
 
   function getSynthDebt() public returns (uint256) {
