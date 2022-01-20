@@ -3,6 +3,7 @@ export const Types = {
   SET_STATUS: '@APP/SET_STATUS',
   SET_CRATIO: '@APP/SET_CRATIO',
   SET_CRATIO_SIMULATE_MINT: '@APP/SET_CRATIO_SIMULATE_MINT',
+  SET_CRATIO_SIMULATE_BURN: '@APP/SET_CRATIO_SIMULATE_BURN',
   SET_BALANCE_OF_GHO: '@APP/SET_BALANCE_OF_GHO',
   SET_BALANCE_OF_GDAI: '@APP/SET_BALANCE_OF_GDAI',
 };
@@ -11,7 +12,7 @@ type TState = {
   txSuccess?: boolean;
   status?: 'idle' | 'pending' | 'success' | 'error';
   cRatioValue?: string;
-  cRatioSimulateMintValue?: string;
+  cRatioSimulateValue?: string;
   balanceOfGho?: string;
   balanceOfGdai?: string;
   collateralBalance?: string;
@@ -28,7 +29,7 @@ const initialState: TState = {
   txSuccess: false,
   status: 'idle',
   cRatioValue: '0',
-  cRatioSimulateMintValue: '0',
+  cRatioSimulateValue: '0',
   balanceOfGho: '0',
   balanceOfGdai: '0',
   collateralBalance: '0',
@@ -44,7 +45,7 @@ export default (state: TState = initialState, action: TAction) => {
     txSuccess,
     status,
     cRatioValue,
-    cRatioSimulateMintValue,
+    cRatioSimulateValue,
     balanceOfGho,
     balanceOfGdai,
     collateralBalance,
@@ -77,8 +78,14 @@ export default (state: TState = initialState, action: TAction) => {
     case Types.SET_CRATIO_SIMULATE_MINT:
       return {
         ...state,
-        cRatioSimulateMintValue,
+        cRatioSimulateValue,
         collateralBalance,
+        synthDebt,
+      };
+    case Types.SET_CRATIO_SIMULATE_BURN:
+      return {
+        ...state,
+        cRatioSimulateValue,
         synthDebt,
       };
     case Types.SET_BALANCE_OF_GHO:

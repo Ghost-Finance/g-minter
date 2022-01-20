@@ -7,8 +7,12 @@ import GhostIcon from '../../components/Icons/GhoIcon';
 import { useMinter, useERC20 } from '../../hooks/useContract';
 import { useDispatch, useSelector } from '../../redux/hooks';
 import { gDaiAddress, minterAddress } from '../../utils/constants';
-import { balanceOf, burn, approve } from '../../utils/calls';
-import { setTxSucces, setStatus } from '../../redux/app/actions';
+import { balanceOf, burn, approve, simulateBurn } from '../../utils/calls';
+import {
+  setTxSucces,
+  setStatus,
+  setCRatioSimulateBurn,
+} from '../../redux/app/actions';
 import { bigNumberToFloat } from '../../utils/StringUtils';
 import useStyle from '../style';
 
@@ -48,7 +52,27 @@ const BurnPage = () => {
   }
 
   useEffect(() => {
+    dispatch(setCRatioSimulateBurn('0', '0'));
     setAvailableBtn(!(parseInt(gdaiValue || '0') === 0));
+
+    async function fetchData() {
+      const { cRatio, synthDebt } = await simulateBurn(
+        minterContract,
+        gDaiAddress,
+        account as string,
+        gdaiValue ? gdaiValue : '0'
+      );
+
+      dispatch(
+        setCRatioSimulateBurn(
+          (bigNumberToFloat(cRatio) * 100).toString(),
+          bigNumberToFloat(synthDebt).toString()
+        )
+      );
+      dispatch(setStatus('success'));
+    }
+
+    fetchData();
   }, [gdaiValue]);
 
   return (

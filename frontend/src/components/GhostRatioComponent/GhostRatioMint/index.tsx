@@ -13,7 +13,7 @@ const GhostRatioMint = () => {
   const classes = useStyles(theme);
 
   const {
-    cRatioSimulateMintValue,
+    cRatioSimulateValue,
     balanceOfGho,
     balanceOfGdai,
     collateralBalance,
@@ -26,7 +26,7 @@ const GhostRatioMint = () => {
         <div className={classes.content}>
           <CRatio
             size={200}
-            progress={parseInt(cRatioSimulateMintValue || '')}
+            progress={parseInt(cRatioSimulateValue || '')}
             strokeWidth={4}
             circleTwoStroke="#4BE29A"
             errorColorStroke="#F44336"
