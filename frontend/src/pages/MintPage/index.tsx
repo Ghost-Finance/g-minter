@@ -30,8 +30,6 @@ import { gDaiAddress, ghoAddress, minterAddress } from '../../utils/constants';
 import { bigNumberToFloat, bigNumberToString } from '../../utils/StringUtils';
 
 const MintPage = () => {
-  let gdaiTarget: string = 'gdai';
-  let ghoTarget: string = 'gho';
   const classes = useStyle();
   const minterContract = useMinter();
   const ghoContract = useERC20(ghoAddress);
@@ -39,6 +37,7 @@ const MintPage = () => {
 
   const dispatch = useDispatch();
   const { account } = useSelector((state) => state.wallet);
+  const { cRatioSimulateMintValue } = useSelector((state) => state.app);
 
   const [redirect, setRedirect] = useState(false);
   const [redirectHome, setRedirectHome] = useState(false);
@@ -56,13 +55,13 @@ const MintPage = () => {
     ...gdaiField
   } = useOnlyDigitField('text');
 
-  console.log(`GHO value: ${ghoField.value}`);
-  console.log(`GDAI value: ${gdaiField.value}`);
-  console.log(`GHO vali ${gdaiFieldValid}`);
-  console.log(`GDAI vali ${ghoFieldValid}`);
-
   async function handleMint() {
-    if (!(gdaiFieldValid && ghoFieldValid)) return;
+    if (
+      parseInt(cRatioSimulateMintValue || '') === 0 ||
+      ghoField.value === '' ||
+      gdaiField.value === ''
+    )
+      return;
 
     setRedirect(true);
     dispatch(setStatus('pending'));
@@ -132,9 +131,8 @@ const MintPage = () => {
   useEffect(() => {
     dispatch(setStatus('pending'));
     dispatch(setCRatioSimulateMint('0', '0', '0'));
-
     async function fetchData() {
-      if (!(gdaiFieldValid && ghoFieldValid)) return;
+      if (ghoField.value === '' || gdaiField.value === '') return;
       try {
         const { cRatio, collateralBalance, synthDebt } =
           await positionExposeData(
@@ -160,8 +158,14 @@ const MintPage = () => {
       }
     }
 
-    fetchData();
-    dispatch(setStatus('success'));
+    const timeout = setTimeout(() => {
+      fetchData();
+      dispatch(setStatus('success'));
+    }, 2000);
+
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [
     account,
     minterContract,
@@ -249,17 +253,29 @@ const MintPage = () => {
                   <ButtonForm
                     text="Mint gDAI"
                     className={
-                      !btnDisabled ? classes.buttonMint : classes.buttonMintGrey
+                      parseInt(cRatioSimulateMintValue || '') === 0 ||
+                      ghoField.value === '' ||
+                      gdaiField.value === ''
+                        ? classes.buttonMintGrey
+                        : classes.buttonMint
                     }
                     onClick={handleMint}
-                    disabled={btnDisabled}
+                    disabled={
+                      parseInt(cRatioSimulateMintValue || '') === 0 ||
+                      ghoField.value === '' ||
+                      gdaiField.value === ''
+                    }
                   />
                 </div>
               </div>
             </Box>
             <div
               className={
-                !btnDisabled ? classes.bottomBox : classes.bottomBoxGrey
+                parseInt(cRatioSimulateMintValue || '') === 0 ||
+                ghoField.value === '' ||
+                gdaiField.value === ''
+                  ? classes.bottomBoxGrey
+                  : classes.bottomBox
               }
             >
               &nbsp;

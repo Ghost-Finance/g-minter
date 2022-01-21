@@ -23,8 +23,6 @@ const useOnlyDigitField = (type: string): P => {
 
       return;
     }
-
-    setValid(false);
   };
 
   const reset = () => {
