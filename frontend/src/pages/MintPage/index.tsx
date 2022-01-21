@@ -9,6 +9,7 @@ import ButtonForm from '../../components/Button/ButtonForm';
 import InputContainer from '../../components/InputContainer';
 import { GhostIcon } from '../../components/Icons';
 import { useMinter, useERC20 } from '../../hooks/useContract';
+import useOnlyDigitField from '../../hooks/useOnlyDigitField';
 import { useDispatch, useSelector } from '../../redux/hooks';
 import {
   approve,
@@ -36,27 +37,45 @@ const MintPage = () => {
 
   const dispatch = useDispatch();
   const { account } = useSelector((state) => state.wallet);
+  const { cRatioSimulateMintValue } = useSelector((state) => state.app);
 
   const [redirect, setRedirect] = useState(false);
   const [redirectHome, setRedirectHome] = useState(false);
   const [btnDisabled, setBtnDisabled] = useState(true);
-  const [gdaiValue, setGdaiValue] = useState('');
-  const [ghoValue, setGhoValue] = useState('');
+  const {
+    reset: resetGhoField,
+    valid: ghoFieldValid,
+    setValue: setGhoValue,
+    ...ghoField
+  } = useOnlyDigitField('text');
+  const {
+    reset: resetGdaiField,
+    valid: gdaiFieldValid,
+    setValue: setGdaiValue,
+    ...gdaiField
+  } = useOnlyDigitField('text');
 
   async function handleMint() {
-    if (btnDisabled) return;
+    if (btnDisabled || ghoField.value === '' || gdaiField.value === '') return;
 
     setRedirect(true);
     dispatch(setStatus('pending'));
     dispatch(setTxSucces(false));
-    await approve(ghoContract, account as string, minterAddress, ghoValue);
+    await approve(
+      ghoContract,
+      account as string,
+      minterAddress,
+      ghoField.value
+    );
     await mint(
       minterContract,
       gDaiAddress,
-      ghoValue,
-      gdaiValue,
+      ghoField.value,
+      gdaiField.value,
       account as string
     );
+    resetGhoField();
+    resetGdaiField();
     setTimeout(() => {
       dispatch(setStatus('success'));
       dispatch(setTxSucces(true));
@@ -71,7 +90,9 @@ const MintPage = () => {
   async function handleMaxGHO(e: any) {
     e.preventDefault();
     let balanceValue = await balanceOf(ghoContract, account as string);
-    let value = ghoValue ? ghoValue : bigNumberToString(balanceValue);
+    let value = ghoField.value
+      ? ghoField.value
+      : bigNumberToString(balanceValue);
     try {
       let maxGdaiValue = await maximumByCollateral(
         minterContract,
@@ -87,8 +108,8 @@ const MintPage = () => {
     e.preventDefault();
     let balanceValue = await balanceOf(gDaiContract, account as string);
 
-    let value = gdaiValue
-      ? gdaiValue
+    let value = gdaiField.value
+      ? gdaiField.value
       : bigNumberToString(balanceValue).toString();
     try {
       let maxGhoValue = await maximumByDebt(
@@ -102,45 +123,54 @@ const MintPage = () => {
     } catch (error) {}
   }
 
-  function stateDisableButton() {
-    if (parseInt(gdaiValue || '0') === 0 || parseInt(ghoValue || '0') === 0) {
-      setBtnDisabled(true);
-      return true;
+  useEffect(() => {
+    dispatch(setStatus('pending'));
+    dispatch(setCRatioSimulateMint('0', '0', '0'));
+    setBtnDisabled(true);
+
+    async function fetchData() {
+      if (ghoField.value === '' || gdaiField.value === '') return;
+      try {
+        const { cRatio, collateralBalance, synthDebt } =
+          await positionExposeData(
+            minterContract,
+            gDaiAddress,
+            account as string,
+            ghoField.value,
+            gdaiField.value
+          );
+
+        setBtnDisabled(bigNumberToFloat(cRatio) * 100 < 900);
+        dispatch(
+          setCRatioSimulateMint(
+            (bigNumberToFloat(cRatio) * 100).toString(),
+            bigNumberToFloat(collateralBalance).toString(),
+            bigNumberToFloat(synthDebt).toString()
+          )
+        );
+      } catch (error) {
+        setBtnDisabled(true);
+        dispatch(setCRatioSimulateMint('0', '0', '0'));
+      }
     }
 
-    setBtnDisabled(false);
-    return false;
-  }
-
-  useEffect(() => {
-    dispatch(setCRatioSimulateMint('0', '0', '0'));
-
-    const timeout = setTimeout(async () => {
-      if (stateDisableButton()) return;
-      dispatch(setStatus('pending'));
-
-      const { cRatio, collateralBalance, synthDebt } = await positionExposeData(
-        minterContract,
-        gDaiAddress,
-        account as string,
-        ghoValue ? ghoValue : '0',
-        gdaiValue ? gdaiValue : '0'
-      );
-
-      dispatch(
-        setCRatioSimulateMint(
-          (bigNumberToFloat(cRatio) * 100).toString(),
-          bigNumberToFloat(collateralBalance).toString(),
-          bigNumberToFloat(synthDebt).toString()
-        )
-      );
+    const timeout = setTimeout(() => {
+      fetchData();
       dispatch(setStatus('success'));
-    }, 3000);
+    }, 2000);
 
     return () => {
       clearTimeout(timeout);
     };
-  }, [account, minterContract, ghoValue, gdaiValue, dispatch]);
+  }, [
+    account,
+    minterContract,
+    ghoField.value,
+    gdaiField.value,
+    gdaiFieldValid,
+    ghoFieldValid,
+    dispatch,
+  ]);
 
   return (
     <div className="modal side-left">
@@ -187,15 +217,7 @@ const MintPage = () => {
                   <GhostIcon />
                   <span className={classes.labelInput}>gDAI</span>
 
-                  <input
-                    className={classes.input}
-                    type="text"
-                    value={gdaiValue}
-                    onChange={(e) => {
-                      setGdaiValue(e.target.value.trim());
-                      setTimeout(() => stateDisableButton, 3000);
-                    }}
-                  />
+                  <input className={classes.input} id="gdai" {...gdaiField} />
 
                   <div>
                     <ButtonForm
@@ -210,15 +232,7 @@ const MintPage = () => {
                   <GhostIcon />
                   <span className={classes.labelInput}>GHO</span>
 
-                  <input
-                    className={classes.input}
-                    type="text"
-                    value={ghoValue}
-                    onChange={(e) => {
-                      setGhoValue(e.target.value.trim());
-                      setTimeout(() => stateDisableButton, 3000);
-                    }}
-                  />
+                  <input className={classes.input} id="gho" {...ghoField} />
 
                   <div>
                     <ButtonForm
@@ -235,17 +249,27 @@ const MintPage = () => {
                   <ButtonForm
                     text="Mint gDAI"
                     className={
-                      btnDisabled ? classes.buttonMintGrey : classes.buttonMint
+                      btnDisabled ||
+                      ghoField.value === '' ||
+                      gdaiField.value === ''
+                        ? classes.buttonMintGrey
+                        : classes.buttonMint
                     }
                     onClick={handleMint}
-                    disabled={btnDisabled}
+                    disabled={
+                      btnDisabled ||
+                      ghoField.value === '' ||
+                      gdaiField.value === ''
+                    }
                   />
                 </div>
               </div>
             </Box>
             <div
               className={
-                btnDisabled ? classes.bottomBoxGrey : classes.bottomBox
+                btnDisabled || ghoField.value === '' || gdaiField.value === ''
+                  ? classes.bottomBoxGrey
+                  : classes.bottomBox
               }
             >
               &nbsp;
