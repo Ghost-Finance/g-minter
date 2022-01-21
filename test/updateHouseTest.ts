@@ -5,6 +5,7 @@ import * as BN from 'bignumber.js';
 import { parseEther, parseUnits } from 'ethers/lib/utils';
 import {
   checkCreatePositionEvent,
+  checkFinishPositionWithLoserEvent,
   checkFinishPositionWithWinnerEvent,
 } from './util/CheckEvent';
 import setup from './util/setup';
@@ -15,7 +16,7 @@ let gSpotContractLabel: string = 'GSpot';
 let ssmContractLabel: string = 'Ssm';
 let medianTestContractLabel: string = 'GValueTest';
 
-describe('#UpdateHouse', async function() {
+describe.only('#UpdateHouse', async function() {
   let UpdateHouse,
     DebtPool,
     GSpot,
@@ -90,11 +91,11 @@ describe('#UpdateHouse', async function() {
     gSpacexKey = ethers.utils.formatBytes32String('GSPACEX');
     await gSpot.addSsm(gSpacexKey, median.address);
     // Simulate add a new current price for a synth
-    await median.poke(BigNumber.from(parseEther('74')));
+    await median.poke(BigNumber.from(parseEther('80')));
     // If return success when adds a new price, it will be possible to read.
     initialPrice = await gSpot.connect(alice).read(gSpacexKey);
     expect(initialPrice.toString()).to.be.equal(
-      BigNumber.from(parseEther('74')).toString()
+      BigNumber.from(parseEther('80')).toString()
     );
 
     await debtPool.addUpdatedHouse(updateHouse.address);
@@ -201,6 +202,25 @@ describe('#UpdateHouse', async function() {
         `Alice synthDebt after buy a synth position ${synthDebt.toString()}`
       );
 
+      await state.token
+        .attach(synthTokenAddress)
+        .connect(bob)
+        .approve(vault, amount);
+
+      await updateHouse.connect(bob).createPosition(amount, gSpacexKey, 1);
+      balanceOf = await state.token
+        .attach(synthTokenAddress)
+        .balanceOf(bob.address);
+      synthDebt = await state.minter
+        .connect(bob)
+        .synthDebt(bob.address, synthTokenAddress);
+      console.log(
+        `Bob balanceOf after buy a synth position ${balanceOf.toString()}`
+      );
+      console.log(
+        `Bob synthDebt after buy a synth position ${synthDebt.toString()}`
+      );
+
       positionData = await updateHouse.data(1);
       expect(positionData.account).to.be.equal(alice.address);
       expect(positionData.direction).to.be.equal(2); // Long postion
@@ -214,26 +234,113 @@ describe('#UpdateHouse', async function() {
       );
     });
 
-    it('#finish should transfer 30 gDai if Alice purchase 20 gSpx before the price increase 10%', async function() {
-      // Increse the price of gSpx in 10%
-      await median.poke(BigNumber.from(parseEther('81.4')));
+    it('#finish validate account in position is correct', async function() {
+      try {
+        await updateHouse.connect(bob).finishPosition(1);
+      } catch (error) {
+        expect(error.message).to.match(
+          /Invalid account or position already finished!/
+        );
+      }
+    });
+
+    it('#increase ');
+
+    it('#finish validate current price is not positive', async function() {
+      try {
+        await median.poke(BigNumber.from(parseEther('0')));
+        let currentPrice = await gSpot.connect(alice).read(gSpacexKey);
+        expect(currentPrice.toString()).to.be.equal(
+          BigNumber.from(parseEther('0'))
+        );
+
+        await updateHouse.connect(alice).finishPosition(1);
+      } catch (error) {
+        expect(error.message).to.match(/Current price not valid!/);
+      }
+    });
+
+    it.only('#finish should transfer gDai to winner in a short position', async function() {
+      // Increase the price of gSpx in 10%
+      await median.poke(BigNumber.from(parseEther('72')));
+      let currentPrice = await gSpot.read(gSpacexKey);
+      expect(currentPrice.toString()).to.be.equal(
+        BigNumber.from(parseEther('72'))
+      );
+
+      // Bob call finish operation
+      await updateHouse.connect(bob).finishPosition(2);
+      let balanceOfBob = await state.token
+        .attach(synthTokenAddress)
+        .balanceOf(bob.address);
+
+      // Check event Winner
+      expect(
+        await checkFinishPositionWithWinnerEvent(
+          updateHouse,
+          bob.address,
+          1,
+          balanceOfBob.toString()
+        )
+      ).to.be.true;
+    });
+
+    it('#finish should transfer gDai to winner in a long position', async function() {
+      // Increase the price of gSpx in 10%
+      await median.poke(BigNumber.from(parseEther('92')));
       let currentPrice = await gSpot.connect(alice).read(gSpacexKey);
       expect(currentPrice.toString()).to.be.equal(
-        BigNumber.from(parseEther('81.4'))
+        BigNumber.from(parseEther('92'))
       );
 
       // Alice call finish operation
       await updateHouse.connect(alice).finishPosition(1);
+      let balanceOfAlice = await state.token
+        .attach(synthTokenAddress)
+        .balanceOf(alice.address);
 
-      // Check event Finish
+      // Check event Winner
       expect(
         await checkFinishPositionWithWinnerEvent(
           updateHouse,
           alice.address,
           2,
-          '21999999999999999998'
+          balanceOfAlice.toString()
         )
+      ).to.be.true;
+    });
+
+    it('#finish should burn gDai to account in a long position', async function() {
+      // Decrease the price of gSpx in 10%
+      let balanceOfAliceBefore = await state.token
+        .attach(synthTokenAddress)
+        .balanceOf(alice.address);
+      console.log(`Balanceof loser before ${balanceOfAliceBefore.toString()}`);
+
+      await median.poke(BigNumber.from(parseEther('72')));
+      let currentPrice = await gSpot.connect(alice).read(gSpacexKey);
+      console.log(currentPrice.toString());
+      expect(currentPrice.toString()).to.be.equal(
+        BigNumber.from(parseEther('72'))
       );
+
+      // Alice call finish operation
+      await updateHouse.connect(alice).finishPosition(1);
+      let balanceOfAlice = await state.token
+        .attach(synthTokenAddress)
+        .balanceOf(alice.address);
+
+      console.log(`Balanceof loser after ${balanceOfAlice.toString()}`);
+
+      // Check event Loser
+      expect(
+        await checkFinishPositionWithLoserEvent(
+          updateHouse,
+          alice.address,
+          2,
+          balanceOfAlice.toString()
+        )
+      ).to.be.true;
     });
   });
 });

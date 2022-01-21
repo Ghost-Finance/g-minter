@@ -35,7 +35,6 @@ contract DebtPool is Ownable {
   }
 
   function transferFrom(address receiver, uint256 amount) public onlyHouse {
-    token.approve(receiver, amount);
     token.transfer(receiver, amount);
   }
 

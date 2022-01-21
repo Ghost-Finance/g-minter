@@ -69,6 +69,11 @@ type LiquidateEvent = {
   tokenAddress: string;
 };
 
+type LoserEvent = {
+  account: string;
+  amountToReceive: string;
+};
+
 type StartAuctionHouseEvent = {
   token: string;
   keeper: string;
@@ -111,6 +116,7 @@ export {
   CreatePositionEvent,
   MintEvent,
   LiquidateEvent,
+  LoserEvent,
   StartAuctionHouseEvent,
   TokenDetails,
   TransferEvent,

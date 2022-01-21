@@ -13,6 +13,7 @@ import {
   CreatePositionEvent,
   MintEvent,
   LiquidateEvent,
+  LoserEvent,
   StartAuctionHouseEvent,
   WinnerEvent,
   WithdrawnCollateralEvent,
@@ -414,6 +415,51 @@ export const checkFinishPositionWithWinnerEvent = async (
   const eventWinner = await winnerEvent;
   expect(eventWinner.account).to.be.equal(account);
   expect(eventWinner.amountToReceive.toString()).to.be.equal(amountToReceive);
+
+  const eventFinish = await finishEvent;
+  expect(eventFinish.account).to.be.equal(account);
+  expect(eventFinish.status).to.be.equal(status);
+
+  contract.removeAllListeners();
+
+  return true;
+};
+
+export const checkFinishPositionWithLoserEvent = async (
+  contract: Contract,
+  account: string,
+  status: number,
+  amountToReceive: string
+): Promise<boolean> => {
+  let loserEvent = new Promise<LoserEvent>((resolve, reject) => {
+    contract.on('Loser', (sender, amountToReceive) => {
+      resolve({
+        account: sender,
+        amountToReceive: amountToReceive,
+      });
+    });
+
+    setTimeout(() => {
+      reject(new Error('timeout'));
+    }, 60000);
+  });
+
+  let finishEvent = new Promise<FinishPositionEvent>((resolve, reject) => {
+    contract.on('Finish', (sender, status) => {
+      resolve({
+        account: sender,
+        status: status,
+      });
+    });
+
+    setTimeout(() => {
+      reject(new Error('timeout'));
+    }, 60000);
+  });
+
+  const eventLoser = await loserEvent;
+  expect(eventLoser.account).to.be.equal(account);
+  expect(eventLoser.amountToReceive.toString()).to.be.equal(amountToReceive);
 
   const eventFinish = await finishEvent;
   expect(eventFinish.account).to.be.equal(account);
