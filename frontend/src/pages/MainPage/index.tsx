@@ -125,7 +125,6 @@ const MainPage = ({ networkName }: Props) => {
           dispatch(setStatus('success'));
         },
         (error: any) => {
-          console.log(error);
           dispatch(setStatus('error'));
         }
       );

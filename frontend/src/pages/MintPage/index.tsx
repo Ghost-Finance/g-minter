@@ -56,12 +56,7 @@ const MintPage = () => {
   } = useOnlyDigitField('text');
 
   async function handleMint() {
-    if (
-      parseInt(cRatioSimulateMintValue || '') === 0 ||
-      ghoField.value === '' ||
-      gdaiField.value === ''
-    )
-      return;
+    if (btnDisabled || ghoField.value === '' || gdaiField.value === '') return;
 
     setRedirect(true);
     dispatch(setStatus('pending'));
@@ -131,6 +126,8 @@ const MintPage = () => {
   useEffect(() => {
     dispatch(setStatus('pending'));
     dispatch(setCRatioSimulateMint('0', '0', '0'));
+    setBtnDisabled(true);
+
     async function fetchData() {
       if (ghoField.value === '' || gdaiField.value === '') return;
       try {
@@ -143,7 +140,7 @@ const MintPage = () => {
             gdaiField.value
           );
 
-        setBtnDisabled(true);
+        setBtnDisabled(bigNumberToFloat(cRatio) * 100 < 900);
         dispatch(
           setCRatioSimulateMint(
             (bigNumberToFloat(cRatio) * 100).toString(),
@@ -152,8 +149,7 @@ const MintPage = () => {
           )
         );
       } catch (error) {
-        console.log(error);
-        setBtnDisabled(false);
+        setBtnDisabled(true);
         dispatch(setCRatioSimulateMint('0', '0', '0'));
       }
     }
@@ -253,7 +249,7 @@ const MintPage = () => {
                   <ButtonForm
                     text="Mint gDAI"
                     className={
-                      parseInt(cRatioSimulateMintValue || '') === 0 ||
+                      btnDisabled ||
                       ghoField.value === '' ||
                       gdaiField.value === ''
                         ? classes.buttonMintGrey
@@ -261,7 +257,7 @@ const MintPage = () => {
                     }
                     onClick={handleMint}
                     disabled={
-                      parseInt(cRatioSimulateMintValue || '') === 0 ||
+                      btnDisabled ||
                       ghoField.value === '' ||
                       gdaiField.value === ''
                     }
@@ -271,9 +267,7 @@ const MintPage = () => {
             </Box>
             <div
               className={
-                parseInt(cRatioSimulateMintValue || '') === 0 ||
-                ghoField.value === '' ||
-                gdaiField.value === ''
+                btnDisabled || ghoField.value === '' || gdaiField.value === ''
                   ? classes.bottomBoxGrey
                   : classes.bottomBox
               }
