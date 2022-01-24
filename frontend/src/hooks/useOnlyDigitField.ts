@@ -17,7 +17,8 @@ const useOnlyDigitField = (type: string): P => {
 
   const onChange = (e: any) => {
     e.preventDefault();
-    if (REGEX.test(e.target.value.trim())) {
+    let value = e.target.value.trim();
+    if (REGEX.test(value) || value.lenght <= e.target.maxLenght) {
       setValid(true);
       setValue(e.target.value.trim());
 

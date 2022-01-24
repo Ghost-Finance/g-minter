@@ -217,7 +217,12 @@ const MintPage = () => {
                   <GhostIcon />
                   <span className={classes.labelInput}>gDAI</span>
 
-                  <input className={classes.input} id="gdai" {...gdaiField} />
+                  <input
+                    className={classes.input}
+                    id="gdai"
+                    {...gdaiField}
+                    maxLength={11}
+                  />
 
                   <div>
                     <ButtonForm
@@ -232,7 +237,12 @@ const MintPage = () => {
                   <GhostIcon />
                   <span className={classes.labelInput}>GHO</span>
 
-                  <input className={classes.input} id="gho" {...ghoField} />
+                  <input
+                    className={classes.input}
+                    id="gho"
+                    {...ghoField}
+                    maxLength={11}
+                  />
 
                   <div>
                     <ButtonForm

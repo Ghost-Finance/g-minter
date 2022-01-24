@@ -1,9 +1,5 @@
-// import { BigNumber } from 'ethers'
-// import { formatEther } from 'ethers/lib/utils'
-
 import { BigNumber } from '@ethersproject/bignumber';
-import { formatEther } from '@ethersproject/units';
-// import BigNumber from 'bignumber.js';
+import { formatEther, commify } from '@ethersproject/units';
 
 export const shortenAddress = (address: string) => {
   if (address.length < 10) return address;
@@ -18,7 +14,7 @@ export const shortenAddress = (address: string) => {
  */
 export const bigNumberToFloat = (bNumber: BigNumber) => {
   const etherBalance = formatEther(bNumber || BigNumber.from('0'));
-  return parseFloat(etherBalance);
+  return parseFloat(commify(etherBalance));
 };
 
 export const bigNumberToString = (bNumber: BigNumber | string) => {
