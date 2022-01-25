@@ -140,10 +140,11 @@ const MintPage = () => {
             gdaiField.value
           );
 
-        setBtnDisabled(bigNumberToFloat(cRatio) * 100 < 900);
+        let ratio = bigNumberToFloat(cRatio) * 100;
+        setBtnDisabled(ratio < 900);
         dispatch(
           setCRatioSimulateMint(
-            (bigNumberToFloat(cRatio) * 100).toString(),
+            ratio.toString(),
             bigNumberToFloat(collateralBalance).toString(),
             bigNumberToFloat(synthDebt).toString()
           )

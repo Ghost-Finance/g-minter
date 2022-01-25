@@ -40,7 +40,11 @@ import {
   feedGhoAddress,
 } from '../../utils/constants';
 import { useSelector } from '../../redux/hooks';
-import { bigNumberToFloat, formatCurrency } from '../../utils/StringUtils';
+import {
+  bigNumberToFloat,
+  formatBalance,
+  formatCurrency,
+} from '../../utils/StringUtils';
 
 interface Props {
   networkName?: string;
@@ -105,10 +109,10 @@ const MainPage = ({ networkName }: Props) => {
             feedGhoPrice,
             feedGdaiPrice,
           ] = data;
-
+          debugger;
           dispatch(
             setCRatio({
-              cRatioValue: (bigNumberToFloat(cRatio) * 100).toString(),
+              cRatioValue: bigNumberToFloat(cRatio) * 100,
               balanceOfGho: bigNumberToFloat(balanceGho).toString(),
               balanceOfGdai: bigNumberToFloat(balanceGdai).toString(),
               collateralBalance: bigNumberToFloat(collateralBalance).toString(),

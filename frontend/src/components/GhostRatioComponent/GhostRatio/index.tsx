@@ -13,6 +13,7 @@ import {
   EtherIcon,
 } from '../../Icons';
 import { useSelector } from '../../../redux/hooks';
+import { formatBalance } from '../../../utils/StringUtils';
 import CRatio from '../../CRatio';
 import useStyles from './styles';
 import theme from '../../../theme.style';
@@ -37,12 +38,12 @@ const GhostRatio = () => {
       <Token
         icon={<DaiIcon />}
         label="gDAI"
-        valueNumber={parseFloat(balanceOfGdai || '0')}
+        valueNumber={formatBalance(Number(balanceOfGdai || '0'), 4, 2)}
       />
       <Token
         icon={<GhostIcon />}
         label="GHO"
-        valueNumber={parseFloat(balanceOfGho || '0')}
+        valueNumber={formatBalance(Number(balanceOfGho || '0'), 4, 2)}
       />
     </>
   );
@@ -52,18 +53,18 @@ const GhostRatio = () => {
       <TokenLight
         icon={<GdaiIcon />}
         label="gDAI"
-        amount={parseFloat(synthDebt || '0')}
+        amount={formatBalance(Number(synthDebt || '0'), 4, 2, '.')}
         valueNumber={synthDebtPrice || '$ 0,00'}
       />
       <TokenLight
         icon={<GhoIcon />}
         label="GHO"
-        amount={parseFloat(collateralBalance || '0')}
+        amount={formatBalance(Number(collateralBalance || '0'), 4, 2, '.')}
         valueNumber={collateralBalancePrice || '$ 0,00'}
       />
     </>
   );
-
+  debugger;
   useEffect(() => {
     setPosition(
       parseInt(collateralBalance || '0') > 0 && parseInt(synthDebt || '0') > 0

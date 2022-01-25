@@ -8,6 +8,7 @@ import CRatio from '../../CRatio';
 import useStyles from './styles';
 import theme from '../../../theme.style';
 import { useSelector } from '../../../redux/hooks';
+import { formatBalance } from '../../../utils/StringUtils';
 
 const GhostRatioMint = () => {
   const classes = useStyles(theme);
@@ -37,12 +38,24 @@ const GhostRatioMint = () => {
           <TokenLight
             icon={<GhostIcon />}
             label="GHO"
-            valueNumber={parseFloat(collateralBalance || '0')}
+            valueNumber={formatBalance(
+              Number(collateralBalance || '0'),
+              4,
+              2,
+              ',',
+              '.'
+            )}
           />
           <TokenLight
             icon={<DaiIcon />}
             label="gDAI"
-            valueNumber={parseFloat(synthDebt || '0')}
+            valueNumber={formatBalance(
+              Number(synthDebt || '0'),
+              4,
+              2,
+              ',',
+              '.'
+            )}
           />
         </ListSynths>
 
@@ -50,12 +63,24 @@ const GhostRatioMint = () => {
           <TokenBorderLight
             icon={<GhostIcon />}
             label="GHO"
-            valueNumber={parseFloat(balanceOfGho || '0')}
+            valueNumber={formatBalance(
+              Number(balanceOfGho || '0'),
+              4,
+              2,
+              ',',
+              '.'
+            )}
           />
           <TokenBorderLight
             icon={<DaiIcon />}
             label="gDai"
-            valueNumber={parseFloat(balanceOfGdai || '0')}
+            valueNumber={formatBalance(
+              Number(balanceOfGdai || '0'),
+              4,
+              2,
+              ',',
+              '.'
+            )}
           />
         </ListSynths>
       </div>

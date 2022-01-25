@@ -46,7 +46,7 @@ export const formatBalance = (
 ) => {
   const re = '\\d(?=(\\d{' + x + '})+' + (n > 0 ? '\\D' : '$') + ')',
     num = bal.toFixed(Math.max(0, ~~n));
-
+  console.log(num.replace(new RegExp(re, 'g'), '$&' + s));
   return (c ? num.replace('.', c) : num).replace(new RegExp(re, 'g'), '$&' + s);
 };
 
