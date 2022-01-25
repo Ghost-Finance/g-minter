@@ -7,6 +7,7 @@ import useStyle from './index.style';
 import hooks from '../../hooks/walletConnect';
 import ButtonForm from '../../components/Button/ButtonForm';
 import InputContainer from '../../components/InputContainer';
+import { NumericalInput } from '../../components/InputMask';
 import { GhostIcon } from '../../components/Icons';
 import { useMinter, useERC20 } from '../../hooks/useContract';
 import useOnlyDigitField from '../../hooks/useOnlyDigitField';
@@ -27,7 +28,12 @@ import {
 } from '../../redux/app/actions';
 import ConnectWallet from '../../components/Button/ConnectWallet';
 import { gDaiAddress, ghoAddress, minterAddress } from '../../utils/constants';
-import { bigNumberToFloat, bigNumberToString } from '../../utils/StringUtils';
+import {
+  bigNumberToFloat,
+  bigNumberToString,
+  formatBalance,
+  stringToBigNumber,
+} from '../../utils/StringUtils';
 
 const MintPage = () => {
   const classes = useStyle();
@@ -47,13 +53,13 @@ const MintPage = () => {
     valid: ghoFieldValid,
     setValue: setGhoValue,
     ...ghoField
-  } = useOnlyDigitField('text');
+  } = useOnlyDigitField('tel');
   const {
     reset: resetGdaiField,
     valid: gdaiFieldValid,
     setValue: setGdaiValue,
     ...gdaiField
-  } = useOnlyDigitField('text');
+  } = useOnlyDigitField('tel');
 
   async function handleMint() {
     if (btnDisabled || ghoField.value === '' || gdaiField.value === '') return;
@@ -136,8 +142,8 @@ const MintPage = () => {
             minterContract,
             gDaiAddress,
             account as string,
-            ghoField.value,
-            gdaiField.value
+            parseFloat(ghoField.value).toFixed(2).toString(),
+            parseFloat(gdaiField.value).toFixed(2).toString()
           );
 
         let ratio = bigNumberToFloat(cRatio) * 100;
@@ -145,8 +151,8 @@ const MintPage = () => {
         dispatch(
           setCRatioSimulateMint(
             ratio.toString(),
-            bigNumberToFloat(collateralBalance).toString(),
-            bigNumberToFloat(synthDebt).toString()
+            bigNumberToString(collateralBalance).toString(),
+            bigNumberToString(synthDebt).toString()
           )
         );
       } catch (error) {
@@ -218,11 +224,10 @@ const MintPage = () => {
                   <GhostIcon />
                   <span className={classes.labelInput}>gDAI</span>
 
-                  <input
+                  <NumericalInput
                     className={classes.input}
                     id="gdai"
                     {...gdaiField}
-                    maxLength={11}
                   />
 
                   <div>
@@ -238,11 +243,10 @@ const MintPage = () => {
                   <GhostIcon />
                   <span className={classes.labelInput}>GHO</span>
 
-                  <input
+                  <NumericalInput
                     className={classes.input}
                     id="gho"
                     {...ghoField}
-                    maxLength={11}
                   />
 
                   <div>

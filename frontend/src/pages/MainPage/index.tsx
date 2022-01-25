@@ -109,7 +109,7 @@ const MainPage = ({ networkName }: Props) => {
             feedGhoPrice,
             feedGdaiPrice,
           ] = data;
-          debugger;
+
           dispatch(
             setCRatio({
               cRatioValue: bigNumberToFloat(cRatio) * 100,

@@ -1,6 +1,7 @@
 import { ChangeEventHandler, useState, Dispatch } from 'react';
+import { formatCurrency } from '../utils/StringUtils';
 
-const REGEX = /^[+-]?\d*(?:[.,]\d*)?$/;
+const REGEX = /^[+-]?\d*(?:[.]\d*)?$/;
 
 interface P {
   type: string;
@@ -18,9 +19,9 @@ const useOnlyDigitField = (type: string): P => {
   const onChange = (e: any) => {
     e.preventDefault();
     let value = e.target.value.trim();
-    if (REGEX.test(value) || value.lenght <= e.target.maxLenght) {
+    if (REGEX.test(value)) {
       setValid(true);
-      setValue(e.target.value.trim());
+      setValue(value);
 
       return;
     }

@@ -1,5 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber';
-import { formatEther, commify } from '@ethersproject/units';
+import { formatEther } from '@ethersproject/units';
 
 export const shortenAddress = (address: string) => {
   if (address.length < 10) return address;
@@ -14,7 +14,7 @@ export const shortenAddress = (address: string) => {
  */
 export const bigNumberToFloat = (bNumber: BigNumber) => {
   const etherBalance = formatEther(bNumber || BigNumber.from('0'));
-  return parseFloat(commify(etherBalance));
+  return parseFloat(etherBalance);
 };
 
 export const bigNumberToString = (bNumber: BigNumber | string) => {
@@ -46,7 +46,7 @@ export const formatBalance = (
 ) => {
   const re = '\\d(?=(\\d{' + x + '})+' + (n > 0 ? '\\D' : '$') + ')',
     num = bal.toFixed(Math.max(0, ~~n));
-  console.log(num.replace(new RegExp(re, 'g'), '$&' + s));
+
   return (c ? num.replace('.', c) : num).replace(new RegExp(re, 'g'), '$&' + s);
 };
 
