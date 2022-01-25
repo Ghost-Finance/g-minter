@@ -38,24 +38,12 @@ const GhostRatioMint = () => {
           <TokenLight
             icon={<GhostIcon />}
             label="GHO"
-            valueNumber={formatBalance(
-              Number(collateralBalance || '0'),
-              4,
-              2,
-              ',',
-              '.'
-            )}
+            valueNumber={formatBalance(Number(collateralBalance || '0'))}
           />
           <TokenLight
             icon={<DaiIcon />}
             label="gDAI"
-            valueNumber={formatBalance(
-              Number(synthDebt || '0'),
-              4,
-              2,
-              ',',
-              '.'
-            )}
+            valueNumber={formatBalance(Number(synthDebt || '0'))}
           />
         </ListSynths>
 
@@ -63,24 +51,12 @@ const GhostRatioMint = () => {
           <TokenBorderLight
             icon={<GhostIcon />}
             label="GHO"
-            valueNumber={formatBalance(
-              Number(balanceOfGho || '0'),
-              4,
-              2,
-              ',',
-              '.'
-            )}
+            valueNumber={formatBalance(Number(balanceOfGho || '0'))}
           />
           <TokenBorderLight
             icon={<DaiIcon />}
             label="gDai"
-            valueNumber={formatBalance(
-              Number(balanceOfGdai || '0'),
-              4,
-              2,
-              ',',
-              '.'
-            )}
+            valueNumber={formatBalance(Number(balanceOfGdai || '0'))}
           />
         </ListSynths>
       </div>
