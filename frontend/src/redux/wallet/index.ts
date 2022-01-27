@@ -1,7 +1,10 @@
+import { NetworkNames } from '../../config/enums';
+
 export const Types = {
   SET_CONNECTION: '@WALLET/SET_CONNECTION',
   SET_LOADING_WALLET: '@WALLET/SET_LOADING_WALLET',
   SET_ACCOUNT: '@WALLET/SET_ACCOUNT',
+  SET_NETWORK: '@WALLET/SET_NETWORK',
 };
 
 type TState = {
@@ -9,6 +12,7 @@ type TState = {
   loaded?: boolean;
   loadingWallet?: boolean;
   account?: string | null;
+  network?: NetworkNames;
 };
 
 type TAction = {
@@ -23,7 +27,7 @@ const initialState: TState = {
 };
 
 export default (state: TState = initialState, action: TAction) => {
-  const { type, connected, loadingWallet, account } = action;
+  const { type, connected, loadingWallet, account, network } = action;
   switch (type) {
     case Types.SET_CONNECTION:
       return {
@@ -39,6 +43,11 @@ export default (state: TState = initialState, action: TAction) => {
       return {
         ...state,
         account,
+      };
+    case Types.SET_NETWORK:
+      return {
+        ...state,
+        network,
       };
     default:
       return state;

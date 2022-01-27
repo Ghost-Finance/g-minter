@@ -42,13 +42,11 @@ import {
 } from '../../utils/constants';
 import { useSelector } from '../../redux/hooks';
 import { bigNumberToFloat, formatCurrency } from '../../utils/StringUtils';
-import useNetwork from '../../hooks/useNetwork';
 
 const MainPage = () => {
   const pagesWithoutNavElement = ['/alert', '/wallet-connect'];
   const classes = useStyles();
   const location = useLocation();
-  const network = useNetwork();
   const [rootPage, setRootPageChanged] = useState(true);
   const [showDialogWrongNetwork, setDialogWrongNetWork] = useState<boolean>(
     false
@@ -66,14 +64,13 @@ const MainPage = () => {
     status,
     networkName,
   } = useSelector(state => state.app);
-  const { account } = useSelector(state => state.wallet);
+  const { account, network } = useSelector(state => state.wallet);
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(setStatus('pending'));
     setRootPageChanged(location.pathname === '/');
-    console.log(networkName);
-    console.log(network);
+    setDialogWrongNetWork(network !== networkName);
 
     function organizeCardsData() {
       if (balanceOfGdai === '0') return;
@@ -137,7 +134,6 @@ const MainPage = () => {
 
     account && fetchData();
     organizeCardsData();
-    setDialogWrongNetWork(network !== networkName);
     setTimeout(() => dispatch(setStatus('idle')), 6000);
   }, [
     rootPage,
@@ -150,6 +146,8 @@ const MainPage = () => {
     network,
     networkName,
     minterContract,
+    feedGhoContract,
+    feedGdaiContract,
     dispatch,
   ]);
 
