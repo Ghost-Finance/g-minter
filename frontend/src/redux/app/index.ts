@@ -27,8 +27,6 @@ type TAction = {
   type: string;
 } & TState;
 
-console.log(`REDUX APP ${process.env.REACT_APP_CHAIN_NETWORK}`);
-debugger;
 const targetNetwork = process.env.REACT_APP_CHAIN_NETWORK
   ? (process.env.REACT_APP_CHAIN_NETWORK as NetworkNames)
   : NetworkNames.LOCAL;
