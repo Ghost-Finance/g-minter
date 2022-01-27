@@ -3,7 +3,6 @@ import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { Switch, Route, useLocation } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
-import BigNumber from 'bignumber.js';
 import { LogoIcon, SynthCardIcon } from '../../components/Icons';
 import { useStyles } from './index.style';
 import AppMenu from '../AppMenu';
@@ -19,6 +18,8 @@ import GcardLink from '../../components/GcardLink';
 import GhostRatio from '../../components/GhostRatioComponent/GhostRatio';
 import LinkCard from '../../components/LinkCard';
 import GhostRatioMint from '../../components/GhostRatioComponent/GhostRatioMint';
+import { NetworkNames } from '../../config/enums';
+import InvalidNetwork from '../../components/InvalidNetwork';
 import cardsData from './cardsData';
 import './main.css';
 import WalletConnectPage from '../WalletConnectPage';
@@ -40,21 +41,18 @@ import {
   feedGhoAddress,
 } from '../../utils/constants';
 import { useSelector } from '../../redux/hooks';
-import {
-  bigNumberToFloat,
-  formatBalance,
-  formatCurrency,
-} from '../../utils/StringUtils';
+import { bigNumberToFloat, formatCurrency } from '../../utils/StringUtils';
+import useNetwork from '../../hooks/useNetwork';
 
-interface Props {
-  networkName?: string;
-}
-
-const MainPage = ({ networkName }: Props) => {
+const MainPage = () => {
   const pagesWithoutNavElement = ['/alert', '/wallet-connect'];
   const classes = useStyles();
   const location = useLocation();
+  const network = useNetwork();
   const [rootPage, setRootPageChanged] = useState(true);
+  const [showDialogWrongNetwork, setDialogWrongNetWork] = useState<boolean>(
+    false
+  );
   const [cardsDataArray, setCardsDataArray] = useState(cardsData);
   const minterContract = useMinter();
   const feedGhoContract = useFeed(feedGhoAddress);
@@ -66,6 +64,7 @@ const MainPage = ({ networkName }: Props) => {
     balanceOfGho,
     collateralBalance,
     status,
+    networkName,
   } = useSelector(state => state.app);
   const { account } = useSelector(state => state.wallet);
   const dispatch = useDispatch();
@@ -73,6 +72,8 @@ const MainPage = ({ networkName }: Props) => {
   useEffect(() => {
     dispatch(setStatus('pending'));
     setRootPageChanged(location.pathname === '/');
+    console.log(networkName);
+    console.log(network);
 
     function organizeCardsData() {
       if (balanceOfGdai === '0') return;
@@ -136,6 +137,7 @@ const MainPage = ({ networkName }: Props) => {
 
     account && fetchData();
     organizeCardsData();
+    setDialogWrongNetWork(network !== networkName);
     setTimeout(() => dispatch(setStatus('idle')), 6000);
   }, [
     rootPage,
@@ -145,6 +147,8 @@ const MainPage = ({ networkName }: Props) => {
     account,
     balanceOfGdai,
     balanceOfGho,
+    network,
+    networkName,
     minterContract,
     dispatch,
   ]);
@@ -197,6 +201,10 @@ const MainPage = ({ networkName }: Props) => {
               <ConnectWallet />
             </Grid>
             <Grid item className={classes.columnFixed} justify-xs-center="true">
+              <InvalidNetwork
+                isOpen={showDialogWrongNetwork}
+                targetNetwork={networkName}
+              />
               {account && balanceOfGho === '0' && collateralBalance === '0' ? (
                 <LinkCard
                   title="🦄 Swap GHO"
