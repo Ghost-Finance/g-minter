@@ -132,8 +132,8 @@ const MainPage = () => {
       );
     }
 
-    account && fetchData();
     organizeCardsData();
+    account && fetchData();
     setTimeout(() => dispatch(setStatus('idle')), 6000);
   }, [
     rootPage,
@@ -219,7 +219,7 @@ const MainPage = () => {
                   status !== 'pending' &&
                   cardsDataArray.map((props, key) => (
                     <GcardLink
-                      to={account ? props.to : '#'}
+                      to={account && !showDialogWrongNetwork ? props.to : '#'}
                       image={props.image}
                       title={props.title}
                       key={key}

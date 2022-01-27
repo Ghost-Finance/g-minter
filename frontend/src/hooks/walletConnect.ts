@@ -8,7 +8,6 @@ import {
   setNetwork,
 } from '../redux/wallet/actions';
 import { getNetworkNameFromId } from '../utils/Network';
-import { NetworkNames } from '../config/enums';
 
 declare global {
   interface Window {
