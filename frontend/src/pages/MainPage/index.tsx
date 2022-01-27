@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { Switch, Route, useLocation } from 'react-router-dom';
-import { Grid } from '@material-ui/core';
+import { Grid, Typography } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import { LogoIcon, SynthCardIcon } from '../../components/Icons';
 import { useStyles } from './index.style';
@@ -187,23 +187,24 @@ const MainPage = () => {
         <main className={classes.main}>
           <Grid
             container
-            direction="row"
-            justify="flex-end"
-            alignItems="center"
+            direction="column"
+            justify="flex-start"
+            alignContent="center"
           >
-            <Grid
-              item
-              style={{ marginTop: 40, marginRight: 30 }}
-              justify-xs-center="true"
-            >
-              <ConnectWallet />
+            <Grid item xs={8} sm spacing={2} style={{ marginTop: 40 }}>
+              <div className={classes.walletGrid}>
+                <ConnectWallet />
+              </div>
             </Grid>
-            <Grid item className={classes.columnFixed} justify-xs-center="true">
+            <Grid item xs={8} sm spacing={2} alignContent="center">
               <InvalidNetwork
                 isOpen={showDialogWrongNetwork}
                 targetNetwork={networkName}
               />
-              {account && balanceOfGho === '0' && collateralBalance === '0' ? (
+              {account &&
+              balanceOfGho === '0' &&
+              collateralBalance === '0' &&
+              !showDialogWrongNetwork ? (
                 <LinkCard
                   title="🦄 Swap GHO"
                   text="into your wallet"
@@ -213,6 +214,7 @@ const MainPage = () => {
                 <></>
               )}
               <div className={classes.item}>
+                <Typography variant="h6">Explore</Typography>
                 {status !== 'error' &&
                   status !== 'pending' &&
                   cardsDataArray.map((props, key) => (

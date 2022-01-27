@@ -5,13 +5,18 @@ const useStyle = makeStyles((theme: Theme) =>
     root: {
       flexGrow: 1,
       marginTop: 30,
-      marginBottom: 0,
+      margin: 0,
+      width: 548,
+      [theme.breakpoints.down('md')]: {
+        width: '100%',
+      },
     },
     content: {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
       margin: 'auto',
+      padding: 48,
       borderRadius: 24,
     },
     contentError: {
@@ -37,6 +42,7 @@ const useStyle = makeStyles((theme: Theme) =>
       width: 56,
     },
     text: {
+      fontWeight: 'bold',
       fontSize: '24px',
       color: theme.palette.primary.contrastText,
     },

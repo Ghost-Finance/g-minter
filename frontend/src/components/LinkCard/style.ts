@@ -8,12 +8,6 @@ const useStyle = makeStyles((theme: Theme) =>
       marginBottom: 0,
     },
     content: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      margin: 'auto',
-      width: 547,
-      height: 200,
       backgroundColor: theme.palette.primary.light,
       borderRadius: 24,
     },

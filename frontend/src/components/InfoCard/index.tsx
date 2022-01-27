@@ -18,7 +18,7 @@ const InfoCard = ({ error, text, image }: Props) => {
           error ? classes.contentError : classes.contentSuccess
         }`}
       >
-        <Box m={6}>
+        <Box>
           {image && <img src={image} alt="complex" />}
           <Typography component="h4" variant="h4" className={classes.text}>
             {text}
