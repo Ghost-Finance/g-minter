@@ -67,6 +67,9 @@ const theme = createMuiTheme({
   },
   typography: {
     fontFamily: 'Inter',
+    h6: {
+      color: '#fff',
+    },
     caption: {
       white: '#ffffff',
     },
