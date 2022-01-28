@@ -31,7 +31,7 @@ export default () => {
     dispatch(setConnection(accounts?.length ? accounts?.length > 0 : false));
   };
 
-  const listeners = () => {
+  const listeners = async () => {
     ethereum?.on('chainChanged', (chainId: any) => {
       changeNetwork(chainId);
     });
@@ -43,11 +43,14 @@ export default () => {
     });
     ethereum?.on('connect', async () => {
       const accounts = await ethereum.request({ method: 'eth_accounts' });
+      const chainId = await ethereum.request({ method: 'eth_chainId' });
+      changeNetwork(chainId);
       changeAccount(accounts);
     });
     if (ethereum?.selectedAddress) {
       changeAccount([ethereum?.selectedAddress]);
     }
+
     if (ethereum?.chainId) {
       changeNetwork(ethereum?.chainId);
     }

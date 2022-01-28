@@ -183,7 +183,7 @@ const MainPage = () => {
           {rootPage ? <GhostRatio /> : <GhostRatioMint />}
         </NavElement>
       )}
-      {rootPage && (
+      {rootPage && status !== 'error' && status !== 'pending' && (
         <main className={classes.main}>
           <Grid
             container
@@ -215,16 +215,14 @@ const MainPage = () => {
               )}
               <div className={classes.item}>
                 <Typography variant="h6">Explore</Typography>
-                {status !== 'error' &&
-                  status !== 'pending' &&
-                  cardsDataArray.map((props, key) => (
-                    <GcardLink
-                      to={account && !showDialogWrongNetwork ? props.to : '#'}
-                      image={props.image}
-                      title={props.title}
-                      key={key}
-                    />
-                  ))}
+                {cardsDataArray.map((props, key) => (
+                  <GcardLink
+                    to={account && !showDialogWrongNetwork ? props.to : '#'}
+                    image={props.image}
+                    title={props.title}
+                    key={key}
+                  />
+                ))}
               </div>
             </Grid>
           </Grid>
