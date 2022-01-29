@@ -5,6 +5,7 @@ import * as BN from 'bignumber.js';
 import { parseEther, parseUnits } from 'ethers/lib/utils';
 import {
   checkCreatePositionEvent,
+  checkFinishEvent,
   checkFinishPositionWithLoserEvent,
   checkFinishPositionWithWinnerEvent,
 } from './util/CheckEvent';
@@ -16,7 +17,7 @@ let gSpotContractLabel: string = 'GSpot';
 let ssmContractLabel: string = 'Ssm';
 let medianTestContractLabel: string = 'GValueTest';
 
-describe.only('#UpdateHouse', async function() {
+describe('#UpdateHouse', async function() {
   let UpdateHouse,
     DebtPool,
     GSpot,
@@ -260,8 +261,8 @@ describe.only('#UpdateHouse', async function() {
       }
     });
 
-    it.only('#finish should transfer gDai to winner in a short position', async function() {
-      // Increase the price of gSpx in 10%
+    it('#finish should transfer gDai to winner in a short position', async function() {
+      // Decrease the price of gSpx in 10%
       await median.poke(BigNumber.from(parseEther('72')));
       let currentPrice = await gSpot.read(gSpacexKey);
       expect(currentPrice.toString()).to.be.equal(
@@ -279,13 +280,15 @@ describe.only('#UpdateHouse', async function() {
         await checkFinishPositionWithWinnerEvent(
           updateHouse,
           bob.address,
-          1,
           balanceOfBob.toString()
         )
       ).to.be.true;
+      expect(await checkFinishEvent(updateHouse, bob.address, 1, 2)).to.be.true;
+
+      updateHouse.removeAllListeners();
     });
 
-    it('#finish should transfer gDai to winner in a long position', async function() {
+    it.only('#finish should transfer gDai to winner in a long position', async function() {
       // Increase the price of gSpx in 10%
       await median.poke(BigNumber.from(parseEther('92')));
       let currentPrice = await gSpot.connect(alice).read(gSpacexKey);
@@ -304,10 +307,13 @@ describe.only('#UpdateHouse', async function() {
         await checkFinishPositionWithWinnerEvent(
           updateHouse,
           alice.address,
-          2,
           balanceOfAlice.toString()
         )
       ).to.be.true;
+      expect(await checkFinishEvent(updateHouse, alice.address, 2, 2)).to.be
+        .true;
+
+      updateHouse.removeAllListeners();
     });
 
     it('#finish should burn gDai to account in a long position', async function() {
@@ -337,10 +343,11 @@ describe.only('#UpdateHouse', async function() {
         await checkFinishPositionWithLoserEvent(
           updateHouse,
           alice.address,
-          2,
           balanceOfAlice.toString()
         )
       ).to.be.true;
+      expect(await checkFinishEvent(updateHouse, alice.address, 2, 2)).to.be
+        .true;
     });
   });
 });

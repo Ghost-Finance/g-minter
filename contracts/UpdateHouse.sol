@@ -38,7 +38,7 @@ contract UpdateHouse is CoreMath, Ownable {
   mapping (uint => PositionData) public data;
 
   event Create(address account, PositionData data);
-  event Finish(address account, Status status);
+  event Finish(address account, Direction direction, Status status);
   event Winner(address account, uint256 amount);
   event Loser(address account, uint256 amount);
 
@@ -115,6 +115,7 @@ contract UpdateHouse is CoreMath, Ownable {
       console.log(dataPosition.tokenAmount);
       currentPricePosition = dataPosition.initialPrice < currentPrice ? (dataPosition.tokenAmount + positionFixValue) : (dataPosition.tokenAmount - positionFixValue);
     } else if (dataPosition.direction == Direction.SHORT) {
+      console.log("short position");
       currentPricePosition = dataPosition.initialPrice < currentPrice ? (dataPosition.tokenAmount - positionFixValue) : (dataPosition.tokenAmount + positionFixValue);
     }
 
@@ -129,7 +130,7 @@ contract UpdateHouse is CoreMath, Ownable {
 
       vault.transferFrom(address(msg.sender), amount);
       debtPool.transferFrom(address(msg.sender), amountToReceive);
-
+      console.log("entrou no winner");
       emit Winner(address(msg.sender), amount + amountToReceive);
     } else {
       console.log("entrou no burn");
@@ -148,8 +149,8 @@ contract UpdateHouse is CoreMath, Ownable {
     dataPosition.status = Status.FINISHED;
     dataPosition.updated_at = block.timestamp;
     data[index] = dataPosition;
-
-    emit Finish(address(msg.sender), dataPosition.status);
+    console.log('emit finish event');
+    emit Finish(address(msg.sender), dataPosition.direction, dataPosition.status);
   }
 
   function _create(address account, Direction direction, bytes32 synthKey, uint256 initialPrice, uint256 amount) internal returns (PositionData memory) {

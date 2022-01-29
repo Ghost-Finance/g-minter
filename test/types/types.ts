@@ -55,6 +55,7 @@ type DepositedCollateralEvent = {
 
 type FinishPositionEvent = {
   account: string;
+  direction: number;
   status: number;
 };
 
