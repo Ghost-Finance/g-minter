@@ -34,12 +34,14 @@ export default () => {
   const listeners = async () => {
     ethereum?.on('chainChanged', (chainId: any) => {
       changeNetwork(chainId);
+      reloadPage();
     });
     ethereum?.on('disconnect', async () => {
       reloadPage();
     });
     ethereum?.on('accountsChanged', (accounts: string[] | null) => {
       changeAccount(accounts);
+      reloadPage();
     });
     ethereum?.on('connect', async () => {
       const accounts = await ethereum.request({ method: 'eth_accounts' });
