@@ -112,11 +112,16 @@ const MintPage = () => {
 
   async function handleMaxDAI(e: any) {
     e.preventDefault();
-    let balanceValue = await balanceOf(gDaiContract, account as string);
+    let balanceGdaiValue = bigNumberToString(
+      await balanceOf(gDaiContract, account as string)
+    );
 
-    let value = gdaiField.value
-      ? gdaiField.value
-      : bigNumberToString(balanceValue).toString();
+    if (gdaiField.value === '' && balanceGdaiValue === '0.0') {
+      handleMaxGHO(e);
+      return;
+    }
+
+    let value = gdaiField.value ? gdaiField.value : balanceGdaiValue;
     try {
       let maxGhoValue = await maximumByDebt(
         minterContract,
