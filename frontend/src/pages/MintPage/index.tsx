@@ -95,6 +95,7 @@ const MintPage = () => {
 
   async function handleMaxGHO(e: any) {
     e.preventDefault();
+    dispatch(setStatus('pending'));
     let balanceValue = await balanceOf(ghoContract, account as string);
     let value = ghoField.value
       ? ghoField.value
@@ -107,11 +108,13 @@ const MintPage = () => {
         value
       );
       setValues(value, bigNumberToString(maxGdaiValue));
+      dispatch(setStatus('success'));
     } catch (error) {}
   }
 
   async function handleMaxDAI(e: any) {
     e.preventDefault();
+    dispatch(setStatus('pending'));
     let balanceGdaiValue = bigNumberToString(
       await balanceOf(gDaiContract, account as string)
     );
@@ -131,6 +134,7 @@ const MintPage = () => {
       );
 
       setValues(bigNumberToString(maxGhoValue), value);
+      dispatch(setStatus('success'));
     } catch (error) {}
   }
 
