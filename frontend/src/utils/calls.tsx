@@ -1,7 +1,6 @@
 import { Contract } from 'web3-eth-contract';
 import { BigNumber } from '@ethersproject/bignumber';
 import { parseEther, parseUnits } from '@ethersproject/units';
-import { promises } from 'dns';
 
 export const mint = async (
   contract: Contract,
