@@ -139,6 +139,7 @@ const MintPage = () => {
   }
 
   useEffect(() => {
+    setRedirectHome(account === null);
     dispatch(setStatus('pending'));
     dispatch(setCRatioSimulateMint('0', '0', '0'));
     setBtnDisabled(true);
