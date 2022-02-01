@@ -7,7 +7,6 @@ import './DebtPool.sol';
 import './GTokenERC20.sol';
 import './PositionVault.sol';
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "hardhat/console.sol";
 
 contract UpdateHouse is CoreMath, Ownable {
 
@@ -99,10 +98,8 @@ contract UpdateHouse is CoreMath, Ownable {
 
   function finishPosition(uint index) external {
     PositionData storage dataPosition = data[index];
-    console.log("entrouu na funcao");
     require(dataPosition.account == msg.sender && dataPosition.status != Status.FINISHED, 'Invalid account or position already finished!');
     uint256 currentPrice = spot.read(dataPosition.synth);
-    console.log(currentPrice);
     require(currentPrice > 0, 'Current price not valid!');
 
     uint256 a = (dataPosition.synthTokenAmount * currentPrice) / WAD;
@@ -110,37 +107,24 @@ contract UpdateHouse is CoreMath, Ownable {
     uint256 positionFixValue = b > a ? b - a : a - b;
     uint256 currentPricePosition;
     if (dataPosition.direction == Direction.LONG) {
-      console.log("Entrouuuu akkkk");
-      console.log(positionFixValue);
-      console.log(dataPosition.tokenAmount);
       currentPricePosition = dataPosition.initialPrice < currentPrice ? (dataPosition.tokenAmount + positionFixValue) : (dataPosition.tokenAmount - positionFixValue);
     } else if (dataPosition.direction == Direction.SHORT) {
-      console.log("short position");
       currentPricePosition = dataPosition.initialPrice < currentPrice ? (dataPosition.tokenAmount - positionFixValue) : (dataPosition.tokenAmount + positionFixValue);
     }
 
     uint256 amount = vault.withdrawFullDeposit(index);
     uint256 amountToReceive;
-    console.log("Valor do currentPricePosition");
-    console.log(currentPricePosition);
-    console.log(currentPricePosition > dataPosition.tokenAmount);
     if (currentPricePosition > dataPosition.tokenAmount) {
       amountToReceive = currentPricePosition - dataPosition.tokenAmount;
       debtPool.mint(amountToReceive);
 
       vault.transferFrom(address(msg.sender), amount);
       debtPool.transferFrom(address(msg.sender), amountToReceive);
-      console.log("entrou no winner");
       emit Winner(address(msg.sender), amount + amountToReceive);
     } else {
-      console.log("entrou no burn");
       amountToReceive = amount - currentPricePosition;
-      console.log("amount para queimar");
-      console.log(amountToReceive);
       vault.transferFrom(address(debtPool), amountToReceive);
       debtPool.burn(amountToReceive);
-      console.log("Valor a enviar para a carteira");
-      console.log(currentPricePosition);
       vault.transferFrom(address(msg.sender), currentPricePosition);
 
       emit Loser(address(msg.sender), currentPricePosition);
@@ -149,7 +133,7 @@ contract UpdateHouse is CoreMath, Ownable {
     dataPosition.status = Status.FINISHED;
     dataPosition.updated_at = block.timestamp;
     data[index] = dataPosition;
-    console.log('emit finish event');
+
     emit Finish(address(msg.sender), dataPosition.direction, dataPosition.status);
   }
 

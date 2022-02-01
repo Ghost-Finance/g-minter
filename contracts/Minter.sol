@@ -133,8 +133,6 @@ contract Minter {
   }
 
   function debtPoolBurn(GTokenERC20 token, uint256 amount) public onlyDebtPool {
-    console.log("entrou no minter");
-    console.log(synthDebt[msg.sender][token]);
     if (synthDebt[msg.sender][token] > 0) {
       synthDebt[msg.sender][token] -= amount;
     }
