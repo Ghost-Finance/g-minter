@@ -15,7 +15,7 @@ let gSpotContractLabel: string = 'GSpot';
 let ssmContractLabel: string = 'Ssm';
 let medianTestContractLabel: string = 'GValueTest';
 
-describe.only('#UpdateHouse', async function() {
+describe('#UpdateHouse', async function() {
   let UpdateHouse,
     DebtPool,
     GSpot,
@@ -176,7 +176,7 @@ describe.only('#UpdateHouse', async function() {
     });
   });
 
-  describe('#finish Alice postion', async function() {
+  describe('#finish postions', async function() {
     let amount, positionData, balanceOf, synthDebt;
 
     beforeEach(async function() {
@@ -243,7 +243,7 @@ describe.only('#UpdateHouse', async function() {
       }
     });
 
-    it('#increase ');
+    it('#increase ', async function() {});
 
     it('#finish validate current price is not positive', async function() {
       try {
@@ -259,7 +259,7 @@ describe.only('#UpdateHouse', async function() {
       }
     });
 
-    it('#finish should transfer gDai to winner in a short position', async function() {
+    it('#finish should transfer gDai to winner in a SHORT position', async function() {
       // Decrease the price of gSpx in 10%
       await median.poke(BigNumber.from(parseEther('72')));
       let currentPrice = await gSpot.read(gSpacexKey);
@@ -286,7 +286,34 @@ describe.only('#UpdateHouse', async function() {
       ).to.be.true;
     });
 
-    it('#finish should transfer gDai to winner in a long position', async function() {
+    it('#finish should burn gDai to account in a SHORT position', async function() {
+      // Decrease the price of gSpx in 10%
+      await median.poke(BigNumber.from(parseEther('92')));
+      let currentPrice = await gSpot.read(gSpacexKey);
+      expect(currentPrice.toString()).to.be.equal(
+        BigNumber.from(parseEther('92'))
+      );
+
+      // Bob call finish operation
+      await updateHouse.connect(bob).finishPosition(2);
+      let balanceOfBob = await state.token
+        .attach(synthTokenAddress)
+        .balanceOf(bob.address);
+
+      // Check event Winner
+      expect(
+        await checkFinishPositionWithWinnerOrLoserEvent(
+          updateHouse,
+          'Loser',
+          bob.address,
+          1,
+          2,
+          balanceOfBob.toString()
+        )
+      ).to.be.true;
+    });
+
+    it('#finish should transfer gDai to winner in a LONG position', async function() {
       // Increase the price of gSpx in 10%
       await median.poke(BigNumber.from(parseEther('92')));
       let currentPrice = await gSpot.connect(alice).read(gSpacexKey);
@@ -313,16 +340,14 @@ describe.only('#UpdateHouse', async function() {
       ).to.be.true;
     });
 
-    it('#finish should burn gDai to account in a long position', async function() {
+    it('#finish should burn gDai to account in a LONG position', async function() {
       // Decrease the price of gSpx in 10%
       let balanceOfAliceBefore = await state.token
         .attach(synthTokenAddress)
         .balanceOf(alice.address);
-      console.log(`Balanceof loser before ${balanceOfAliceBefore.toString()}`);
 
       await median.poke(BigNumber.from(parseEther('72')));
       let currentPrice = await gSpot.connect(alice).read(gSpacexKey);
-      console.log(currentPrice.toString());
       expect(currentPrice.toString()).to.be.equal(
         BigNumber.from(parseEther('72'))
       );
@@ -332,8 +357,6 @@ describe.only('#UpdateHouse', async function() {
       let balanceOfAlice = await state.token
         .attach(synthTokenAddress)
         .balanceOf(alice.address);
-
-      console.log(`Balanceof loser after ${balanceOfAlice.toString()}`);
 
       // Check event Loser
       expect(
