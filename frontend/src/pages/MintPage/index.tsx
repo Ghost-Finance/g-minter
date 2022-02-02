@@ -170,13 +170,13 @@ const MintPage = () => {
       }
     }
 
-    const timeout = setTimeout(() => {
+    const requestId = setTimeout(() => {
       fetchData();
       dispatch(setStatus('success'));
     }, 2000);
 
     return () => {
-      clearTimeout(timeout);
+      clearTimeout(requestId);
     };
   }, [
     account,
