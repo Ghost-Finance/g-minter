@@ -33,7 +33,7 @@ import {
   feedPrice,
 } from '../../utils/calls';
 import { useERC20, useMinter, useFeed } from '../../hooks/useContract';
-import { setCRatio, setStatus } from '../../redux/app/actions';
+import { setCRatio, setBalanceOfGHO, setStatus } from '../../redux/app/actions';
 import {
   ghoAddress,
   gDaiAddress,
@@ -71,6 +71,17 @@ const MainPage = () => {
     dispatch(setStatus('pending'));
     setRootPageChanged(location.pathname === '/');
     setDialogWrongNetWork(network !== networkName);
+
+    let intervalId: any;
+    async function fetchGHOBalanceOf() {
+      if ((balanceOfGho as string) !== '0') {
+        clearInterval(intervalId);
+        return;
+      }
+
+      const balanceValue = await balanceOf(ghoContract, account as string);
+      balanceValue && dispatch(setBalanceOfGHO(balanceValue));
+    }
 
     function organizeCardsData() {
       if (balanceOfGdai === '0') return;
@@ -133,8 +144,15 @@ const MainPage = () => {
     }
 
     organizeCardsData();
-    account && fetchData();
-    setTimeout(() => dispatch(setStatus('idle')), 6000);
+    if (account) {
+      fetchData();
+      intervalId = setInterval(fetchGHOBalanceOf, 3000);
+    }
+    setTimeout(() => dispatch(setStatus('idle')), 3000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
   }, [
     rootPage,
     location,
