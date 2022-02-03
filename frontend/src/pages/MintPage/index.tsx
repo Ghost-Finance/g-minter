@@ -93,8 +93,7 @@ const MintPage = () => {
     setGdaiValue(gdaiValue);
   }
 
-  async function handleMaxGHO(e: any) {
-    e.preventDefault();
+  async function handleMaxGHO() {
     dispatch(setStatus('pending'));
     let balanceValue = await balanceOf(ghoContract, account as string);
     let value = ghoField.value
@@ -112,15 +111,14 @@ const MintPage = () => {
     } catch (error) {}
   }
 
-  async function handleMaxDAI(e: any) {
-    e.preventDefault();
+  async function handleMaxDAI() {
     dispatch(setStatus('pending'));
     let balanceGdaiValue = bigNumberToString(
       await balanceOf(gDaiContract, account as string)
     );
 
     if (gdaiField.value === '' && balanceGdaiValue === '0.0') {
-      handleMaxGHO(e);
+      handleMaxGHO();
       return;
     }
 
@@ -146,6 +144,7 @@ const MintPage = () => {
 
     async function fetchData() {
       if (ghoField.value === '' || gdaiField.value === '') return;
+
       try {
         const { cRatio, collateralBalance, synthDebt } =
           await positionExposeData(
@@ -172,9 +171,16 @@ const MintPage = () => {
     }
 
     const requestId = setTimeout(() => {
+      if (ghoField.value !== '' && gdaiField.value === '') {
+        handleMaxGHO();
+      }
+      if (gdaiField.value !== '' && ghoField.value === '') {
+        handleMaxDAI();
+      }
+
       fetchData();
       dispatch(setStatus('success'));
-    }, 2000);
+    }, 1000);
 
     return () => {
       clearTimeout(requestId);
