@@ -96,33 +96,38 @@ const MintPage = () => {
   async function handleMaxGHO() {
     dispatch(setStatus('pending'));
     let balanceValue = await balanceOf(ghoContract, account as string);
-    let value = ghoField.value
-      ? ghoField.value
-      : bigNumberToString(balanceValue);
+    await maximumCollateralValue(bigNumberToString(balanceValue));
+  }
+
+  async function handleMaxDAI() {
+    let balanceGdaiValue = bigNumberToString(
+      await balanceOf(gDaiContract, account as string)
+    );
+
+    if (balanceGdaiValue === '0.0') {
+      handleMaxGHO();
+      return;
+    }
+
+    await maximumDebtValue(balanceGdaiValue);
+  }
+
+  async function maximumCollateralValue(value: string) {
     try {
-      let maxGdaiValue = await maximumByCollateral(
+      let maxValue = await maximumByCollateral(
         minterContract,
         gDaiAddress,
         account as string,
         value
       );
-      setValues(value, bigNumberToString(maxGdaiValue));
-      dispatch(setStatus('success'));
-    } catch (error) {}
+      setValues(value, bigNumberToString(maxValue));
+    } catch (error) {
+      dispatch(setStatus('error'));
+      console.error(error.message);
+    }
   }
 
-  async function handleMaxDAI() {
-    dispatch(setStatus('pending'));
-    let balanceGdaiValue = bigNumberToString(
-      await balanceOf(gDaiContract, account as string)
-    );
-
-    if (gdaiField.value === '' && balanceGdaiValue === '0.0') {
-      handleMaxGHO();
-      return;
-    }
-
-    let value = gdaiField.value ? gdaiField.value : balanceGdaiValue;
+  async function maximumDebtValue(value: string) {
     try {
       let maxGhoValue = await maximumByDebt(
         minterContract,
@@ -132,8 +137,24 @@ const MintPage = () => {
       );
 
       setValues(bigNumberToString(maxGhoValue), value);
-      dispatch(setStatus('success'));
-    } catch (error) {}
+    } catch (error) {
+      dispatch(setStatus('error'));
+      console.error(error.message);
+    }
+  }
+
+  async function changeMaxGho() {
+    debugger;
+    if (ghoField.value !== '') return;
+    dispatch(setStatus('pending'));
+    await maximumCollateralValue(ghoField.value);
+  }
+
+  async function changeMaxGdai() {
+    debugger;
+    if (gdaiField.value !== '') return;
+    dispatch(setStatus('pending'));
+    await maximumDebtValue(gdaiField.value);
   }
 
   useEffect(() => {
@@ -171,16 +192,18 @@ const MintPage = () => {
     }
 
     const requestId = setTimeout(() => {
-      if (ghoField.value !== '' && gdaiField.value === '') {
-        handleMaxGHO();
-      }
-      if (gdaiField.value !== '' && ghoField.value === '') {
-        handleMaxDAI();
-      }
-
+      // if (ghoField.value !== '' && gdaiField.value === '') {
+      //   resetGdaiField();
+      //   handleMaxGHO();
+      // } else if (gdaiField.value !== '' && ghoField.value === '') {
+      //   resetGhoField();
+      //   handleMaxDAI();
+      // }
+      changeMaxGdai();
+      changeMaxGho();
       fetchData();
       dispatch(setStatus('success'));
-    }, 1000);
+    }, 3000);
 
     return () => {
       clearTimeout(requestId);
