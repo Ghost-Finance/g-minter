@@ -100,6 +100,7 @@ const MintPage = () => {
   }
 
   async function handleMaxDAI() {
+    dispatch(setStatus('pending'));
     let balanceGdaiValue = bigNumberToString(
       await balanceOf(gDaiContract, account as string)
     );
@@ -112,8 +113,23 @@ const MintPage = () => {
     await maximumDebtValue(balanceGdaiValue);
   }
 
+  async function changeMaxGho() {
+    debugger;
+    if (ghoField.value === '' || gdaiField.value !== '') return;
+    dispatch(setStatus('pending'));
+    await maximumCollateralValue(ghoField.value);
+  }
+
+  async function changeMaxGdai() {
+    debugger;
+    if (gdaiField.value === '' || ghoField.value !== '') return;
+    dispatch(setStatus('pending'));
+    await maximumDebtValue(gdaiField.value);
+  }
+
   async function maximumCollateralValue(value: string) {
     try {
+      debugger;
       let maxValue = await maximumByCollateral(
         minterContract,
         gDaiAddress,
@@ -122,6 +138,7 @@ const MintPage = () => {
       );
       setValues(value, bigNumberToString(maxValue));
     } catch (error) {
+      debugger;
       dispatch(setStatus('error'));
       console.error(error.message);
     }
@@ -141,20 +158,6 @@ const MintPage = () => {
       dispatch(setStatus('error'));
       console.error(error.message);
     }
-  }
-
-  async function changeMaxGho() {
-    debugger;
-    if (ghoField.value !== '') return;
-    dispatch(setStatus('pending'));
-    await maximumCollateralValue(ghoField.value);
-  }
-
-  async function changeMaxGdai() {
-    debugger;
-    if (gdaiField.value !== '') return;
-    dispatch(setStatus('pending'));
-    await maximumDebtValue(gdaiField.value);
   }
 
   useEffect(() => {
@@ -192,13 +195,6 @@ const MintPage = () => {
     }
 
     const requestId = setTimeout(() => {
-      // if (ghoField.value !== '' && gdaiField.value === '') {
-      //   resetGdaiField();
-      //   handleMaxGHO();
-      // } else if (gdaiField.value !== '' && ghoField.value === '') {
-      //   resetGhoField();
-      //   handleMaxDAI();
-      // }
       changeMaxGdai();
       changeMaxGho();
       fetchData();
