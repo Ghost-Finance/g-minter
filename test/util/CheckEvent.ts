@@ -373,7 +373,7 @@ export const checkCreatePositionEvent = async (
   expect(eventAdd.data[1]).to.be.equal(status);
   expect(eventAdd.data[2]).to.be.equal(direction);
   expect(eventAdd.data[3]).to.be.equal(synthKey);
-  expect(eventAdd.data[6].toString()).to.be.equal(amount.toString());
+  expect(eventAdd.data[5].toString()).to.be.equal(amount.toString());
   contract.removeAllListeners();
 
   return true;

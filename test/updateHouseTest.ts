@@ -36,7 +36,7 @@ describe('#UpdateHouse', async function() {
     others,
     synthTokenAddress,
     state,
-    initialPrice;
+    averagePrice;
 
   beforeEach(async function() {
     state = await setup();
@@ -92,8 +92,8 @@ describe('#UpdateHouse', async function() {
     // Simulate add a new current price for a synth
     await median.poke(BigNumber.from(parseEther('80')));
     // If return success when adds a new price, it will be possible to read.
-    initialPrice = await gSpot.connect(alice).read(gSpacexKey);
-    expect(initialPrice.toString()).to.be.equal(
+    averagePrice = await gSpot.connect(alice).read(gSpacexKey);
+    expect(averagePrice.toString()).to.be.equal(
       BigNumber.from(parseEther('80')).toString()
     );
 
@@ -177,7 +177,7 @@ describe('#UpdateHouse', async function() {
   });
 
   describe('#finish postions', async function() {
-    let amount, positionData, balanceOf, synthDebt;
+    let amount, positionData, balanceOf, synthDebt, tokenGdai;
 
     beforeEach(async function() {
       amount = BigNumber.from(parseEther('20.0'));
@@ -194,12 +194,6 @@ describe('#UpdateHouse', async function() {
       synthDebt = await state.minter
         .connect(alice)
         .synthDebt(alice.address, synthTokenAddress);
-      console.log(
-        `Alice balanceOf after buy a synth position ${balanceOf.toString()}`
-      );
-      console.log(
-        `Alice synthDebt after buy a synth position ${synthDebt.toString()}`
-      );
 
       await state.token
         .attach(synthTokenAddress)
@@ -213,21 +207,25 @@ describe('#UpdateHouse', async function() {
       synthDebt = await state.minter
         .connect(bob)
         .synthDebt(bob.address, synthTokenAddress);
+
+      tokenGdai = await state.token.attach(synthTokenAddress);
+      const balanceOfAlice = await tokenGdai.balanceOf(bob);
       console.log(
-        `Bob balanceOf after buy a synth position ${balanceOf.toString()}`
+        `Alice balance of before a position: ${balanceOfAlice.toString()}`
       );
+      const balanceOfBob = await tokenGdai.balanceOf(bob);
       console.log(
-        `Bob synthDebt after buy a synth position ${synthDebt.toString()}`
+        `Bob balance of before a position: ${balanceOfBob.toString()}`
       );
 
       positionData = await updateHouse.data(1);
       expect(positionData.account).to.be.equal(alice.address);
       expect(positionData.direction).to.be.equal(2); // Long postion
-      expect(positionData.initialPrice.toString()).to.be.equal(
-        initialPrice.toString()
+      expect(positionData.averagePrice.toString()).to.be.equal(
+        averagePrice.toString()
       );
       const synthTokenAmountResult =
-        (amount.toString() / initialPrice.toString()) * 10 ** 18;
+        (amount.toString() / averagePrice.toString()) * 10 ** 18;
       expect(positionData.synthTokenAmount.toString() / 10 ** 18).to.be.equal(
         synthTokenAmountResult / 10 ** 18
       );
@@ -243,7 +241,13 @@ describe('#UpdateHouse', async function() {
       }
     });
 
-    it('#increase ', async function() {});
+    it('#increase Update amount to increase a position LONG', async function() {});
+
+    it('#decrease Update amount to decrease a position LONG', async function() {});
+
+    it('#increase Update amount to increase a position SHORT', async function() {});
+
+    it('#decrease Update amount to decrease a position SHORT', async function() {});
 
     it('#finish validate current price is not positive', async function() {
       try {
