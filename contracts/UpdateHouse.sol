@@ -24,8 +24,7 @@ contract UpdateHouse is CoreMath, Ownable {
     Direction direction;
     Status status;
     bytes32 synth;
-    uint256 initialPrice; // ok
-    uint256 lastPrice; // confirma spotPrice?
+    uint256 averagePrice; // ok
     uint256 tokenAmount; // ok
     uint256 synthTokenAmount;
     uint256 created_at;
@@ -75,11 +74,11 @@ contract UpdateHouse is CoreMath, Ownable {
     _addPositionVault(index, address(msg.sender), deltaAmount);
 
     uint256 newSynthAmount = radiv(deltaAmount, currentPrice);
-    uint256 oldSynthPrice = dataPosition.synthTokenAmount * dataPosition.initialPrice;
+    uint256 oldSynthPrice = dataPosition.synthTokenAmount * dataPosition.averagePrice;
     uint256 newSynthPrice = newSynthAmount * currentPrice;
     uint256 medianPrice = (newSynthPrice + oldSynthPrice) / (dataPosition.tokenAmount + newSynthAmount);
 
-    dataPosition.initialPrice = medianPrice;
+    dataPosition.averagePrice = medianPrice;
   }
 
   function decreasePosition(uint index, uint256 deltaAmount) external {
@@ -89,11 +88,11 @@ contract UpdateHouse is CoreMath, Ownable {
     _removePositionVault(index, address(msg.sender), deltaAmount);
 
     uint256 currentTokenAmount = dataPosition.tokenAmount - deltaAmount;
-    uint256 oldPrice = (dataPosition.tokenAmount / currentTokenAmount) * dataPosition.initialPrice;
+    uint256 oldPrice = (dataPosition.tokenAmount / currentTokenAmount) * dataPosition.averagePrice;
     uint256 newPrice = (deltaAmount / currentTokenAmount) * currentPrice;
-    uint256 currentInitialPrice = orderToSub(newPrice, oldPrice);
+    uint256 currentAveragePrice = orderToSub(newPrice, oldPrice);
 
-    dataPosition.initialPrice = currentInitialPrice;
+    dataPosition.averagePrice = currentAveragePrice;
   }
 
   function finishPosition(uint index) external {
@@ -103,13 +102,13 @@ contract UpdateHouse is CoreMath, Ownable {
     require(currentPrice > 0, 'Current price not valid!');
 
     uint256 a = (dataPosition.synthTokenAmount * currentPrice) / WAD;
-    uint256 b = (dataPosition.synthTokenAmount * dataPosition.initialPrice) / WAD;
+    uint256 b = (dataPosition.synthTokenAmount * dataPosition.averagePrice) / WAD;
     uint256 positionFixValue = b > a ? b - a : a - b;
     uint256 currentPricePosition;
     if (dataPosition.direction == Direction.LONG) {
-      currentPricePosition = dataPosition.initialPrice < currentPrice ? (dataPosition.tokenAmount + positionFixValue) : (dataPosition.tokenAmount - positionFixValue);
+      currentPricePosition = dataPosition.averagePrice < currentPrice ? (dataPosition.tokenAmount + positionFixValue) : (dataPosition.tokenAmount - positionFixValue);
     } else if (dataPosition.direction == Direction.SHORT) {
-      currentPricePosition = dataPosition.initialPrice < currentPrice ? (dataPosition.tokenAmount - positionFixValue) : (dataPosition.tokenAmount + positionFixValue);
+      currentPricePosition = dataPosition.averagePrice < currentPrice ? (dataPosition.tokenAmount - positionFixValue) : (dataPosition.tokenAmount + positionFixValue);
     }
 
     uint256 amount = vault.withdrawFullDeposit(index);
@@ -137,16 +136,15 @@ contract UpdateHouse is CoreMath, Ownable {
     emit Finish(address(msg.sender), dataPosition.direction, dataPosition.status);
   }
 
-  function _create(address account, Direction direction, bytes32 synthKey, uint256 initialPrice, uint256 amount) internal returns (PositionData memory) {
+  function _create(address account, Direction direction, bytes32 synthKey, uint256 averagePrice, uint256 amount) internal returns (PositionData memory) {
     PositionData memory dataPosition = PositionData(
       address(account),
       direction,
       Status.OPEN,
       synthKey,
-      initialPrice,
-      0,
+      averagePrice,
       amount,
-      radiv(amount, initialPrice),
+      radiv(amount, averagePrice),
       block.timestamp,
       block.timestamp
     );
