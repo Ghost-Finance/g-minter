@@ -226,7 +226,7 @@ const MainPage = () => {
                 <LinkCard
                   title="🦄 Swap GHO"
                   text="into your wallet"
-                  link={`https://app.uniswap.org/#/swap?outputCurrency=${ghoAddress}`}
+                  link={`https://app.uniswap.org/#/swap?outputCurrency=${ghoAddress}&chain=${networkName.toLocaleLowerCase()}`}
                 />
               ) : (
                 <></>
