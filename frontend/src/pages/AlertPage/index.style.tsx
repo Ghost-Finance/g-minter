@@ -16,10 +16,22 @@ const useStyle = makeStyles((theme: Theme) =>
       flexFlow: 'column',
       justifyContent: 'space-between',
       height: '100vh',
+      [theme.breakpoints.down('md')]: {
+        padding: 0,
+        width: '100%',
+      },
     },
     cardForm: {
       marginTop: 20,
       width: 'calc(40%)',
+    },
+    boxMessage: {
+      marginTop: 150,
+      marginBottom: 150,
+      [theme.breakpoints.down('md')]: {
+        marginTop: 0,
+        marginBottom: 0,
+      },
     },
     contentCard: {
       display: 'flex',
@@ -33,14 +45,17 @@ const useStyle = makeStyles((theme: Theme) =>
     help: {
       color: '#444',
     },
+    button: {
+      backgroundColor: theme.palette.primary.light,
+      '&:hover': {
+        backgroundColor: theme.palette.primary.light,
+      },
+    },
     buttonCancel: {
       color: theme.palette.primary.contrastText,
       fontSize: 14,
+      textTransform: 'none',
       fontWeight: 'bold',
-      backgroundColor: `${theme.palette.primary.light} !important`,
-      '&:hover': {
-        backgroundColor: `${theme.palette.primary.light} !important`,
-      },
     },
     container: {
       display: 'flex',
@@ -49,13 +64,19 @@ const useStyle = makeStyles((theme: Theme) =>
       alignItems: 'center',
       width: '100%',
     },
+    containerRow: {
+      display: 'flex',
+      flexFlow: 'row wrap',
+      justifyContent: 'space-between',
+      alignItems: 'baseline',
+    },
     title: {
       marginTop: '65px',
       marginBottom: '35px',
       fontFamily: 'Inter',
       fontSize: '36px',
       fontStyle: 'normal',
-      fontWeight: 400,
+      fontWeight: 600,
       lineHeight: '44px',
       letterSpacing: '0em',
       textAlign: 'left',
@@ -105,6 +126,18 @@ const useStyle = makeStyles((theme: Theme) =>
       width: '100% !important',
       height: '6px',
       backgroundColor: theme.palette.warning.main,
+    },
+    contentButton: {
+      display: 'flex',
+      flexFlow: 'row',
+      justifyItems: 'space-between',
+      alignItems: 'center',
+      padding: 10,
+      borderRadius: 24,
+      backgroundColor: theme.palette.primary.dark,
+    },
+    textDark: {
+      color: theme.palette.secondary.dark,
     },
     textYellow: {
       color: theme.palette.warning.main,

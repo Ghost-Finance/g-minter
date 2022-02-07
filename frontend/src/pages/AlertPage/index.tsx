@@ -1,93 +1,45 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
 import useStyle from './index.style';
 import ButtonForm from '../../components/Button/ButtonForm';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
-import DoneIcon from '@material-ui/icons/Done';
+import ConfirmTransactionMessage from './AlertMessage/ConfirmTransactionMessage';
+import WaitingTransactionMessage from './AlertMessage/WaitingTransactionMessage';
+import SuccessTransactionMessage from './AlertMessage/SuccessTransactionMessage';
+import ErrorTransactionMessage from './AlertMessage/ErrorTransactionMessage';
 import { useSelector } from '../../redux/hooks';
+
+let CONFIRM_TRANSACTION: string = 'confirm';
+let WATING_TRANSACTION: string = 'waiting';
+let SUCCESS_TRANSACTION: string = 'finish';
+let ERROR_TRANSACTION: string = 'error';
 
 const AlertPage = () => {
   const classes = useStyle();
+  const [message, setMessage] = useState('confirm');
   const [confirmed, setConfirmed] = useState(false);
+  const { status } = useSelector((state) => state.app);
 
-  const app = useSelector((state) => state.app);
-  const { txSuccess } = app;
+  const messageComponents = {
+    [CONFIRM_TRANSACTION]: () => <ConfirmTransactionMessage />,
+    [WATING_TRANSACTION]: () => <WaitingTransactionMessage />,
+    [SUCCESS_TRANSACTION]: () => <SuccessTransactionMessage />,
+    [ERROR_TRANSACTION]: () => <ErrorTransactionMessage />,
+  };
+
+  useEffect(() => {
+    setMessage(status as string);
+  }, [status]);
 
   return (
     <div className="modal">
       <Grid container direction="column" className={classes.root}>
         <Grid className={classes.paperContent} item>
           <div className={classes.cardForm}>
-            {!txSuccess ? (
-              <div>
-                <div
-                  className={classes.icon}
-                  onClick={() => setConfirmed(!confirmed)}
-                >
-                  <ArrowForwardIcon style={{ fontSize: '2.8rem' }} />
-                </div>
-
-                <h1 className={classes.title}>
-                  Please <br />
-                  confirm your <br />
-                  transaction
-                </h1>
-
-                <p className={classes.subTitle}>
-                  You need to confirm this in your <br />
-                  wallet. If it doens't work, &nbsp;
-                  <Link to="/" className={classes.help}>
-                    ask here <br /> for help.
-                  </Link>
-                </p>
-
-                <Link to="/" className={classes.link}>
-                  <ButtonForm text="Cancel" className={classes.buttonCancel} />
-                </Link>
-              </div>
-            ) : (
-              <div>
-                <div
-                  className={classes.icon}
-                  onClick={() => setConfirmed(!confirmed)}
-                >
-                  <DoneIcon style={{ fontSize: '2.8rem', color: '#EEFF00' }} />
-                </div>
-
-                <h1 className={classes.title}>
-                  Your transaction <br />
-                  is right on the way <br />
-                  <span className={classes.textYellow}>to be confirmed</span>
-                </h1>
-
-                <p className={classes.subTitle}>
-                  Now you just need to <br />
-                  wait a few more minutes...
-                </p>
-
-                <Link to="/" className={classes.link}>
-                  <ButtonForm
-                    text=""
-                    children={
-                      <>
-                        Back to home
-                        <ArrowForwardIcon
-                          style={{ fontSize: '1.5rem', marginLeft: 10 }}
-                        />
-                      </>
-                    }
-                    className={classes.buttonCancel}
-                  />
-                </Link>
-              </div>
-            )}
-            {/* <div className={classes.bottomBox}>
-              <div className={classes.topBox}>&nbsp;</div>
-            </div> */}
-            {confirmed ? (
-              <div className={classes.bottomBoxYellow}>&nbsp;</div>
-            ) : null}
+            {(messageComponents[message as string] &&
+              messageComponents[message as string]()) ||
+              messageComponents[CONFIRM_TRANSACTION]()}
           </div>
         </Grid>
       </Grid>

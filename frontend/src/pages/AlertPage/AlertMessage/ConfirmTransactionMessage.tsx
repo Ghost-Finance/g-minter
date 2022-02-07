@@ -8,15 +8,15 @@ const ConfirmTransactionMessage = () => {
   const classes = useStyle();
 
   return (
-    <>
-      <div>
-        <div
-          className={classes.icon}
-          // onClick={() => setConfirmed(!confirmed)}
-        >
-          <ArrowForwardIcon style={{ fontSize: '2.8rem' }} />
-        </div>
+    <div>
+      <div
+        className={classes.icon}
+        // onClick={() => setConfirmed(!confirmed)}
+      >
+        <ArrowForwardIcon style={{ fontSize: '2.8rem' }} />
+      </div>
 
+      <div className={classes.boxMessage}>
         <h1 className={classes.title}>
           Please <br />
           confirm your <br />
@@ -30,12 +30,12 @@ const ConfirmTransactionMessage = () => {
             ask here <br /> for help.
           </Link>
         </p>
-
-        <Link to="/" className={classes.link}>
-          <ButtonForm text="Cancel" className={classes.buttonCancel} />
-        </Link>
       </div>
-    </>
+
+      <Link to="/" className={classes.link}>
+        <ButtonForm text="Cancel" className={classes.buttonCancel} />
+      </Link>
+    </div>
   );
 };
 

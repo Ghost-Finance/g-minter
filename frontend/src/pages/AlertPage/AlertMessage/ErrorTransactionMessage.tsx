@@ -1,5 +1,5 @@
 import React from 'react';
 
-const ErrorTransactionMessage = () => <></>;
+const ErrorTransactionMessage = () => <>Errouuuu</>;
 
 export default ErrorTransactionMessage;
