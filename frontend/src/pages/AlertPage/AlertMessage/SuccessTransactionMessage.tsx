@@ -41,16 +41,13 @@ const SuccessTransactionMessage = () => {
           <Link to="/earn" className={classes.link}>
             <ButtonForm
               text="Liquidity program ->"
-              className={classes.button}
+              className={`${classes.button} ${classes.buttonCancel}`}
             />
           </Link>
         </div>
 
         <Link to="/" className={classes.link}>
-          <Button className={classes.buttonCancel}>
-            Back to home
-            <ArrowForwardIcon style={{ fontSize: '1.5rem', marginLeft: 10 }} />
-          </Button>
+          <Button className={classes.buttonDefault}>Back to home {`->`}</Button>
         </Link>
       </div>
     </div>

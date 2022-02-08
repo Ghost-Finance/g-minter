@@ -17,7 +17,7 @@ export const mint =
     contract.methods
       .mint(token, depositAmount, mintAmount)
       .send({ from: account })
-      .on('Mint', (tx: any) => dispatch('finish'))
+      .once('confirmation', () => dispatch('finish'))
       .on('error', (error: any) => dispatch('error'));
   };
 
@@ -29,7 +29,6 @@ export const approve =
       .approve(account, bigAmount)
       .send({ from: sender })
       .once('sent', () => {
-        debugger;
         dispatch('confirm');
       })
       .on('transactionHash', () => {

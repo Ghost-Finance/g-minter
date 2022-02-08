@@ -33,7 +33,10 @@ const ConfirmTransactionMessage = () => {
       </div>
 
       <Link to="/" className={classes.link}>
-        <ButtonForm text="Cancel" className={classes.buttonCancel} />
+        <ButtonForm
+          text="Cancel"
+          className={`${classes.button} ${classes.buttonCancel}`}
+        />
       </Link>
     </div>
   );

@@ -23,7 +23,7 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     cardForm: {
       marginTop: 20,
-      width: 'calc(40%)',
+      width: 'calc(50% - 40px)',
     },
     boxMessage: {
       marginTop: 150,
@@ -56,6 +56,12 @@ const useStyle = makeStyles((theme: Theme) =>
       fontSize: 14,
       textTransform: 'none',
       fontWeight: 'bold',
+    },
+    buttonDefault: {
+      textTransform: 'none',
+      fontWeight: 'bold',
+      color: theme.palette.primary.contrastText,
+      backgroundColor: 'none',
     },
     container: {
       display: 'flex',
@@ -132,7 +138,7 @@ const useStyle = makeStyles((theme: Theme) =>
       flexFlow: 'row',
       justifyItems: 'space-between',
       alignItems: 'center',
-      padding: 10,
+      padding: theme.spacing(2),
       borderRadius: 24,
       backgroundColor: theme.palette.primary.dark,
     },
