@@ -136,17 +136,24 @@ const useStyle = makeStyles((theme: Theme) =>
     contentButton: {
       display: 'flex',
       flexFlow: 'row',
-      justifyItems: 'space-between',
+      justifyContent: 'space-between',
       alignItems: 'center',
-      padding: theme.spacing(2),
+      padding: '2px 16px',
+      width: '70%',
       borderRadius: 24,
-      backgroundColor: theme.palette.primary.dark,
+      backgroundColor: 'rgba(64, 64, 0, 0.255)',
     },
     textDark: {
       color: theme.palette.secondary.dark,
     },
     textYellow: {
       color: theme.palette.warning.main,
+    },
+    textWarning: {
+      color: theme.palette.error.main,
+    },
+    textBold: {
+      fontWeight: 'bold',
     },
     textYellowC: {
       color: theme.palette.warning.main,

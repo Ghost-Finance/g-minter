@@ -37,10 +37,9 @@ const AlertPage = () => {
       <Grid container direction="column" className={classes.root}>
         <Grid className={classes.paperContent} item>
           <div className={classes.cardForm}>
-            {messageComponents[SUCCESS_TRANSACTION]()}
-            {/* {(messageComponents[message as string] &&
+            {(messageComponents[message as string] &&
               messageComponents[message as string]()) ||
-              messageComponents[CONFIRM_TRANSACTION]()} */}
+              messageComponents[CONFIRM_TRANSACTION]()}
           </div>
         </Grid>
       </Grid>

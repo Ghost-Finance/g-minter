@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import DoneIcon from '@material-ui/icons/Done';
-import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import { Button } from '@material-ui/core';
+import { LogoIcon } from '../../../components/Icons';
 import ButtonForm from '../../../components/Button/ButtonForm';
 import infoImage from '../../../assets/arrow-icon-yellow.png';
 import useStyle from '../index.style';
@@ -12,11 +11,8 @@ const SuccessTransactionMessage = () => {
 
   return (
     <div>
-      <div
-        className={classes.icon}
-        // onClick={() => setConfirmed(!confirmed)}
-      >
-        <DoneIcon style={{ fontSize: '2.8rem', color: '#EEFF00' }} />
+      <div className={classes.icon}>
+        <LogoIcon />
       </div>
 
       <div className={classes.boxMessage}>
@@ -27,7 +23,7 @@ const SuccessTransactionMessage = () => {
 
         <p className={classes.subTitle}>
           Now that you have collateral. <br />
-          Let’s start the game ✨
+          <span className={classes.textBold}>Let’s start the game ✨</span>
         </p>
       </div>
 
@@ -38,7 +34,10 @@ const SuccessTransactionMessage = () => {
             Provide liquidity and <br />
             <span className={classes.textYellow}>earn rewards</span>
           </h3>
-          <Link to="/earn" className={classes.link}>
+          <Link
+            to={process.env.LIQUIDITY_PROGRAM || '#'}
+            className={classes.link}
+          >
             <ButtonForm
               text="Liquidity program ->"
               className={`${classes.button} ${classes.buttonCancel}`}
