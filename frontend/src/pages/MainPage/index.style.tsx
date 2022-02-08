@@ -65,9 +65,8 @@ export const useStyles = makeStyles((theme: Theme) =>
       },
     },
     walletGrid: {
-      paddingTop: 48,
-      width: '100%',
       display: 'flex',
+      flexFlow: 'row',
       justifyContent: 'flex-end',
     },
     marginLogo: {

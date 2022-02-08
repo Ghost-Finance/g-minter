@@ -1,3 +1,5 @@
+import { NetworkNames } from '../../config/enums';
+
 export const Types = {
   SET_TXSUCCESS: '@APP/SET_TXSUCCESS',
   SET_STATUS: '@APP/SET_STATUS',
@@ -15,6 +17,7 @@ type TState = {
   cRatioSimulateValue?: string;
   balanceOfGho?: string;
   balanceOfGdai?: string;
+  networkName: NetworkNames;
   collateralBalance?: string;
   synthDebt?: string;
   collateralBalancePrice?: string;
@@ -25,6 +28,10 @@ type TAction = {
   type: string;
 } & TState;
 
+const targetNetwork = process.env.REACT_APP_CHAIN_NETWORK
+  ? (process.env.REACT_APP_CHAIN_NETWORK as NetworkNames)
+  : NetworkNames.LOCAL;
+
 const initialState: TState = {
   txSuccess: false,
   status: 'idle',
@@ -32,6 +39,7 @@ const initialState: TState = {
   cRatioSimulateValue: '0',
   balanceOfGho: '0',
   balanceOfGdai: '0',
+  networkName: targetNetwork,
   collateralBalance: '0',
   synthDebt: '0',
   collateralBalancePrice: '0',

@@ -3,7 +3,7 @@ export enum ConnectState {
   DISCONNECTED = 'Disconnected',
   CONNECTED = 'Connected',
   ADDRESS_NOT_CONTRACT = 'Could not connect to Token contract',
-  WRONG_NETWORK = 'Wrong network: connect to localhost'
+  WRONG_NETWORK = 'Wrong network',
 }
 
 export enum Networks {
@@ -12,7 +12,7 @@ export enum Networks {
   ROPSTEN = '0x3',
   RINKEBY = '0x4',
   GOERLI = '0x5',
-  LOCAL = '0x539'
+  LOCAL = '0x539',
 }
 
 export enum NetworkNames {
@@ -22,19 +22,19 @@ export enum NetworkNames {
   RINKEBY = 'RINKEBY',
   GOERLI = 'GOERLI',
   LOCAL = 'LOCALHOST:9545',
-  UNKNOWN = 'UNKNOWN NETWORK'
+  UNKNOWN = 'UNKNOWN NETWORK',
 }
 
 export enum Tokens {
   // ETH = 'ETH',
   DAI = 'DAI',
-  UBE = 'UBE'
+  UBE = 'UBE',
 }
 
 export enum ChainError {
-  REJECTED = 4001
+  REJECTED = 4001,
 }
 
 export enum ContractHelper {
-  DECIMALPADDING = 100
+  DECIMALPADDING = 100,
 }
