@@ -84,6 +84,7 @@ const useStyle = makeStyles((theme: Theme) =>
       fontSize: 36,
       textAlign: 'center',
       marginBottom: '90px',
+      fontWeight: 'bold',
       lineHeight: '37px',
       [theme.breakpoints.down(1800)]: {
         marginTop: '35px',

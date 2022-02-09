@@ -11,7 +11,6 @@ export interface Props {
 
 const ContentPage = (props: Props) => {
   const classes = useStyles();
-  const [btnDisabled, setBtnDisabled] = useState(true);
 
   return (
     <div className="modal side-left">

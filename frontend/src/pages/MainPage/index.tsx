@@ -62,6 +62,7 @@ const MainPage = () => {
     balanceOfGdai,
     balanceOfGho,
     collateralBalance,
+    synthDebt,
     status,
     networkName,
   } = useSelector(state => state.app);
@@ -162,6 +163,8 @@ const MainPage = () => {
     account,
     balanceOfGdai,
     balanceOfGho,
+    collateralBalance,
+    synthDebt,
     network,
     networkName,
     minterContract,

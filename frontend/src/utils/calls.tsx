@@ -31,7 +31,7 @@ export const burn = async (
   return contract.methods
     .burn(token, burnAmount)
     .send({ from: account })
-    .on('transactionHash', (tx: any) => {
+    .on('confirmation', (tx: any) => {
       return tx.transactionHash;
     });
 };
@@ -121,7 +121,7 @@ export const simulateBurn = (
   const gdaiAmount = BigNumber.from(parseUnits(amountGdai));
 
   return contract.methods
-    .simulateCRatio(token, '0', gdaiAmount, false)
+    .simulateCRatio(token, BigNumber.from(parseEther('0')), gdaiAmount, false)
     .call({ from: account });
 };
 

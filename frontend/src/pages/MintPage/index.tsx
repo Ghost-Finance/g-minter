@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Link, Redirect } from 'react-router-dom';
-import { Grid } from '@material-ui/core';
-import Box from '@material-ui/core/Box';
 import BigNumber from 'bignumber.js';
+import { Typography } from '@material-ui/core';
 import useStyle from './index.style';
 import hooks from '../../hooks/walletConnect';
 import ButtonForm from '../../components/Button/ButtonForm';
 import InputContainer from '../../components/InputContainer';
+import FormBox from '../../components/FormBox';
 import { NumericalInput } from '../../components/InputMask';
 import { GhostIcon } from '../../components/Icons';
 import { useMinter, useERC20 } from '../../hooks/useContract';
@@ -43,7 +42,7 @@ const MintPage = () => {
 
   const dispatch = useDispatch();
   const { account } = useSelector((state) => state.wallet);
-  const { cRatioSimulateMintValue } = useSelector((state) => state.app);
+  const { cRatioSimulateValue } = useSelector((state) => state.app);
 
   const [redirect, setRedirect] = useState(false);
   const [redirectHome, setRedirectHome] = useState(false);
@@ -121,7 +120,6 @@ const MintPage = () => {
   }
 
   async function changeMaxGdai() {
-    debugger;
     if (gdaiField.value === '' || ghoField.value !== '') return;
     dispatch(setStatus('pending'));
     await maximumDebtValue(gdaiField.value);
@@ -215,119 +213,49 @@ const MintPage = () => {
   ]);
 
   return (
-    <div className="modal side-left">
-      {redirect ? (
-        <Redirect
-          to={{
-            pathname: '/alert',
-          }}
-        />
-      ) : null}
+    <FormBox
+      title={
+        <>
+          Mint <br /> your gDai
+        </>
+      }
+      titleButton="Mint your gDai"
+      onClick={handleMint}
+      disableButton={
+        btnDisabled || ghoField.value === '' || gdaiField.value === ''
+      }
+    >
+      <InputContainer>
+        <GhostIcon />
+        <span className={classes.labelInput}>gDAI</span>
 
-      {redirectHome ? (
-        <Redirect
-          to={{
-            pathname: '/',
-          }}
-        />
-      ) : null}
+        <NumericalInput className={classes.input} id="gdai" {...gdaiField} />
 
-      <Grid container direction="column" className={classes.root}>
-        <div className={classes.containerTop}>
-          <Grid item>
-            <Link to="/" className={classes.link}>
-              <ButtonForm text="Cancel" className={classes.buttonCancel} />
-            </Link>
-          </Grid>
-
-          <Grid item>
-            <ConnectWallet />
-          </Grid>
+        <div>
+          <ButtonForm
+            text="MAX"
+            className={classes.buttonMax}
+            onClick={handleMaxDAI}
+          />
         </div>
+      </InputContainer>
+      <InputContainer>
+        <GhostIcon />
+        <span className={classes.labelInput}>GHO</span>
 
-        <Grid className={classes.paperContent} item>
-          <div className={classes.cardForm}>
-            <div className={classes.topBox}>&nbsp;</div>
+        <NumericalInput className={classes.input} id="gho" {...ghoField} />
 
-            <Box className={classes.contentCard}>
-              <div className={classes.container}>
-                <h1 className={classes.title}>
-                  Mint <br /> your gDAI
-                </h1>
+        <div>
+          <ButtonForm
+            text="MAX"
+            className={classes.buttonMax}
+            onClick={handleMaxGHO}
+          />
+        </div>
+      </InputContainer>
 
-                <InputContainer>
-                  <GhostIcon />
-                  <span className={classes.labelInput}>gDAI</span>
-
-                  <NumericalInput
-                    className={classes.input}
-                    id="gdai"
-                    {...gdaiField}
-                  />
-
-                  <div>
-                    <ButtonForm
-                      text="MAX"
-                      className={classes.buttonMax}
-                      onClick={handleMaxDAI}
-                    />
-                  </div>
-                </InputContainer>
-
-                <InputContainer>
-                  <GhostIcon />
-                  <span className={classes.labelInput}>GHO</span>
-
-                  <NumericalInput
-                    className={classes.input}
-                    id="gho"
-                    {...ghoField}
-                  />
-
-                  <div>
-                    <ButtonForm
-                      text="MAX"
-                      className={classes.buttonMax}
-                      onClick={handleMaxGHO}
-                    />
-                  </div>
-                </InputContainer>
-
-                <span className={classes.labelGas}>Gas Fee $0.00/0 GWEI</span>
-
-                <div>
-                  <ButtonForm
-                    text="Mint gDAI"
-                    className={
-                      btnDisabled ||
-                      ghoField.value === '' ||
-                      gdaiField.value === ''
-                        ? classes.buttonMintGrey
-                        : classes.buttonMint
-                    }
-                    onClick={handleMint}
-                    disabled={
-                      btnDisabled ||
-                      ghoField.value === '' ||
-                      gdaiField.value === ''
-                    }
-                  />
-                </div>
-              </div>
-            </Box>
-            <div
-              className={
-                btnDisabled || ghoField.value === '' || gdaiField.value === ''
-                  ? classes.bottomBoxGrey
-                  : classes.bottomBox
-              }
-            >
-              &nbsp;
-            </div>
-          </div>
-        </Grid>
-      </Grid>
-    </div>
+      <span className={classes.labelGas}>Gas Fee $0.00/0 GWEI</span>
+    </FormBox>
   );
 };
 
