@@ -2,38 +2,43 @@ import { Contract } from 'web3-eth-contract';
 import { BigNumber } from '@ethersproject/bignumber';
 import { parseEther, parseUnits } from '@ethersproject/units';
 
-export const mint = async (
-  contract: Contract,
-  token: string,
-  amountToDeposit: string,
-  amountToMint: string,
-  account: string
-) => {
-  const depositAmount = BigNumber.from(parseEther(amountToDeposit));
-  const mintAmount = BigNumber.from(parseEther(amountToMint));
+export const mint =
+  (
+    contract: Contract,
+    token: string,
+    amountToDeposit: string,
+    amountToMint: string,
+    account: string
+  ) =>
+  (dispatch: any) => {
+    const depositAmount = BigNumber.from(parseEther(amountToDeposit));
+    const mintAmount = BigNumber.from(parseEther(amountToMint));
+    debugger;
+    contract.methods
+      .mint(token, depositAmount, mintAmount)
+      .send({ from: account })
+      .once('confirmation', () => dispatch('finish'))
+      .on('error', (error: any) => dispatch('error'));
+  };
 
-  return contract.methods
-    .mint(token, depositAmount, mintAmount)
-    .send({ from: account })
-    .on('transactionHash', (tx: any) => {
-      return tx.transactionHash;
-    });
-};
-
-export const approve = async (
-  contract: Contract,
-  sender: string,
-  account: string,
-  amount: string
-) => {
-  const bigAmount = BigNumber.from(parseEther(amount));
-  return contract.methods
-    .approve(account, bigAmount)
-    .send({ from: sender })
-    .on('Approve', (data: any) => {
-      return data;
-    });
-};
+export const approve =
+  (contract: Contract, sender: string, account: string, amount: string) =>
+  (dispatch: any) => {
+    const bigAmount = BigNumber.from(parseEther(amount));
+    return contract.methods
+      .approve(account, bigAmount)
+      .send({ from: sender })
+      .once('sent', () => {
+        dispatch('confirm');
+      })
+      .on('transactionHash', () => {
+        dispatch('waiting');
+      })
+      .on('Approve', (data: any) => {
+        return data;
+      })
+      .on('error', (error: any) => dispatch('error'));
+  };
 
 export const depositCollateral = async (
   token: string,

@@ -61,31 +61,31 @@ const MintPage = () => {
     ...gdaiField
   } = useOnlyDigitField('tel');
 
+  function dispatchLoading(key: string) {
+    dispatch(setStatus(key));
+  }
+
   async function handleMint() {
     if (btnDisabled || ghoField.value === '' || gdaiField.value === '') return;
 
     setRedirect(true);
-    dispatch(setStatus('pending'));
-    dispatch(setTxSucces(false));
     await approve(
       ghoContract,
       account as string,
       minterAddress,
       ghoField.value
-    );
+    )(dispatchLoading);
+
     await mint(
       minterContract,
       gDaiAddress,
       ghoField.value,
       gdaiField.value,
       account as string
-    );
+    )(dispatchLoading);
+
     resetGhoField();
     resetGdaiField();
-    setTimeout(() => {
-      dispatch(setStatus('success'));
-      dispatch(setTxSucces(true));
-    }, 5000);
   }
 
   function setValues(ghoValue: string, gdaiValue: string) {
@@ -94,13 +94,13 @@ const MintPage = () => {
   }
 
   async function handleMaxGHO() {
-    dispatch(setStatus('pending'));
+    dispatchLoading('pending');
     let balanceValue = await balanceOf(ghoContract, account as string);
     await maximumCollateralValue(bigNumberToString(balanceValue));
   }
 
   async function handleMaxDAI() {
-    dispatch(setStatus('pending'));
+    dispatchLoading('pending');
     let balanceGdaiValue = bigNumberToString(
       await balanceOf(gDaiContract, account as string)
     );
@@ -114,22 +114,19 @@ const MintPage = () => {
   }
 
   async function changeMaxGho() {
-    debugger;
     if (ghoField.value === '' || gdaiField.value !== '') return;
-    dispatch(setStatus('pending'));
+    dispatchLoading('pending');
     await maximumCollateralValue(ghoField.value);
   }
 
   async function changeMaxGdai() {
-    debugger;
     if (gdaiField.value === '' || ghoField.value !== '') return;
-    dispatch(setStatus('pending'));
+    dispatchLoading('pending');
     await maximumDebtValue(gdaiField.value);
   }
 
   async function maximumCollateralValue(value: string) {
     try {
-      debugger;
       let maxValue = await maximumByCollateral(
         minterContract,
         gDaiAddress,
@@ -138,8 +135,7 @@ const MintPage = () => {
       );
       setValues(value, bigNumberToString(maxValue));
     } catch (error) {
-      debugger;
-      dispatch(setStatus('error'));
+      dispatchLoading('error');
       console.error(error.message);
     }
   }
@@ -155,14 +151,14 @@ const MintPage = () => {
 
       setValues(bigNumberToString(maxGhoValue), value);
     } catch (error) {
-      dispatch(setStatus('error'));
+      dispatchLoading('error');
       console.error(error.message);
     }
   }
 
   useEffect(() => {
     setRedirectHome(account === null);
-    dispatch(setStatus('pending'));
+    dispatchLoading('pending');
     dispatch(setCRatioSimulateMint('0', '0', '0'));
     setBtnDisabled(true);
 
@@ -188,8 +184,11 @@ const MintPage = () => {
             bigNumberToString(synthDebt).toString()
           )
         );
+        debugger;
+        dispatchLoading('success');
       } catch (error) {
         setBtnDisabled(true);
+        dispatchLoading('error');
         dispatch(setCRatioSimulateMint('0', '0', '0'));
       }
     }
@@ -198,7 +197,6 @@ const MintPage = () => {
       changeMaxGdai();
       changeMaxGho();
       fetchData();
-      dispatch(setStatus('success'));
     }, 3000);
 
     return () => {
@@ -211,7 +209,6 @@ const MintPage = () => {
     gdaiField.value,
     gdaiFieldValid,
     ghoFieldValid,
-    dispatch,
   ]);
 
   return (
@@ -305,7 +302,10 @@ const MintPage = () => {
                         ? classes.buttonMintGrey
                         : classes.buttonMint
                     }
-                    onClick={handleMint}
+                    onClick={() => {
+                      dispatchLoading('idle');
+                      handleMint();
+                    }}
                     disabled={
                       btnDisabled ||
                       ghoField.value === '' ||
