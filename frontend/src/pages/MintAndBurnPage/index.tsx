@@ -9,8 +9,6 @@ import BurnPage from '../BurnPage';
 import MintPage from '../MintPage';
 
 const MintAndBurnPage = () => {
-  const [redirect, setRedirect] = useState(false);
-  const [redirectHome, setRedirectHome] = useState(false);
   const [page, setPage] = useState('mint');
   const classes = useStyles();
 
@@ -20,22 +18,7 @@ const MintAndBurnPage = () => {
 
   return (
     <ContentPage>
-      {redirect ? (
-        <Redirect
-          to={{
-            pathname: '/alert',
-          }}
-        />
-      ) : null}
-
-      {redirectHome ? (
-        <Redirect
-          to={{
-            pathname: '/',
-          }}
-        />
-      ) : null}
-      <CardContent>
+      <CardContent typeCard={page}>
         <TabContext value={page}>
           <AppBar position="static">
             <TabList onChange={handleChange} aria-label="mint or burn">
@@ -43,10 +26,10 @@ const MintAndBurnPage = () => {
               <Tab label="Burn" value="burn" />
             </TabList>
           </AppBar>
-          <TabPanel value="mint">
+          <TabPanel className={classes.panel} value="mint">
             <MintPage />
           </TabPanel>
-          <TabPanel value="burn">
+          <TabPanel className={classes.panel} value="burn">
             <BurnPage />
           </TabPanel>
         </TabContext>

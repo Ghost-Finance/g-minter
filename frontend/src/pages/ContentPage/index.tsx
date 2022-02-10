@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
 import useStyles from '../style';
 import ButtonForm from '../../components/Button/ButtonForm';
@@ -10,10 +10,27 @@ export interface Props {
 }
 
 const ContentPage = (props: Props) => {
+  const [redirect, setRedirect] = useState(false);
+  const [redirectHome, setRedirectHome] = useState(false);
   const classes = useStyles();
 
   return (
     <div className="modal side-left">
+      {redirect ? (
+        <Redirect
+          to={{
+            pathname: '/alert',
+          }}
+        />
+      ) : null}
+
+      {redirectHome ? (
+        <Redirect
+          to={{
+            pathname: '/',
+          }}
+        />
+      ) : null}
       <Grid container direction="column" className={classes.root}>
         <div className={classes.containerTop}>
           <Grid item>

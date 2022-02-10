@@ -20,7 +20,7 @@ const GhostRatioMint = () => {
     collateralBalance,
     synthDebt,
   } = useSelector((state) => state.app);
-  debugger;
+
   return (
     <Box component="div" m={1} className={classes.root}>
       <div className={classes.box}>

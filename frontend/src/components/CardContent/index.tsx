@@ -1,17 +1,30 @@
 import React from 'react';
 import useStyle from './style';
 import { Grid } from '@material-ui/core';
+import { ClassNameMap } from '@material-ui/styles';
 
 type Props = {
+  typeCard?: string;
   children?: React.ReactNode;
 };
 
-const CardContent = ({ children }: Props) => {
+let MintLabel: string = 'mint';
+let BurnLabel: string = 'burn';
+
+const CardContent = ({ typeCard, children }: Props) => {
   const classes = useStyle();
+
+  const topClassName = {
+    [MintLabel]: classes.mint,
+    [BurnLabel]: classes.burn,
+  };
 
   return (
     <Grid className={classes.root} item>
-      <div className={classes.cardForm}>{children}</div>
+      <div className={classes.cardForm}>
+        <div className={topClassName[typeCard || 'mint']}>&nbsp;</div>
+        {children}
+      </div>
     </Grid>
   );
 };

@@ -4,7 +4,7 @@ import { Typography } from '@material-ui/core';
 import FormBox from '../../components/FormBox';
 import InputContainer from '../../components/InputContainer';
 import ButtonForm from '../../components/Button/ButtonForm';
-import GhostIcon from '../../components/Icons/GhoIcon';
+import GdaiIcon from '../../components/Icons/GDaiIcon';
 import useOnlyDigitField from '../../hooks/useOnlyDigitField';
 import { useMinter, useERC20 } from '../../hooks/useContract';
 import { useDispatch, useSelector } from '../../redux/hooks';
@@ -75,7 +75,7 @@ const BurnPage = () => {
         account as string,
         gdaiValue ? gdaiValue : '0'
       );
-      debugger;
+
       dispatch(
         setCRatioSimulateBurn(
           (bigNumberToFloat(cRatio) * 100).toString(),
@@ -97,17 +97,12 @@ const BurnPage = () => {
 
   return (
     <FormBox
-      title={
-        <>
-          Burn <br /> your gDai
-        </>
-      }
       titleButton="Burn your gDai"
       onClick={handleBurn}
       disableButton={btnDisabled || gdaiValue === ''}
     >
       <InputContainer>
-        <GhostIcon />
+        <GdaiIcon />
         <span className={classes.labelInput}>gDAI</span>
 
         <input

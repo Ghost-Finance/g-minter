@@ -8,6 +8,8 @@ import { useStyles } from './index.style';
 import AppMenu from '../AppMenu';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import NavElement from '../../components/NavElement';
+import ContentPage from '../ContentPage';
+import CardContent from '../../components/CardContent';
 import MintPage from '../MintPage';
 import BurnPage from '../BurnPage';
 import MintAndBurnPage from '../MintAndBurnPage';
@@ -268,7 +270,16 @@ const MainPage = () => {
           classNames="fade"
         >
           <Switch location={location}>
-            <Route path="/mint" children={<MintPage />} />
+            <Route
+              path="/mint"
+              children={
+                <ContentPage>
+                  <CardContent typeCard="mint">
+                    <MintPage title="Mint your gDai" />
+                  </CardContent>
+                </ContentPage>
+              }
+            />
             <Route path="/mint-burn" children={<MintAndBurnPage />} />
             <Route path="/rewards" children={<RewardPage />} />
             <Route path="/stake" children={<StakePage />} />

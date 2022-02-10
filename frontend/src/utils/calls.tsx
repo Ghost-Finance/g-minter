@@ -108,7 +108,7 @@ export const simulateMint = async (
   amountGdai: string
 ) => {
   return contract.methods
-    .simulateCRatio(token, amountGHO, amountGdai, true)
+    .simulateCRatio(token, amountGHO, amountGdai)
     .call({ from: account });
 };
 
@@ -121,7 +121,7 @@ export const simulateBurn = (
   const gdaiAmount = BigNumber.from(parseUnits(amountGdai));
 
   return contract.methods
-    .simulateCRatio(token, BigNumber.from(parseEther('0')), gdaiAmount, false)
+    .simulateCRatio(token, BigNumber.from(parseEther('0')), gdaiAmount)
     .call({ from: account });
 };
 

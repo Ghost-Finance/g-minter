@@ -4,7 +4,7 @@ import ButtonForm from '../Button/ButtonForm';
 import useStyle from './index.style';
 
 interface Props {
-  title: any;
+  title?: string;
   children: ReactNode;
   titleButton?: string;
   disableButton?: boolean;
@@ -21,21 +21,25 @@ export const FormBox = ({
   const classes = useStyle();
   return (
     <Box className={classes.root}>
-      <div className={classes.container}>
-        <Typography component="h3" variant="h3" className={classes.title}>
-          {title}
-        </Typography>
+      <Typography component="h3" variant="h3" className={classes.title}>
+        {title}
+      </Typography>
 
-        {children}
+      {children}
 
-        <ButtonForm
-          text={titleButton || '#'}
-          className={`${classes.button} ${(disableButton &&
-            classes.disableButton) ||
-            ''}`}
-          onClick={onClick}
-          disabled={disableButton}
-        />
+      <ButtonForm
+        text={titleButton || '#'}
+        className={`${classes.button} ${(disableButton &&
+          classes.disableButton) ||
+          ''}`}
+        onClick={onClick}
+        disabled={disableButton}
+      />
+
+      <div
+        className={disableButton ? classes.bottomGrey : classes.bottomYellow}
+      >
+        &nbsp;
       </div>
     </Box>
   );

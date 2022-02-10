@@ -7,7 +7,7 @@ import ButtonForm from '../../components/Button/ButtonForm';
 import InputContainer from '../../components/InputContainer';
 import FormBox from '../../components/FormBox';
 import { NumericalInput } from '../../components/InputMask';
-import { GhostIcon } from '../../components/Icons';
+import { GhostIcon, GdaiIcon } from '../../components/Icons';
 import { useMinter, useERC20 } from '../../hooks/useContract';
 import useOnlyDigitField from '../../hooks/useOnlyDigitField';
 import { useDispatch, useSelector } from '../../redux/hooks';
@@ -34,7 +34,11 @@ import {
   stringToBigNumber,
 } from '../../utils/StringUtils';
 
-const MintPage = () => {
+interface Props {
+  title?: string;
+}
+
+const MintPage = ({ title }: Props) => {
   const classes = useStyle();
   const minterContract = useMinter();
   const ghoContract = useERC20(ghoAddress);
@@ -42,7 +46,6 @@ const MintPage = () => {
 
   const dispatch = useDispatch();
   const { account } = useSelector((state) => state.wallet);
-  const { cRatioSimulateValue } = useSelector((state) => state.app);
 
   const [redirect, setRedirect] = useState(false);
   const [redirectHome, setRedirectHome] = useState(false);
@@ -113,7 +116,6 @@ const MintPage = () => {
   }
 
   async function changeMaxGho() {
-    debugger;
     if (ghoField.value === '' || gdaiField.value !== '') return;
     dispatch(setStatus('pending'));
     await maximumCollateralValue(ghoField.value);
@@ -127,7 +129,6 @@ const MintPage = () => {
 
   async function maximumCollateralValue(value: string) {
     try {
-      debugger;
       let maxValue = await maximumByCollateral(
         minterContract,
         gDaiAddress,
@@ -136,7 +137,6 @@ const MintPage = () => {
       );
       setValues(value, bigNumberToString(maxValue));
     } catch (error) {
-      debugger;
       dispatch(setStatus('error'));
       console.error(error.message);
     }
@@ -188,6 +188,7 @@ const MintPage = () => {
         );
       } catch (error) {
         setBtnDisabled(true);
+        dispatch(setStatus('error'));
         dispatch(setCRatioSimulateMint('0', '0', '0'));
       }
     }
@@ -214,11 +215,7 @@ const MintPage = () => {
 
   return (
     <FormBox
-      title={
-        <>
-          Mint <br /> your gDai
-        </>
-      }
+      title={title || ''}
       titleButton="Mint your gDai"
       onClick={handleMint}
       disableButton={
@@ -226,7 +223,7 @@ const MintPage = () => {
       }
     >
       <InputContainer>
-        <GhostIcon />
+        <GdaiIcon />
         <span className={classes.labelInput}>gDAI</span>
 
         <NumericalInput className={classes.input} id="gdai" {...gdaiField} />

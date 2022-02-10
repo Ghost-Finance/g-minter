@@ -3,8 +3,9 @@ import { makeStyles, Theme } from '@material-ui/core';
 const useStyle = makeStyles((theme: Theme) => ({
   root: {
     display: 'flex',
-    flexFlow: 'row',
+    flexDirection: 'column',
     justifyContent: 'center',
+    alignItems: 'center',
     width: '100%',
   },
   container: {
@@ -43,6 +44,18 @@ const useStyle = makeStyles((theme: Theme) => ({
   },
   disableButton: {
     backgroundColor: `${theme.palette.secondary.dark} !important`,
+  },
+  bottomYellow: {
+    margin: '0 auto',
+    width: '100% !important',
+    height: '4px',
+    backgroundColor: theme?.brand.main,
+  },
+  bottomGrey: {
+    margin: '0 auto',
+    width: '100% !important',
+    height: '4px',
+    backgroundColor: theme.palette.secondary.dark,
   },
 }));
 

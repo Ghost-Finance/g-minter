@@ -9,6 +9,9 @@ const useStyle = makeStyles((theme: Theme) =>
       width: '100%',
       marginTop: 20,
     },
+    panel: {
+      padding: 0,
+    },
     containerTop: {
       display: 'flex',
       width: '63%',
