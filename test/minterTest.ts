@@ -113,9 +113,7 @@ describe('Minter', async function() {
             BigNumber.from(parseEther('1000.0'))
           );
       } catch (error) {
-        expect(error.message).to.match(
-          /ERC20: transfer amount exceeds balance/
-        );
+        expect(error.message).to.match(/ERC20: insufficient allowance/);
       }
     });
 
@@ -326,9 +324,7 @@ describe('Minter', async function() {
             .connect(accountOne)
             .burn(synthTokenAddress, BigNumber.from(parseEther('20.0')));
         } catch (error) {
-          expect(error.message).to.match(
-            /ERC20: transfer amount exceeds balance/
-          );
+          expect(error.message).to.match(/ERC20: insufficient allowance/);
         }
       });
 
@@ -346,9 +342,7 @@ describe('Minter', async function() {
             .connect(accountOne)
             .burn(synthTokenAddress, BigNumber.from(parseEther('200.0')));
         } catch (error) {
-          expect(error.message).to.match(
-            /ERC20: transfer amount exceeds balance/
-          );
+          expect(error.message).to.match(/ERC20: insufficient allowance/);
         }
       });
 
