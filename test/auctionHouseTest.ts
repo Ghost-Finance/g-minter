@@ -149,6 +149,11 @@ describe('Auction House tests', async function() {
     const amount = BigNumber.from(parseEther('20.0'));
     const accountWithoutFounds = state.contractAccounts[2];
 
+    await state.token
+      .attach(synthTokenAddress)
+      .connect(accountWithoutFounds)
+      .approve(state.auctionHouse.address, amount);
+
     try {
       await state.auctionHouse
         .connect(accountWithoutFounds)

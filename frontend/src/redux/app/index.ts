@@ -12,7 +12,14 @@ export const Types = {
 
 type TState = {
   txSuccess?: boolean;
-  status?: 'idle' | 'pending' | 'success' | 'error';
+  status?:
+    | 'idle'
+    | 'pending'
+    | 'confirm'
+    | 'waiting'
+    | 'finish'
+    | 'success'
+    | 'error';
   cRatioValue?: string;
   cRatioSimulateValue?: string;
   balanceOfGho?: string;

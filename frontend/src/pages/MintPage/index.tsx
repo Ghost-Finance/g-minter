@@ -63,31 +63,31 @@ const MintPage = ({ title }: Props) => {
     ...gdaiField
   } = useOnlyDigitField('tel');
 
+  function dispatchLoading(key: string) {
+    dispatch(setStatus(key));
+  }
+
   async function handleMint() {
     if (btnDisabled || ghoField.value === '' || gdaiField.value === '') return;
 
     setRedirect(true);
-    dispatch(setStatus('pending'));
-    dispatch(setTxSucces(false));
     await approve(
       ghoContract,
       account as string,
       minterAddress,
       ghoField.value
-    );
+    )(dispatchLoading);
+
     await mint(
       minterContract,
       gDaiAddress,
       ghoField.value,
       gdaiField.value,
       account as string
-    );
+    )(dispatchLoading);
+
     resetGhoField();
     resetGdaiField();
-    setTimeout(() => {
-      dispatch(setStatus('success'));
-      dispatch(setTxSucces(true));
-    }, 5000);
   }
 
   function setValues(ghoValue: string, gdaiValue: string) {
@@ -96,13 +96,13 @@ const MintPage = ({ title }: Props) => {
   }
 
   async function handleMaxGHO() {
-    dispatch(setStatus('pending'));
+    dispatchLoading('pending');
     let balanceValue = await balanceOf(ghoContract, account as string);
     await maximumCollateralValue(bigNumberToString(balanceValue));
   }
 
   async function handleMaxDAI() {
-    dispatch(setStatus('pending'));
+    dispatchLoading('pending');
     let balanceGdaiValue = bigNumberToString(
       await balanceOf(gDaiContract, account as string)
     );
@@ -117,13 +117,13 @@ const MintPage = ({ title }: Props) => {
 
   async function changeMaxGho() {
     if (ghoField.value === '' || gdaiField.value !== '') return;
-    dispatch(setStatus('pending'));
+    dispatchLoading('pending');
     await maximumCollateralValue(ghoField.value);
   }
 
   async function changeMaxGdai() {
     if (gdaiField.value === '' || ghoField.value !== '') return;
-    dispatch(setStatus('pending'));
+    dispatchLoading('pending');
     await maximumDebtValue(gdaiField.value);
   }
 
@@ -137,7 +137,7 @@ const MintPage = ({ title }: Props) => {
       );
       setValues(value, bigNumberToString(maxValue));
     } catch (error) {
-      dispatch(setStatus('error'));
+      dispatchLoading('error');
       console.error(error.message);
     }
   }
@@ -153,14 +153,14 @@ const MintPage = ({ title }: Props) => {
 
       setValues(bigNumberToString(maxGhoValue), value);
     } catch (error) {
-      dispatch(setStatus('error'));
+      dispatchLoading('error');
       console.error(error.message);
     }
   }
 
   useEffect(() => {
     setRedirectHome(account === null);
-    dispatch(setStatus('pending'));
+    dispatchLoading('pending');
     dispatch(setCRatioSimulateMint('0', '0', '0'));
     setBtnDisabled(true);
 
@@ -186,9 +186,11 @@ const MintPage = ({ title }: Props) => {
             bigNumberToString(synthDebt).toString()
           )
         );
+        debugger;
+        dispatchLoading('success');
       } catch (error) {
         setBtnDisabled(true);
-        dispatch(setStatus('error'));
+        dispatchLoading('error');
         dispatch(setCRatioSimulateMint('0', '0', '0'));
       }
     }
@@ -197,7 +199,6 @@ const MintPage = ({ title }: Props) => {
       changeMaxGdai();
       changeMaxGho();
       fetchData();
-      dispatch(setStatus('success'));
     }, 3000);
 
     return () => {
@@ -210,7 +211,6 @@ const MintPage = ({ title }: Props) => {
     gdaiField.value,
     gdaiFieldValid,
     ghoFieldValid,
-    dispatch,
   ]);
 
   return (
