@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import BigNumber from 'bignumber.js';
 import { Typography } from '@material-ui/core';
 import useStyle from './index.style';
 import hooks from '../../hooks/walletConnect';
+import { ContextPage } from '../ContentPage';
 import ButtonForm from '../../components/Button/ButtonForm';
 import InputContainer from '../../components/InputContainer';
 import FormBox from '../../components/FormBox';
@@ -25,7 +26,6 @@ import {
   setStatus,
   setCRatioSimulateMint,
 } from '../../redux/app/actions';
-import ConnectWallet from '../../components/Button/ConnectWallet';
 import { gDaiAddress, ghoAddress, minterAddress } from '../../utils/constants';
 import {
   bigNumberToFloat,
@@ -47,8 +47,7 @@ const MintPage = ({ title }: Props) => {
   const dispatch = useDispatch();
   const { account } = useSelector((state) => state.wallet);
 
-  const [redirect, setRedirect] = useState(false);
-  const [redirectHome, setRedirectHome] = useState(false);
+  const { setRedirectHome, setRedirect } = useContext(ContextPage);
   const [btnDisabled, setBtnDisabled] = useState(true);
   const {
     reset: resetGhoField,

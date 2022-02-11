@@ -23,7 +23,7 @@ export const mint =
   };
 
 export const burn =
-  async (contract: Contract, token: string, amount: string, account: string) =>
+  (contract: Contract, token: string, amount: string, account: string) =>
   (dispatch: any) => {
     dispatch('idle');
     const burnAmount = BigNumber.from(parseEther(amount));

@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Typography } from '@material-ui/core';
+import { ContextPage } from '../ContentPage';
 import FormBox from '../../components/FormBox';
 import InputContainer from '../../components/InputContainer';
 import ButtonForm from '../../components/Button/ButtonForm';
 import GdaiIcon from '../../components/Icons/GDaiIcon';
+import { NumericalInput } from '../../components/InputMask';
 import useOnlyDigitField from '../../hooks/useOnlyDigitField';
 import { useMinter, useERC20 } from '../../hooks/useContract';
 import { useDispatch, useSelector } from '../../redux/hooks';
@@ -22,72 +24,102 @@ const BurnPage = () => {
   const classes = useStyle();
   const minterContract = useMinter();
   const gDaiContract = useERC20(gDaiAddress);
-  const [availableBtn, setAvailableBtn] = useState(false);
   const [btnDisabled, setBtnDisabled] = useState(true);
   const {
     reset: resetGdaiField,
     valid: gdaiFieldValid,
     value: gdaiValue,
     setValue: setGdaiValue,
+    ...gdaiField
   } = useOnlyDigitField('tel');
 
   const { account } = useSelector((state) => state.wallet);
+  const { balanceOfGdai } = useSelector((state) => state.app);
   const dispatch = useDispatch();
 
-  const [redirect, setRedirect] = useState(false);
-  const [redirectHome, setRedirectHome] = useState(false);
+  const { setRedirectHome, setRedirect } = useContext(ContextPage);
+
+  function dispatchLoading(key: string) {
+    dispatch(setStatus(key));
+  }
 
   async function handleBurn() {
-    if (!availableBtn) return;
-
+    debugger;
+    if (btnDisabled || gdaiValue === '') return;
+    debugger;
     setRedirect(true);
-    dispatch(setStatus('pending'));
-    dispatch(setTxSucces(false));
-    await approve(gDaiContract, account as string, minterAddress, gdaiValue);
-    await burn(minterContract, gDaiAddress, gdaiValue, account as string);
+    dispatchLoading('idle');
+    try {
+      await approve(
+        gDaiContract,
+        account as string,
+        minterAddress,
+        gdaiValue
+      )(dispatchLoading);
 
-    resetGdaiField();
-    setTimeout(() => {
-      dispatch(setStatus('success'));
-      dispatch(setTxSucces(true));
-    }, 5000);
+      await burn(
+        minterContract,
+        gDaiAddress,
+        gdaiValue,
+        account as string
+      )(dispatchLoading);
+
+      resetGdaiField();
+    } catch (error) {
+      debugger;
+      dispatchLoading('error');
+    }
   }
 
   async function handleMaxDAI(e: any) {
     e.preventDefault();
-    let value = await balanceOf(gDaiContract, account as string);
+    let balanceOfGdai = bigNumberToFloat(
+      await balanceOf(gDaiContract, account as string)
+    );
 
-    setGdaiValue(bigNumberToFloat(value).toString());
+    if (balanceOfGdai <= 0) {
+      alert('Gdai amount insufficient!');
+      return;
+    }
+
+    setGdaiValue(balanceOfGdai.toString());
   }
 
   useEffect(() => {
     setRedirectHome(account === null);
-    dispatch(setStatus('pending'));
+    dispatchLoading('pending');
     dispatch(setCRatioSimulateBurn('0', '0'));
     setBtnDisabled(true);
 
     async function fetchData() {
       if (gdaiValue === '') return;
 
-      const { cRatio, synthDebt } = await simulateBurn(
-        minterContract,
-        gDaiAddress,
-        account as string,
-        gdaiValue ? gdaiValue : '0'
-      );
+      try {
+        const { cRatio, synthDebt } = await simulateBurn(
+          minterContract,
+          gDaiAddress,
+          account as string,
+          gdaiValue ? gdaiValue : '0'
+        );
 
-      dispatch(
-        setCRatioSimulateBurn(
-          (bigNumberToFloat(cRatio) * 100).toString(),
-          bigNumberToFloat(synthDebt).toString()
-        )
-      );
-      dispatch(setStatus('success'));
+        dispatch(
+          setCRatioSimulateBurn(
+            (bigNumberToFloat(cRatio) * 100).toString(),
+            bigNumberToFloat(synthDebt).toString()
+          )
+        );
+        dispatchLoading('success');
+      } catch (error) {
+        setBtnDisabled(true);
+        dispatchLoading('error');
+        dispatch(setCRatioSimulateBurn('0', '0'));
+      }
     }
 
     const requestId = setTimeout(() => {
+      if (parseInt(gdaiValue) > 0) setBtnDisabled(false);
+
       fetchData();
-      dispatch(setStatus('success'));
     }, 3000);
 
     return () => {
@@ -99,20 +131,13 @@ const BurnPage = () => {
     <FormBox
       titleButton="Burn your gDai"
       onClick={handleBurn}
-      disableButton={btnDisabled || gdaiValue === ''}
+      disableButton={btnDisabled || parseInt(gdaiValue) < 0}
     >
       <InputContainer>
         <GdaiIcon />
         <span className={classes.labelInput}>gDAI</span>
 
-        <input
-          className={classes.input}
-          type="text"
-          value={gdaiValue}
-          onChange={(e) => {
-            setGdaiValue(e.target.value.trim());
-          }}
-        />
+        <NumericalInput className={classes.input} id="gdai" {...gdaiField} />
 
         <div>
           <ButtonForm

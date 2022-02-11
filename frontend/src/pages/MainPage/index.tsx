@@ -8,7 +8,7 @@ import { useStyles } from './index.style';
 import AppMenu from '../AppMenu';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import NavElement from '../../components/NavElement';
-import ContentPage from '../ContentPage';
+import { ContentPage } from '../ContentPage';
 import CardContent from '../../components/CardContent';
 import MintPage from '../MintPage';
 import BurnPage from '../BurnPage';

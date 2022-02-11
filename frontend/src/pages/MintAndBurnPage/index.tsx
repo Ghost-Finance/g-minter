@@ -3,7 +3,7 @@ import { Redirect } from 'react-router-dom';
 import { AppBar, Tab } from '@material-ui/core';
 import { TabContext, TabPanel } from '@material-ui/lab';
 import useStyles from './style';
-import ContentPage from '../ContentPage';
+import { ContextPage, ContentPage } from '../ContentPage';
 import CardContent from '../../components/CardContent';
 import { TabsListWithTheme, TabWithTheme } from '../../components/TabsContent';
 import BurnPage from '../BurnPage';

@@ -1,17 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, createContext, useContext } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
 import useStyles from '../style';
 import ButtonForm from '../../components/Button/ButtonForm';
 import ConnectWallet from '../../components/Button/ConnectWallet';
-
 export interface Props {
   children: React.ReactNode;
 }
 
-const ContentPage = (props: Props) => {
-  const [redirect, setRedirect] = useState(false);
-  const [redirectHome, setRedirectHome] = useState(false);
+export const ContextPage = createContext({
+  redirect: false,
+  redirectHome: false,
+  setRedirectHome: (value: boolean) => {},
+  setRedirect: (value: boolean) => {},
+});
+
+export const ContentPage = (props: Props) => {
+  const { redirect, redirectHome } = useContext(ContextPage);
   const classes = useStyles();
 
   return (
@@ -50,5 +55,3 @@ const ContentPage = (props: Props) => {
     </div>
   );
 };
-
-export default ContentPage;
