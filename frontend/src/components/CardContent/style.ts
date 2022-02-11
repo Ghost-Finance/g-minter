@@ -9,7 +9,7 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     cardForm: {
       marginTop: 20,
-      width: 'calc(60%)',
+      width: 'calc(60% - 40px)',
       backgroundColor: '#393939',
       border: 1,
       [theme.breakpoints.down(1800)]: {
@@ -33,10 +33,7 @@ const useStyle = makeStyles((theme: Theme) =>
       maxWidth: '325px',
       height: '41px',
       backgroundColor: theme.palette.primary.dark,
-      border: '1px solid #F2F2F2',
-      boxSizing: 'border-box',
-      borderRadius: 200,
-      transform: 'matrix(0, 1, 1, 0, 0, 0)',
+      borderRadius: '0 0 40px 40px',
     },
   })
 );
