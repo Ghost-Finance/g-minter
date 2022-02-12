@@ -10,6 +10,8 @@ import BurnPage from '../BurnPage';
 import MintPage from '../MintPage';
 
 const MintAndBurnPage = () => {
+  const [redirect, setRedirect] = useState(false);
+  const [redirectHome, setRedirectHome] = useState(false);
   const [page, setPage] = useState('mint');
   const classes = useStyles();
 
@@ -18,33 +20,37 @@ const MintAndBurnPage = () => {
   };
 
   return (
-    <ContentPage>
-      <CardContent typeCard={page}>
-        <TabContext value={page}>
-          <AppBar
-            position="static"
-            style={{ boxShadow: 'none', marginTop: 50 }}
-          >
-            <TabsListWithTheme
-              centered
-              onChange={handleChange}
-              indicatorColor="secondary"
-              textColor="secondary"
-              aria-label="mint or burn"
+    <ContextPage.Provider
+      value={{ redirect, redirectHome, setRedirect, setRedirectHome }}
+    >
+      <ContentPage>
+        <CardContent typeCard={page}>
+          <TabContext value={page}>
+            <AppBar
+              position="static"
+              style={{ boxShadow: 'none', marginTop: 50 }}
             >
-              <TabWithTheme label="Mint" value="mint" />
-              <TabWithTheme label="Burn" value="burn" />
-            </TabsListWithTheme>
-          </AppBar>
-          <TabPanel className={classes.panel} value="mint">
-            <MintPage />
-          </TabPanel>
-          <TabPanel className={classes.panel} value="burn">
-            <BurnPage />
-          </TabPanel>
-        </TabContext>
-      </CardContent>
-    </ContentPage>
+              <TabsListWithTheme
+                centered
+                onChange={handleChange}
+                indicatorColor="secondary"
+                textColor="secondary"
+                aria-label="mint or burn"
+              >
+                <TabWithTheme label="Mint" value="mint" />
+                <TabWithTheme label="Burn" value="burn" />
+              </TabsListWithTheme>
+            </AppBar>
+            <TabPanel className={classes.panel} value="mint">
+              <MintPage />
+            </TabPanel>
+            <TabPanel className={classes.panel} value="burn">
+              <BurnPage />
+            </TabPanel>
+          </TabContext>
+        </CardContent>
+      </ContentPage>
+    </ContextPage.Provider>
   );
 };
 

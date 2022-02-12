@@ -25,13 +25,15 @@ export const mint =
 export const burn =
   (contract: Contract, token: string, amount: string, account: string) =>
   (dispatch: any) => {
-    dispatch('idle');
     const burnAmount = BigNumber.from(parseEther(amount));
 
     return contract.methods
       .burn(token, burnAmount)
       .send({ from: account })
-      .once('confirmation', () => dispatch('finish'))
+      .once('confirmation', (data: any) => {
+        debugger;
+        dispatch('finish');
+      })
       .on('error', (error: any) => dispatch('error'));
   };
 

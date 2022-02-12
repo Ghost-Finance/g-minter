@@ -1,4 +1,4 @@
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, createContext, useContext, useEffect } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
 import useStyles from '../style';
@@ -11,8 +11,8 @@ export interface Props {
 export const ContextPage = createContext({
   redirect: false,
   redirectHome: false,
-  setRedirectHome: (value: boolean) => {},
-  setRedirect: (value: boolean) => {},
+  setRedirect: (value: any) => {},
+  setRedirectHome: (value: any) => {},
 });
 
 export const ContentPage = (props: Props) => {
