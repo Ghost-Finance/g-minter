@@ -81,7 +81,7 @@ const BurnPage = () => {
       alert('Gdai amount insufficient!');
       return;
     }
-
+    debugger;
     setGdaiValue(balanceOfGdai.toString());
   }
 
@@ -137,7 +137,12 @@ const BurnPage = () => {
         <GdaiIcon />
         <span className={classes.labelInput}>gDAI</span>
 
-        <NumericalInput className={classes.input} id="gdai" {...gdaiField} />
+        <NumericalInput
+          className={classes.input}
+          id="gdai"
+          value={gdaiValue}
+          {...gdaiField}
+        />
 
         <div>
           <ButtonForm

@@ -6,12 +6,13 @@ import useStyles from './style';
 import { ContextPage, ContentPage } from '../ContentPage';
 import CardContent from '../../components/CardContent';
 import { TabsListWithTheme, TabWithTheme } from '../../components/TabsContent';
+import useRedirect from '../../hooks/useRedirect';
 import BurnPage from '../BurnPage';
 import MintPage from '../MintPage';
 
 const MintAndBurnPage = () => {
-  const [redirect, setRedirect] = useState(false);
-  const [redirectHome, setRedirectHome] = useState(false);
+  const { redirect, redirectHome, setRedirect, setRedirectHome } =
+    useRedirect();
   const [page, setPage] = useState('mint');
   const classes = useStyles();
 

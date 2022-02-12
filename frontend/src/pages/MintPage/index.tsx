@@ -185,7 +185,7 @@ const MintPage = ({ title }: Props) => {
             bigNumberToString(synthDebt).toString()
           )
         );
-        debugger;
+
         dispatchLoading('success');
       } catch (error) {
         setBtnDisabled(true);
