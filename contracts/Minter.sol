@@ -230,9 +230,8 @@ contract Minter {
 
   function simulateCRatio(GTokenERC20 token, uint256 amountGHO, uint256 amountGDAI) external view returns (uint256) {
     require(amountGHO != 0 || amountGDAI != 0, 'Incorrect values');
-    uint256 gDaiAmount = typeOperation ? synthDebt[msg.sender][token] + amountGDAI : synthDebt[msg.sender][token] - amountGDAI;
     uint256 collateralValue = (collateralBalance[msg.sender][token] + amountGHO) * collateralFeed.price() / 1 ether;
-    uint256 debtValue = gDaiAmount * feeds[token].price() / 1 ether;
+    uint256 debtValue = (synthDebt[msg.sender][token] + amountGDAI) * feeds[token].price() / 1 ether;
 
     return collateralValue.mul(1 ether).div(debtValue);
   }
