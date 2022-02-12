@@ -8,7 +8,7 @@ import { useStyles } from './index.style';
 import AppMenu from '../AppMenu';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import NavElement from '../../components/NavElement';
-import { ContentPage } from '../ContentPage';
+import { ContentPage, ContextPage } from '../ContentPage';
 import CardContent from '../../components/CardContent';
 import MintPage from '../MintPage';
 import BurnPage from '../BurnPage';
@@ -36,6 +36,7 @@ import {
   feedPrice,
 } from '../../utils/calls';
 import { useERC20, useMinter, useFeed } from '../../hooks/useContract';
+import useRedirect from '../../hooks/useRedirect';
 import { setCRatio, setBalanceOfGHO, setStatus } from '../../redux/app/actions';
 import {
   ghoAddress,
@@ -50,6 +51,12 @@ const MainPage = () => {
   const pagesWithoutNavElement = ['/alert', '/wallet-connect'];
   const classes = useStyles();
   const location = useLocation();
+  const {
+    redirect,
+    redirectHome,
+    setRedirect,
+    setRedirectHome,
+  } = useRedirect();
   const [rootPage, setRootPageChanged] = useState(true);
   const [showDialogWrongNetwork, setDialogWrongNetWork] = useState<boolean>(
     false
@@ -88,7 +95,7 @@ const MainPage = () => {
     }
 
     function organizeCardsData() {
-      if (balanceOfGdai === '0') return;
+      if (parseInt(balanceOfGdai || '') <= 0) return;
 
       let cardsDataArrayAfterMint = cardsData.filter(
         card => card.to !== '/mint' && card.to !== '/stake'
@@ -273,11 +280,20 @@ const MainPage = () => {
             <Route
               path="/mint"
               children={
-                <ContentPage>
-                  <CardContent typeCard="mint">
-                    <MintPage title="Mint your gDai" />
-                  </CardContent>
-                </ContentPage>
+                <ContextPage.Provider
+                  value={{
+                    redirect,
+                    redirectHome,
+                    setRedirect,
+                    setRedirectHome,
+                  }}
+                >
+                  <ContentPage>
+                    <CardContent typeCard="mint">
+                      <MintPage title="Mint your gDai" />
+                    </CardContent>
+                  </ContentPage>
+                </ContextPage.Provider>
               }
             />
             <Route path="/mint-burn" children={<MintAndBurnPage />} />

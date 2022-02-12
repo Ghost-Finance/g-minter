@@ -44,9 +44,7 @@ const BurnPage = () => {
   }
 
   async function handleBurn() {
-    debugger;
     if (btnDisabled || gdaiValue === '') return;
-    debugger;
     setRedirect(true);
     dispatchLoading('idle');
     try {
@@ -66,7 +64,6 @@ const BurnPage = () => {
 
       resetGdaiField();
     } catch (error) {
-      debugger;
       dispatchLoading('error');
     }
   }
@@ -81,7 +78,7 @@ const BurnPage = () => {
       alert('Gdai amount insufficient!');
       return;
     }
-    debugger;
+
     setGdaiValue(balanceOfGdai.toString());
   }
 
