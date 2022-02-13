@@ -5,14 +5,9 @@ const useStyle = makeStyles((theme: Theme) =>
     root: {
       flexGrow: 1,
       color: theme.palette.primary.contrastText,
-      left: '30%',
-      width: '100%',
       marginTop: 20,
     },
     contentCard: {
-      display: 'flex',
-      flexFlow: 'column',
-      justifyContent: 'center',
       width: '100%',
     },
     link: {
@@ -39,7 +34,6 @@ const useStyle = makeStyles((theme: Theme) =>
       width: '20px',
       marginLeft: '15px',
     },
-    lineBottom: {},
     active: {
       width: '325px !important',
       maxWidth: '325px',

@@ -27,9 +27,9 @@ export const TabWithTheme = withStyles((theme: Theme) =>
       color: theme.palette.primary.contrastText,
       borderBottom: 'none',
       textTransform: 'none',
-      maxWidth: 100,
+      minWidth: 70,
       [theme.breakpoints.down('md')]: {
-        maxWidth: 100,
+        minWidth: 100,
       },
     },
     selected: {

@@ -12,14 +12,14 @@ const useStyle = makeStyles((theme: Theme) => ({
     alignItems: 'center',
   },
   title: {
-    marginTop: '60px',
+    marginTop: '50px',
     fontSize: 36,
     textAlign: 'center',
-    marginBottom: '90px',
+    marginBottom: '40px',
     lineHeight: '37px',
-    [theme.breakpoints.down(1800)]: {
+    fontWeight: 'bold',
+    [theme.breakpoints.down('md')]: {
       marginTop: '35px',
-      marginBottom: '40px',
     },
   },
   label: {

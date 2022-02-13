@@ -174,10 +174,11 @@ export const positionExposeData = (
     collateralBalance(contract, token, account),
     synthDebtOf(contract, token, account),
   ]).then((values) => {
+    debugger;
     return {
       cRatio: values[0].toString(),
-      collateralBalance: BigNumber.from(values[1]).add(ghoAmount),
-      synthDebt: BigNumber.from(values[2]).add(gdaiAmount),
+      collateralBalance: BigNumber.from(values[1]).add(ghoAmount.toString()),
+      synthDebt: BigNumber.from(values[2]).add(gdaiAmount.toString()),
     };
   });
 };

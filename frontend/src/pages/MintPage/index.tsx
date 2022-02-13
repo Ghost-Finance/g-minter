@@ -46,6 +46,7 @@ const MintPage = ({ title }: Props) => {
 
   const dispatch = useDispatch();
   const { account } = useSelector((state) => state.wallet);
+  const { balanceOfGho } = useSelector((state) => state.app);
 
   const { setRedirectHome, setRedirect } = useContext(ContextPage);
   const [btnDisabled, setBtnDisabled] = useState(true);
@@ -160,7 +161,6 @@ const MintPage = ({ title }: Props) => {
   useEffect(() => {
     setRedirectHome(account === null);
     dispatchLoading('pending');
-    dispatch(setCRatioSimulateMint('0', '0', '0'));
     setBtnDisabled(true);
 
     async function fetchData() {
@@ -178,6 +178,7 @@ const MintPage = ({ title }: Props) => {
 
         let ratio = bigNumberToFloat(cRatio) * 100;
         setBtnDisabled(ratio < 900);
+        debugger;
         dispatch(
           setCRatioSimulateMint(
             ratio.toString(),
@@ -190,6 +191,7 @@ const MintPage = ({ title }: Props) => {
       } catch (error) {
         setBtnDisabled(true);
         dispatchLoading('error');
+        debugger;
         dispatch(setCRatioSimulateMint('0', '0', '0'));
       }
     }
@@ -218,14 +220,22 @@ const MintPage = ({ title }: Props) => {
       titleButton="Mint your gDai"
       onClick={handleMint}
       disableButton={
-        btnDisabled || ghoField.value === '' || gdaiField.value === ''
+        btnDisabled ||
+        parseInt(balanceOfGho || '') <= 0 ||
+        parseInt(ghoField.value || '') <= 0 ||
+        parseInt(gdaiField.value || '') <= 0
       }
     >
       <InputContainer>
         <GdaiIcon />
         <span className={classes.labelInput}>gDAI</span>
 
-        <NumericalInput className={classes.input} id="gdai" {...gdaiField} />
+        <NumericalInput
+          className={classes.input}
+          id="gdai"
+          placeholder="0.0"
+          {...gdaiField}
+        />
 
         <div>
           <ButtonForm
@@ -239,7 +249,12 @@ const MintPage = ({ title }: Props) => {
         <GhostIcon />
         <span className={classes.labelInput}>GHO</span>
 
-        <NumericalInput className={classes.input} id="gho" {...ghoField} />
+        <NumericalInput
+          className={classes.input}
+          id="gho"
+          placeholder="0.0"
+          {...ghoField}
+        />
 
         <div>
           <ButtonForm

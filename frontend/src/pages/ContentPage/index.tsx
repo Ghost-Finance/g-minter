@@ -36,21 +36,42 @@ export const ContentPage = (props: Props) => {
           }}
         />
       ) : null}
-      <Grid container direction="column" className={classes.root}>
-        <div className={classes.containerTop}>
-          <Grid item>
+      <Grid
+        container
+        direction="column"
+        justify="flex-start"
+        spacing={4}
+        className={classes.root}
+      >
+        <Grid
+          container
+          direction="row"
+          item
+          xs={8}
+          sm
+          spacing={2}
+          className={classes.contentCard}
+        >
+          <Grid item xs={6}>
             <Link to="/" className={classes.link}>
               <ButtonForm text="Cancel" className={classes.buttonCancel} />
             </Link>
           </Grid>
-
-          <Grid item>
+          <Grid item xs={2}>
             <ConnectWallet />
           </Grid>
-        </div>
-
-        <div className={classes.topBox}>&nbsp;</div>
-        {props.children}
+        </Grid>
+        <Grid
+          container
+          direction="column"
+          item
+          xs={8}
+          sm
+          spacing={2}
+          className={classes.contentCard}
+        >
+          {props.children}
+        </Grid>
       </Grid>
     </div>
   );

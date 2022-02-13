@@ -28,12 +28,17 @@ const useStyle = makeStyles((theme: Theme) =>
       borderRadius: '0 0 40px 40px',
     },
     burn: {
-      margin: '0 auto',
-      width: '325px !important',
-      maxWidth: '325px',
-      height: '41px',
-      backgroundColor: theme.palette.primary.dark,
-      borderRadius: '0 0 40px 40px',
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      '& > div:nth-child(n)': {
+        width: 108,
+        padding: 10,
+        height: '40px',
+        backgroundColor: theme.palette.primary.dark,
+        borderRadius: '0 0 40px 40px',
+      },
     },
   })
 );

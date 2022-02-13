@@ -5,17 +5,9 @@ const useStyle = makeStyles((theme: Theme) =>
     root: {
       flexGrow: 1,
       color: theme.palette.primary.contrastText,
-      left: '30%',
-      width: '100%',
-      marginTop: 20,
     },
     panel: {
       padding: 0,
-    },
-    containerTop: {
-      display: 'flex',
-      width: '63%',
-      justifyContent: 'space-between',
     },
     link: {
       textDecoration: 'none',

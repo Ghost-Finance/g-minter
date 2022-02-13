@@ -290,7 +290,7 @@ const MainPage = () => {
                 >
                   <ContentPage>
                     <CardContent typeCard="mint">
-                      <MintPage title="Mint your gDai" />
+                      <MintPage title={'Mint your gDai'} />
                     </CardContent>
                   </ContentPage>
                 </ContextPage.Provider>

@@ -22,7 +22,11 @@ const CardContent = ({ typeCard, children }: Props) => {
   return (
     <Grid className={classes.root} item>
       <div className={classes.cardForm}>
-        <div className={topClassName[typeCard || 'mint']}>&nbsp;</div>
+        <div className={topClassName[typeCard || 'mint']}>
+          <div>&nbsp;</div>
+          <div>&nbsp;</div>
+          <div>&nbsp;</div>
+        </div>
         {children}
       </div>
     </Grid>

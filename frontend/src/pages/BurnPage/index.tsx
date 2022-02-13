@@ -138,6 +138,7 @@ const BurnPage = () => {
           className={classes.input}
           id="gdai"
           value={gdaiValue}
+          placeholder="0.0"
           {...gdaiField}
         />
 
