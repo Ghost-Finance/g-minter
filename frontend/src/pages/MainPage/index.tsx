@@ -129,7 +129,7 @@ const MainPage = () => {
             feedGhoPrice,
             feedGdaiPrice,
           ] = data;
-
+          debugger;
           dispatch(
             setCRatio({
               cRatioValue: bigNumberToFloat(cRatio) * 100,

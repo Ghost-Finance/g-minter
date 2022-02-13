@@ -71,7 +71,7 @@ const GhostRatio = () => {
         ? 1
         : 0
     );
-  }, [collateralBalance, synthDebt]);
+  }, [collateralBalance, synthDebt, cRatioValue]);
 
   return (
     <Box component="div" m={3}>

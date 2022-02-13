@@ -8,10 +8,21 @@ import ButtonForm from '../../components/Button/ButtonForm';
 import GdaiIcon from '../../components/Icons/GDaiIcon';
 import { NumericalInput } from '../../components/InputMask';
 import useOnlyDigitField from '../../hooks/useOnlyDigitField';
-import { useMinter, useERC20 } from '../../hooks/useContract';
+import { useMinter, useERC20, useFeed } from '../../hooks/useContract';
 import { useDispatch, useSelector } from '../../redux/hooks';
-import { gDaiAddress, minterAddress } from '../../utils/constants';
-import { balanceOf, burn, approve, simulateBurn } from '../../utils/calls';
+import {
+  gDaiAddress,
+  minterAddress,
+  feedGhoAddress,
+  feedGdaiAddress,
+} from '../../utils/constants';
+import {
+  balanceOf,
+  burn,
+  approve,
+  simulateBurn,
+  feedPrice,
+} from '../../utils/calls';
 import {
   setTxSucces,
   setStatus,
@@ -24,12 +35,15 @@ const BurnPage = () => {
   const classes = useStyle();
   const minterContract = useMinter();
   const gDaiContract = useERC20(gDaiAddress);
+  const feedGhoContract = useFeed(feedGhoAddress);
+  const feedGdaiContract = useFeed(feedGdaiAddress);
   const [btnDisabled, setBtnDisabled] = useState(true);
   const {
     reset: resetGdaiField,
     valid: gdaiFieldValid,
     value: gdaiValue,
     setValue: setGdaiValue,
+    onChange: onChangeGdai,
     ...gdaiField
   } = useOnlyDigitField('tel');
 
@@ -75,7 +89,6 @@ const BurnPage = () => {
     );
 
     if (balanceOfGdai <= 0) {
-      alert('Gdai amount insufficient!');
       return;
     }
 
@@ -92,16 +105,21 @@ const BurnPage = () => {
       if (gdaiValue === '') return;
 
       try {
-        const { cRatio, synthDebt } = await simulateBurn(
+        const feedPriceGho = await feedPrice(feedGhoContract);
+        const feedPriceGdai = await feedPrice(feedGdaiContract);
+        const [cRatio, synthDebt] = await simulateBurn(
           minterContract,
           gDaiAddress,
           account as string,
-          gdaiValue ? gdaiValue : '0'
+          gdaiValue ? gdaiValue : '0',
+          feedPriceGho,
+          feedPriceGdai
         );
-
+        let ratio = bigNumberToFloat(cRatio) * 100;
+        setBtnDisabled(ratio < 900);
         dispatch(
           setCRatioSimulateBurn(
-            (bigNumberToFloat(cRatio) * 100).toString(),
+            ratio.toString(),
             bigNumberToFloat(synthDebt).toString()
           )
         );
@@ -109,7 +127,6 @@ const BurnPage = () => {
       } catch (error) {
         setBtnDisabled(true);
         dispatchLoading('error');
-        dispatch(setCRatioSimulateBurn('0', '0'));
       }
     }
 
@@ -117,6 +134,7 @@ const BurnPage = () => {
       if (parseInt(gdaiValue) > 0) setBtnDisabled(false);
 
       fetchData();
+      dispatchLoading('idle');
     }, 3000);
 
     return () => {
@@ -128,7 +146,11 @@ const BurnPage = () => {
     <FormBox
       titleButton="Burn your gDai"
       onClick={handleBurn}
-      disableButton={btnDisabled || parseInt(gdaiValue) < 0}
+      disableButton={
+        btnDisabled ||
+        parseInt(balanceOfGdai || '') <= 0 ||
+        parseInt(gdaiValue) <= 0
+      }
     >
       <InputContainer>
         <GdaiIcon />
@@ -139,6 +161,10 @@ const BurnPage = () => {
           id="gdai"
           value={gdaiValue}
           placeholder="0.0"
+          onChange={(e: any) => {
+            setTimeout(() => dispatchLoading('pending'), 500);
+            onChangeGdai(e);
+          }}
           {...gdaiField}
         />
 

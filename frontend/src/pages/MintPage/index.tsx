@@ -191,8 +191,6 @@ const MintPage = ({ title }: Props) => {
       } catch (error) {
         setBtnDisabled(true);
         dispatchLoading('error');
-        debugger;
-        dispatch(setCRatioSimulateMint('0', '0', '0'));
       }
     }
 
@@ -200,6 +198,7 @@ const MintPage = ({ title }: Props) => {
       changeMaxGdai();
       changeMaxGho();
       fetchData();
+      dispatchLoading('idle');
     }, 3000);
 
     return () => {

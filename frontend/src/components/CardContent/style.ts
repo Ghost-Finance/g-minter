@@ -12,8 +12,9 @@ const useStyle = makeStyles((theme: Theme) =>
       width: 'calc(60% - 40px)',
       backgroundColor: '#393939',
       border: 1,
-      [theme.breakpoints.down(1800)]: {
+      [theme.breakpoints.down('md')]: {
         marginTop: 0,
+        width: 'calc(80% - 20px)',
       },
     },
     default: {
@@ -21,9 +22,8 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     mint: {
       margin: '0 auto',
-      width: '325px !important',
-      maxWidth: '325px',
-      height: '41px',
+      width: '320px !important',
+      height: '40px',
       backgroundColor: theme.palette.primary.dark,
       borderRadius: '0 0 40px 40px',
     },
@@ -33,9 +33,11 @@ const useStyle = makeStyles((theme: Theme) =>
       justifyContent: 'center',
       alignItems: 'center',
       '& > div:nth-child(n)': {
-        width: 108,
+        width: 80,
+        height: 40,
         padding: 10,
-        height: '40px',
+        marginLeft: 12,
+        marginRight: 12,
         backgroundColor: theme.palette.primary.dark,
         borderRadius: '0 0 40px 40px',
       },

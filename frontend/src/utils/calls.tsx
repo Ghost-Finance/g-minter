@@ -2,6 +2,8 @@ import { Contract } from 'web3-eth-contract';
 import { BigNumber } from '@ethersproject/bignumber';
 import { parseEther, parseUnits } from '@ethersproject/units';
 
+let oneEther = BigNumber.from(parseEther('1'));
+
 export const mint =
   (
     contract: Contract,
@@ -118,17 +120,40 @@ export const simulateMint = async (
     .call({ from: account });
 };
 
-export const simulateBurn = (
+export const simulateBurn = async (
   contract: Contract,
   token: string,
   account: string,
-  amountGdai: string
+  amountGdai: string,
+  feedPriceGho: BigNumber,
+  feedPriceGdai: BigNumber
 ) => {
   const gdaiAmount = BigNumber.from(parseUnits(amountGdai));
-
-  return contract.methods
-    .simulateCRatio(token, BigNumber.from(parseEther('0')), gdaiAmount)
+  const synthDebt = await contract.methods
+    .synthDebt(account, token)
     .call({ from: account });
+  const collateralValue = await contract.methods
+    .collateralBalance(account, token)
+    .call({ from: account });
+
+  const collateralBalance = BigNumber.from(
+    parseUnits(collateralValue.toString())
+  );
+  const debtAmount = BigNumber.from(parseEther(synthDebt)).sub(
+    parseUnits(gdaiAmount.toString())
+  );
+
+  const collaterlaValue = collateralBalance.mul(
+    parseUnits(feedPriceGho.toString())
+  );
+  const debtValue = debtAmount.mul(parseUnits(feedPriceGdai.toString()));
+
+  return [
+    collaterlaValue
+      .mul(parseUnits(oneEther.toString()))
+      .div(parseUnits(debtValue.toString())),
+    parseUnits(debtAmount.div(parseUnits(oneEther.toString())).toString()),
+  ];
 };
 
 export const feedPrice = async (contract: Contract) => {
@@ -174,11 +199,10 @@ export const positionExposeData = (
     collateralBalance(contract, token, account),
     synthDebtOf(contract, token, account),
   ]).then((values) => {
-    debugger;
     return {
       cRatio: values[0].toString(),
-      collateralBalance: BigNumber.from(values[1]).add(ghoAmount.toString()),
-      synthDebt: BigNumber.from(values[2]).add(gdaiAmount.toString()),
+      collateralBalance: BigNumber.from(values[1]).add(ghoAmount),
+      synthDebt: BigNumber.from(values[2]).add(gdaiAmount),
     };
   });
 };
