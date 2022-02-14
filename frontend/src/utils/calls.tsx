@@ -113,11 +113,33 @@ export const simulateMint = async (
   token: string,
   account: string,
   amountGHO: string,
-  amountGdai: string
+  amountGdai: string,
+  feedPriceGho: BigNumber,
+  feedPriceGdai: BigNumber
 ) => {
-  return contract.methods
-    .simulateCRatio(token, amountGHO, amountGdai)
+  const ghoAmount = BigNumber.from(parseUnits(amountGHO));
+  const gdaiAmount = BigNumber.from(parseUnits(amountGdai));
+
+  const synthDebt = await contract.methods
+    .synthDebt(account, token)
     .call({ from: account });
+  const collateralValue = await contract.methods
+    .collateralBalance(account, token)
+    .call({ from: account });
+
+  const collateralBalance = BigNumber.from(
+    parseUnits(collateralValue.toString())
+  ).add(parseUnits(ghoAmount.toString()));
+  const debtAmount = BigNumber.from(parseEther(synthDebt)).add(
+    parseUnits(gdaiAmount.toString())
+  );
+
+  return calculateCRatio(
+    collateralBalance,
+    debtAmount,
+    feedPriceGho,
+    feedPriceGdai
+  );
 };
 
 export const simulateBurn = async (
@@ -143,17 +165,12 @@ export const simulateBurn = async (
     parseUnits(gdaiAmount.toString())
   );
 
-  const collaterlaValue = collateralBalance.mul(
-    parseUnits(feedPriceGho.toString())
+  return calculateCRatio(
+    collateralBalance,
+    debtAmount,
+    feedPriceGho,
+    feedPriceGdai
   );
-  const debtValue = debtAmount.mul(parseUnits(feedPriceGdai.toString()));
-
-  return [
-    collaterlaValue
-      .mul(parseUnits(oneEther.toString()))
-      .div(parseUnits(debtValue.toString())),
-    parseUnits(debtAmount.div(parseUnits(oneEther.toString())).toString()),
-  ];
 };
 
 export const feedPrice = async (contract: Contract) => {
@@ -178,39 +195,30 @@ export const synthDebtOf = async (
   return contract.methods.synthDebt(account, token).call({ from: account });
 };
 
-export const positionExposeData = (
-  contract: Contract,
-  token: string,
-  account: string,
-  amountGHO: string,
-  amountGdai: string
-) => {
-  const ghoAmount = BigNumber.from(parseUnits(amountGHO));
-  const gdaiAmount = BigNumber.from(parseUnits(amountGdai));
-
-  return Promise.all([
-    simulateMint(
-      contract,
-      token,
-      account,
-      ghoAmount.toString(),
-      gdaiAmount.toString()
-    ),
-    collateralBalance(contract, token, account),
-    synthDebtOf(contract, token, account),
-  ]).then((values) => {
-    return {
-      cRatio: values[0].toString(),
-      collateralBalance: BigNumber.from(values[1]).add(ghoAmount),
-      synthDebt: BigNumber.from(values[2]).add(gdaiAmount),
-    };
-  });
-};
-
 export const promiseAll = async (
   allPromise: any,
   successCallback: any,
   errorCallback: any
 ) => {
   return Promise.all(allPromise).then(successCallback).catch(errorCallback);
+};
+
+export const calculateCRatio = async (
+  collateralBalance: BigNumber,
+  debtAmount: BigNumber,
+  feedPriceGho: BigNumber,
+  feedPriceGdai: BigNumber
+) => {
+  const collaterlaValue = collateralBalance.mul(
+    parseUnits(feedPriceGho.toString())
+  );
+  const debtValue = debtAmount.mul(parseUnits(feedPriceGdai.toString()));
+
+  return [
+    collaterlaValue
+      .mul(parseUnits(oneEther.toString()))
+      .div(parseUnits(debtValue.toString())),
+    collateralBalance.div(parseUnits(oneEther.toString())),
+    debtAmount.div(parseUnits(oneEther.toString())),
+  ];
 };

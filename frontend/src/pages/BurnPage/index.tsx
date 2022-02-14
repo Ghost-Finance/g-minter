@@ -26,7 +26,7 @@ import {
 import {
   setTxSucces,
   setStatus,
-  setCRatioSimulateBurn,
+  setCRatioSimulateMint,
 } from '../../redux/app/actions';
 import { bigNumberToFloat } from '../../utils/StringUtils';
 import useStyle from '../style';
@@ -98,16 +98,13 @@ const BurnPage = () => {
   useEffect(() => {
     setRedirectHome(account === null);
     dispatchLoading('pending');
-    dispatch(setCRatioSimulateBurn('0', '0'));
     setBtnDisabled(true);
 
     async function fetchData() {
-      if (gdaiValue === '') return;
-
       try {
         const feedPriceGho = await feedPrice(feedGhoContract);
         const feedPriceGdai = await feedPrice(feedGdaiContract);
-        const [cRatio, synthDebt] = await simulateBurn(
+        const [cRatio, collateralBalance, synthDebt] = await simulateBurn(
           minterContract,
           gDaiAddress,
           account as string,
@@ -116,11 +113,18 @@ const BurnPage = () => {
           feedPriceGdai
         );
         let ratio = bigNumberToFloat(cRatio) * 100;
-        setBtnDisabled(ratio < 900);
+        setBtnDisabled(
+          ratio < 900 ||
+            parseInt(balanceOfGdai || '0') <= 0 ||
+            parseInt(gdaiValue || '0') <= 0 ||
+            parseInt(gdaiValue || '0') > parseInt(balanceOfGdai || '0')
+        );
+
         dispatch(
-          setCRatioSimulateBurn(
+          setCRatioSimulateMint(
             ratio.toString(),
-            bigNumberToFloat(synthDebt).toString()
+            collateralBalance.toString(),
+            synthDebt.toString()
           )
         );
         dispatchLoading('success');

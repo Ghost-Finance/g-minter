@@ -129,7 +129,7 @@ const MainPage = () => {
             feedGhoPrice,
             feedGdaiPrice,
           ] = data;
-          debugger;
+
           dispatch(
             setCRatio({
               cRatioValue: bigNumberToFloat(cRatio) * 100,
@@ -155,7 +155,7 @@ const MainPage = () => {
     }
 
     organizeCardsData();
-    if (account) {
+    if (account && rootPage) {
       fetchData();
       intervalId = setInterval(fetchGHOBalanceOf, 3000);
     }

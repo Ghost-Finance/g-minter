@@ -9,7 +9,7 @@ import InputContainer from '../../components/InputContainer';
 import FormBox from '../../components/FormBox';
 import { NumericalInput } from '../../components/InputMask';
 import { GhostIcon, GdaiIcon } from '../../components/Icons';
-import { useMinter, useERC20 } from '../../hooks/useContract';
+import { useMinter, useERC20, useFeed } from '../../hooks/useContract';
 import useOnlyDigitField from '../../hooks/useOnlyDigitField';
 import { useDispatch, useSelector } from '../../redux/hooks';
 import {
@@ -18,15 +18,17 @@ import {
   balanceOf,
   maximumByCollateral,
   maximumByDebt,
-  positionExposeData,
   simulateMint,
+  feedPrice,
 } from '../../utils/calls';
+import { setStatus, setCRatioSimulateMint } from '../../redux/app/actions';
 import {
-  setTxSucces,
-  setStatus,
-  setCRatioSimulateMint,
-} from '../../redux/app/actions';
-import { gDaiAddress, ghoAddress, minterAddress } from '../../utils/constants';
+  gDaiAddress,
+  ghoAddress,
+  minterAddress,
+  feedGhoAddress,
+  feedGdaiAddress,
+} from '../../utils/constants';
 import {
   bigNumberToFloat,
   bigNumberToString,
@@ -43,6 +45,8 @@ const MintPage = ({ title }: Props) => {
   const minterContract = useMinter();
   const ghoContract = useERC20(ghoAddress);
   const gDaiContract = useERC20(gDaiAddress);
+  const feedGhoContract = useFeed(feedGhoAddress);
+  const feedGdaiContract = useFeed(feedGdaiAddress);
 
   const dispatch = useDispatch();
   const { account } = useSelector((state) => state.wallet);
@@ -97,22 +101,24 @@ const MintPage = ({ title }: Props) => {
 
   async function handleMaxGHO() {
     dispatchLoading('pending');
-    let balanceValue = await balanceOf(ghoContract, account as string);
-    await maximumCollateralValue(bigNumberToString(balanceValue));
+    let balanceValue = bigNumberToFloat(
+      await balanceOf(ghoContract, account as string)
+    );
+    await maximumCollateralValue(balanceValue.toString());
   }
 
   async function handleMaxDAI() {
     dispatchLoading('pending');
-    let balanceGdaiValue = bigNumberToString(
+    let balanceGdaiValue = bigNumberToFloat(
       await balanceOf(gDaiContract, account as string)
     );
 
-    if (balanceGdaiValue === '0.0') {
+    if (balanceGdaiValue === 0) {
       handleMaxGHO();
       return;
     }
 
-    await maximumDebtValue(balanceGdaiValue);
+    await maximumDebtValue(balanceGdaiValue.toString());
   }
 
   async function changeMaxGho() {
@@ -135,7 +141,7 @@ const MintPage = ({ title }: Props) => {
         account as string,
         value
       );
-      setValues(value, bigNumberToString(maxValue));
+      setValues(value, bigNumberToFloat(maxValue).toFixed(2));
     } catch (error) {
       dispatchLoading('error');
       console.error(error.message);
@@ -150,8 +156,7 @@ const MintPage = ({ title }: Props) => {
         account as string,
         value
       );
-
-      setValues(bigNumberToString(maxGhoValue), value);
+      setValues(bigNumberToFloat(maxGhoValue).toFixed(2), value);
     } catch (error) {
       dispatchLoading('error');
       console.error(error.message);
@@ -164,26 +169,32 @@ const MintPage = ({ title }: Props) => {
     setBtnDisabled(true);
 
     async function fetchData() {
-      if (ghoField.value === '' || gdaiField.value === '') return;
-
       try {
-        const { cRatio, collateralBalance, synthDebt } =
-          await positionExposeData(
-            minterContract,
-            gDaiAddress,
-            account as string,
-            parseFloat(ghoField.value).toFixed(2).toString(),
-            parseFloat(gdaiField.value).toFixed(2).toString()
-          );
+        const feedPriceGho = await feedPrice(feedGhoContract);
+        const feedPriceGdai = await feedPrice(feedGdaiContract);
+        const [cRatio, collateralBalance, synthDebt] = await simulateMint(
+          minterContract,
+          gDaiAddress,
+          account as string,
+          ghoField.value || '0',
+          gdaiField.value || '0',
+          feedPriceGho,
+          feedPriceGdai
+        );
 
         let ratio = bigNumberToFloat(cRatio) * 100;
-        setBtnDisabled(ratio < 900);
-        debugger;
+        setBtnDisabled(
+          ratio < 900 ||
+            parseInt(balanceOfGho || '0') <= 0 ||
+            parseInt(ghoField.value || '0') <= 0 ||
+            parseInt(gdaiField.value || '0') <= 0 ||
+            parseInt(ghoField.value || '0') > parseInt(balanceOfGho || '0')
+        );
         dispatch(
           setCRatioSimulateMint(
             ratio.toString(),
-            bigNumberToString(collateralBalance).toString(),
-            bigNumberToString(synthDebt).toString()
+            collateralBalance.toString(),
+            synthDebt.toString()
           )
         );
 
@@ -191,6 +202,7 @@ const MintPage = ({ title }: Props) => {
       } catch (error) {
         setBtnDisabled(true);
         dispatchLoading('error');
+        dispatch(setCRatioSimulateMint('0', '0', '0'));
       }
     }
 
@@ -218,12 +230,7 @@ const MintPage = ({ title }: Props) => {
       title={title || ''}
       titleButton="Mint your gDai"
       onClick={handleMint}
-      disableButton={
-        btnDisabled ||
-        parseInt(balanceOfGho || '') <= 0 ||
-        parseInt(ghoField.value || '') <= 0 ||
-        parseInt(gdaiField.value || '') <= 0
-      }
+      disableButton={btnDisabled}
     >
       <InputContainer>
         <GdaiIcon />
