@@ -3,6 +3,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { parseEther, parseUnits } from '@ethersproject/units';
 
 let oneEther = BigNumber.from(parseEther('1'));
+let cRatio = BigNumber.from(parseEther('9'));
 
 export const mint =
   (
@@ -93,19 +94,22 @@ export const maximumByCollateral = async (
   amount: string
 ) => {
   const value = BigNumber.from(parseEther(amount));
-  return contract.methods
+  const expectedGdaiAmount = await contract.methods
     .maximumByCollateral(token, value)
     .call({ from: account });
+  const synthDebt = await contract.methods
+    .synthDebt(account, token)
+    .call({ from: account });
+
+  return BigNumber.from(parseUnits(expectedGdaiAmount.toString()))
+    .sub(BigNumber.from(parseUnits(synthDebt.toString())))
+    .div(oneEther.toString());
 };
 
-export const maximumByDebt = async (
-  contract: Contract,
-  token: string,
-  account: string,
-  amount: string
-) => {
-  const value = BigNumber.from(parseEther(amount));
-  return contract.methods.maximumByDebt(token, value).call({ from: account });
+export const maximumByDebt = async (amount: string) => {
+  return BigNumber.from(parseEther(amount))
+    .mul(cRatio.toString())
+    .div(oneEther.toString());
 };
 
 export const simulateMint = async (
@@ -126,14 +130,12 @@ export const simulateMint = async (
   const collateralValue = await contract.methods
     .collateralBalance(account, token)
     .call({ from: account });
-
   const collateralBalance = BigNumber.from(
     parseUnits(collateralValue.toString())
   ).add(parseUnits(ghoAmount.toString()));
-  const debtAmount = BigNumber.from(parseEther(synthDebt)).add(
+  const debtAmount = BigNumber.from(parseUnits(synthDebt.toString())).add(
     parseUnits(gdaiAmount.toString())
   );
-
   return calculateCRatio(
     collateralBalance,
     debtAmount,
@@ -213,7 +215,6 @@ export const calculateCRatio = async (
     parseUnits(feedPriceGho.toString())
   );
   const debtValue = debtAmount.mul(parseUnits(feedPriceGdai.toString()));
-
   return [
     collaterlaValue
       .mul(parseUnits(oneEther.toString()))

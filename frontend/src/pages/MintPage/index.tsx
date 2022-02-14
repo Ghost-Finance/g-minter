@@ -141,7 +141,10 @@ const MintPage = ({ title }: Props) => {
         account as string,
         value
       );
-      setValues(value, bigNumberToFloat(maxValue).toFixed(2));
+      setValues(
+        Number(value).toFixed(2),
+        bigNumberToFloat(maxValue).toFixed(2)
+      );
     } catch (error) {
       dispatchLoading('error');
       console.error(error.message);
@@ -150,13 +153,11 @@ const MintPage = ({ title }: Props) => {
 
   async function maximumDebtValue(value: string) {
     try {
-      let maxGhoValue = await maximumByDebt(
-        minterContract,
-        gDaiAddress,
-        account as string,
-        value
+      let maxGhoValue = await maximumByDebt(value);
+      setValues(
+        bigNumberToFloat(maxGhoValue).toFixed(2),
+        Number(value).toFixed(2)
       );
-      setValues(bigNumberToFloat(maxGhoValue).toFixed(2), value);
     } catch (error) {
       dispatchLoading('error');
       console.error(error.message);
