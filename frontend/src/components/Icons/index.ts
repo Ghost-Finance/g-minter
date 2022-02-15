@@ -9,6 +9,7 @@ import BurnCardIcon from './BurnCardIcon';
 import RewardCardIcon from './RewardCardIcon';
 import SynthCardIcon from './SynthCardIcon';
 import GdaiIcon from './GDaiIcon';
+import DaiCoinIcon from './DaiCoinIcon';
 import GhoIcon from './GhoIcon';
 
 export {
@@ -23,5 +24,6 @@ export {
   RewardCardIcon,
   SynthCardIcon,
   GdaiIcon,
+  DaiCoinIcon,
   GhoIcon,
 };

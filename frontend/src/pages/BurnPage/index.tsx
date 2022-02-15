@@ -5,7 +5,7 @@ import { ContextPage } from '../ContentPage';
 import FormBox from '../../components/FormBox';
 import InputContainer from '../../components/InputContainer';
 import ButtonForm from '../../components/Button/ButtonForm';
-import GdaiIcon from '../../components/Icons/GDaiIcon';
+import DaiCoinIcon from '../../components/Icons/DaiCoinIcon';
 import { NumericalInput } from '../../components/InputMask';
 import useOnlyDigitField from '../../hooks/useOnlyDigitField';
 import { useMinter, useERC20, useFeed } from '../../hooks/useContract';
@@ -157,7 +157,7 @@ const BurnPage = () => {
       }
     >
       <InputContainer>
-        <GdaiIcon />
+        <DaiCoinIcon />
         <span className={classes.labelInput}>gDAI</span>
 
         <NumericalInput

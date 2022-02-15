@@ -8,7 +8,7 @@ import ButtonForm from '../../components/Button/ButtonForm';
 import InputContainer from '../../components/InputContainer';
 import FormBox from '../../components/FormBox';
 import { NumericalInput } from '../../components/InputMask';
-import { GhostIcon, GdaiIcon } from '../../components/Icons';
+import { GhostIcon, DaiCoinIcon } from '../../components/Icons';
 import { useMinter, useERC20, useFeed } from '../../hooks/useContract';
 import useOnlyDigitField from '../../hooks/useOnlyDigitField';
 import { useDispatch, useSelector } from '../../redux/hooks';
@@ -212,7 +212,7 @@ const MintPage = ({ title }: Props) => {
       changeMaxGho();
       fetchData();
       dispatchLoading('idle');
-    }, 3000);
+    }, 2000);
 
     return () => {
       clearTimeout(requestId);
@@ -234,7 +234,7 @@ const MintPage = ({ title }: Props) => {
       disableButton={btnDisabled}
     >
       <InputContainer>
-        <GdaiIcon />
+        <DaiCoinIcon />
         <span className={classes.labelInput}>gDAI</span>
 
         <NumericalInput
