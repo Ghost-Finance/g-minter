@@ -119,9 +119,7 @@ describe('Minter', async function() {
             BigNumber.from(parseEther('10.0'))
           );
       } catch (error) {
-        expect(error.message).to.match(
-          /ERC20: transfer amount exceeds balance/
-        );
+        expect(error.message).to.match(/ERC20: insufficient allowance/);
       }
     });
 
@@ -326,9 +324,7 @@ describe('Minter', async function() {
             .connect(accountOne)
             .burn(synthTokenAddress, BigNumber.from(parseEther('20.0')));
         } catch (error) {
-          expect(error.message).to.match(
-            /ERC20: transfer amount exceeds balance/
-          );
+          expect(error.message).to.match(/ERC20: insufficient allowance/);
         }
       });
 
@@ -346,9 +342,7 @@ describe('Minter', async function() {
             .connect(accountOne)
             .burn(synthTokenAddress, BigNumber.from(parseEther('200.0')));
         } catch (error) {
-          expect(error.message).to.match(
-            /ERC20: transfer amount exceeds balance/
-          );
+          expect(error.message).to.match(/ERC20: insufficient allowance/);
         }
       });
 
@@ -368,14 +362,14 @@ describe('Minter', async function() {
           BigNumber.from(parseEther('9.0'))
         );
 
-        // GHO price go down to 50% c-Ratio is 400%
+        // GHO price go down to 50% c-Ratio is 450%
         await state.feed.updatePrice(BigNumber.from(parseEther('0.5')));
         const amountRatioAfterPriceDown = await state.minter
           .connect(accountOne)
           .getCRatio(synthTokenAddress);
 
         expect(amountRatioAfterPriceDown.toString()).to.be.equal(
-          BigNumber.from(parseEther('4.0'))
+          BigNumber.from(parseEther('4.5'))
         );
 
         // Burn 10 gDai to readjust for 900%

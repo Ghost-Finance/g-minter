@@ -1,41 +1,24 @@
-import React from 'react'
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  Typography
-} from '@material-ui/core'
-import { NetworkNames } from '../config/enums'
-
+import React from 'react';
+import arrowIconError from '../assets/arrow-icon-red.png';
+import InfoCard from './InfoCard';
+import { NetworkNames } from '../config/enums';
 interface InvalidNetworkProps {
-  targetNetwork: NetworkNames
-  isOpen: boolean
-  onClose: () => void
+  targetNetwork?: NetworkNames;
+  isOpen: boolean;
 }
 
-const InvalidNetwork = ({
-  targetNetwork,
-  isOpen,
-  onClose
-}: InvalidNetworkProps) => {
+const InvalidNetwork = ({ targetNetwork, isOpen }: InvalidNetworkProps) => {
   return (
-    <Dialog
-      open={isOpen}
-      onClose={onClose}
-      aria-labelledby="dialog-title"
-      maxWidth="xs"
-    >
-      <DialogTitle id="dialog-title">Wrong Network</DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          <Typography>
-            To proceed, please switch your wallet's network to {targetNetwork}
-          </Typography>
-        </DialogContentText>
-      </DialogContent>
-    </Dialog>
-  )
-}
+    <>
+      {isOpen && (
+        <InfoCard
+          error={true}
+          image={arrowIconError}
+          text={`Don’t forget, we are on ${targetNetwork} network`}
+        />
+      )}
+    </>
+  );
+};
 
-export default InvalidNetwork
+export default InvalidNetwork;

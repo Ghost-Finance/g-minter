@@ -46,9 +46,9 @@
 1. Open a new terminal window and run `git clone https://github.com/Ghost-Finance/g-minter && cd g-minter`
 2. run `npm i` to install backend dependencies
 3. run `npm run test:local` to run contract test suite to run smart contract test cases
-4. run `npm run deploy:local` to compile and deploy the Minter contract to the ganache node that UMA was deployed on
+4. run `npm run deploy:local` to compile and deploy the Minter contract to the ganache node
 5. cd to frontend `cd frontend`
-6. run `npm i` or `yarn` to install frontend dependencies
+6. run `yarn` to install frontend dependencies
 7. run `npm run start` to serve the app locally
 
 ## Environment Setup
@@ -64,12 +64,11 @@
 
 - [ ] Terminal 1 - React Front End for the dapp
 - [ ] Terminal 2 - Ganache node deploy from the uma protocol folder
-- [ ] Terminal 3 (Optional) - Truffle console to migrate and interact with the UMA Contracts in local
 
 #### Dapp Setup Checklist
 
 - [ ] Deploy the local ganache inside the uma protocol
-- [ ] Metamask set to the network you are developing to (localhost:9545 for local, testnet of choice)
+- [ ] Metamask set to the network you are developing to (localhost:7545 for local, testnet of choice)
 - [ ] Run a local react server
 
 #### Smart Contract Development Setup Checklist
@@ -78,16 +77,16 @@
 
 ## Tutorials
 
-#### Deploying contracts in Kovan Testnet
+#### Deploying contracts in Rinkeby Testnet
 
 1. Ensure you have added the following env variables: INFURA_PROJECT_ID and MNEMONIC SEED
 2. Make sure the account in your mnemonic seed has enough balance to deploy the contract
 3. Run `npm run test:local` to ensure all tests are passing (make sure you have the setup your local environment first)
-4. If tests are passing, check deploy.ts if the addresses are pointed to kovan.
-5. If all addresses are on kovan, deploy the code by running `npm run deploy:kovan`
+4. If tests are passing, check deploy.ts if the addresses are pointed to rinkeby.
+5. If all addresses are on kovan, deploy the code by running `npm run deploy:rinkeby`
 6. The minter address should appear in the console.
 7. Run the dApp: `cd frontend && npm run start`
-8. Change your metamask network to Kovan
+8. Change your metamask network to Rinkeby
 9. The minter dApp UI should load
 
 #### Local developlment: How to update the smart contract code w/ hot reloading
@@ -116,9 +115,7 @@
 3. If you get `ProviderError: Must be authenticated!` or https://hardhat.org/errors/#HH604 then make sure you've entered a key and value in `.env` for `ALCHEMY_KEY`
 4. If you've accidentally started a background process for a node then you can use `sudo lsof -i :<port number>` to find the PID then kill it using `kill -9 <PID>` (from https://stackoverflow.com/questions/3855127/find-and-kill-process-locking-port-3000-on-mac)
 
-5. UMA tests don't run due to `No tests configured` err: try `npm uninstall -g ganache-cli`, make sure `yarn ganache-cli --version` returns `Ganache CLI v6.12.2 (ganache-core: 2.13.2)` (or the same version as specified in `protocol` repo's root package.json) then run `yarn test` again
-
 ## Guidelines:
 
 - Use Github Flow. (https://guides.github.com/introduction/flow/)
-- Name your branches starting with your initials + issue number on the backlog. Ex. I'm Luan Pontolio, my branches are named as lp-git-123 or lp-doing-something.
+- Name your branches starting with feature/branchName. Ex. feature/doingSomethingNew or feature/fixSomething.

@@ -5,8 +5,11 @@ import './GTokenERC20.sol';
 import './AuctionHouse.sol';
 import './base/Feed.sol';
 import './DebtPool.sol';
+import './base/CoreMath.sol';
 
 contract Minter {
+  using SafeMath for uint256;
+
   address public owner;
 
   GTokenERC20 public collateralToken;
@@ -258,6 +261,6 @@ contract Minter {
     uint256 collateralValue = (collateralBalance[msg.sender][token] + amountGHO) * collateralFeed.price() / 1 ether;
     uint256 debtValue = (synthDebt[msg.sender][token] + amountGDAI) * feeds[token].price() / 1 ether;
 
-    return (collateralValue / debtValue) * 1 ether;
+    return collateralValue.mul(1 ether).div(debtValue);
   }
 }
