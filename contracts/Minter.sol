@@ -239,7 +239,7 @@ contract Minter {
     uint256 collateralValue = collateralBalance[msg.sender][token] * collateralFeed.price() / 1 ether;
     uint256 debtValue = synthDebt[msg.sender][token] * feeds[token].price() / 1 ether;
 
-    return (collateralValue / debtValue) * 1 ether;
+    return collateralValue.mul(1 ether).div(debtValue);
   }
 
   function maximumByCollateral(GTokenERC20 token, uint256 amount) external view returns (uint256) {

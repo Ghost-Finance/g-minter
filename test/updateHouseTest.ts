@@ -132,7 +132,7 @@ describe('#UpdateHouse', async function() {
           .connect(alice)
           .createPosition(BigNumber.from(parseEther('50.0')), gSpacexKey, 2);
       } catch (error) {
-        expect(error.message).to.match(/transfer amount exceeds balance/);
+        expect(error.message).to.match(/insufficient allowance/);
       }
     });
 
@@ -207,16 +207,6 @@ describe('#UpdateHouse', async function() {
       synthDebt = await state.minter
         .connect(bob)
         .synthDebt(bob.address, synthTokenAddress);
-
-      tokenGdai = await state.token.attach(synthTokenAddress);
-      const balanceOfAlice = await tokenGdai.balanceOf(bob);
-      console.log(
-        `Alice balance of before a position: ${balanceOfAlice.toString()}`
-      );
-      const balanceOfBob = await tokenGdai.balanceOf(bob);
-      console.log(
-        `Bob balance of before a position: ${balanceOfBob.toString()}`
-      );
 
       positionData = await updateHouse.data(1);
       expect(positionData.account).to.be.equal(alice.address);
