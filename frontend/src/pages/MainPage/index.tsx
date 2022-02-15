@@ -8,8 +8,11 @@ import { useStyles } from './index.style';
 import AppMenu from '../AppMenu';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import NavElement from '../../components/NavElement';
+import { ContentPage, ContextPage } from '../ContentPage';
+import CardContent from '../../components/CardContent';
 import MintPage from '../MintPage';
 import BurnPage from '../BurnPage';
+import MintAndBurnPage from '../MintAndBurnPage';
 import RewardPage from '../RewardPage';
 import StakePage from '../StakePage';
 import AlertPage from '../AlertPage';
@@ -33,6 +36,7 @@ import {
   feedPrice,
 } from '../../utils/calls';
 import { useERC20, useMinter, useFeed } from '../../hooks/useContract';
+import useRedirect from '../../hooks/useRedirect';
 import { setCRatio, setBalanceOfGHO, setStatus } from '../../redux/app/actions';
 import {
   ghoAddress,
@@ -47,6 +51,12 @@ const MainPage = () => {
   const pagesWithoutNavElement = ['/alert', '/wallet-connect'];
   const classes = useStyles();
   const location = useLocation();
+  const {
+    redirect,
+    redirectHome,
+    setRedirect,
+    setRedirectHome,
+  } = useRedirect();
   const [rootPage, setRootPageChanged] = useState(true);
   const [showDialogWrongNetwork, setDialogWrongNetWork] = useState<boolean>(
     false
@@ -61,6 +71,7 @@ const MainPage = () => {
     balanceOfGdai,
     balanceOfGho,
     collateralBalance,
+    synthDebt,
     status,
     networkName,
   } = useSelector(state => state.app);
@@ -84,7 +95,7 @@ const MainPage = () => {
     }
 
     function organizeCardsData() {
-      if (balanceOfGdai === '0') return;
+      if (parseInt(balanceOfGdai || '') <= 0) return;
 
       let cardsDataArrayAfterMint = cardsData.filter(
         card => card.to !== '/mint' && card.to !== '/stake'
@@ -144,7 +155,7 @@ const MainPage = () => {
     }
 
     organizeCardsData();
-    if (account) {
+    if (account && rootPage) {
       fetchData();
       intervalId = setInterval(fetchGHOBalanceOf, 3000);
     }
@@ -161,6 +172,8 @@ const MainPage = () => {
     account,
     balanceOfGdai,
     balanceOfGho,
+    collateralBalance,
+    synthDebt,
     network,
     networkName,
     minterContract,
@@ -231,17 +244,27 @@ const MainPage = () => {
               ) : (
                 <></>
               )}
-              <div className={classes.item}>
-                <Typography variant="h6">Explore</Typography>
-                {cardsDataArray.map((props, key) => (
-                  <GcardLink
-                    to={account && !showDialogWrongNetwork ? props.to : '#'}
-                    image={props.image}
-                    title={props.title}
-                    key={key}
-                  />
-                ))}
-              </div>
+              <Grid container item className={classes.item}>
+                <Grid item xs={12} spacing={3}>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    className={classes.text}
+                  >
+                    Explore
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} spacing={3} className={classes.content}>
+                  {cardsDataArray.map((props, key) => (
+                    <GcardLink
+                      to={account && !showDialogWrongNetwork ? props.to : '#'}
+                      image={props.image}
+                      title={props.title}
+                      key={key}
+                    />
+                  ))}
+                </Grid>
+              </Grid>
             </Grid>
           </Grid>
         </main>
@@ -254,8 +277,26 @@ const MainPage = () => {
           classNames="fade"
         >
           <Switch location={location}>
-            <Route path="/mint" children={<MintPage />} />
-            <Route path="/mint-burn" children={<BurnPage />} />
+            <Route
+              path="/mint"
+              children={
+                <ContextPage.Provider
+                  value={{
+                    redirect,
+                    redirectHome,
+                    setRedirect,
+                    setRedirectHome,
+                  }}
+                >
+                  <ContentPage>
+                    <CardContent typeCard="mint">
+                      <MintPage title={'Mint your gDai'} />
+                    </CardContent>
+                  </ContentPage>
+                </ContextPage.Provider>
+              }
+            />
+            <Route path="/mint-burn" children={<MintAndBurnPage />} />
             <Route path="/rewards" children={<RewardPage />} />
             <Route path="/stake" children={<StakePage />} />
             <Route path="/wallet-connect" children={<WalletConnectPage />} />

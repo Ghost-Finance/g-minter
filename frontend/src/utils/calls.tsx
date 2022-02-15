@@ -2,6 +2,9 @@ import { Contract } from 'web3-eth-contract';
 import { BigNumber } from '@ethersproject/bignumber';
 import { parseEther, parseUnits } from '@ethersproject/units';
 
+let oneEther = BigNumber.from(parseEther('1'));
+let cRatio = BigNumber.from(parseEther('9'));
+
 export const mint =
   (
     contract: Contract,
@@ -13,17 +16,34 @@ export const mint =
   (dispatch: any) => {
     const depositAmount = BigNumber.from(parseEther(amountToDeposit));
     const mintAmount = BigNumber.from(parseEther(amountToMint));
-    debugger;
+
     contract.methods
       .mint(token, depositAmount, mintAmount)
       .send({ from: account })
-      .once('confirmation', () => dispatch('finish'))
+      .once('confirmation', () => {
+        dispatch('finish');
+      })
+      .on('error', (error: any) => dispatch('error'));
+  };
+
+export const burn =
+  (contract: Contract, token: string, amount: string, account: string) =>
+  (dispatch: any) => {
+    const burnAmount = BigNumber.from(parseEther(amount));
+
+    return contract.methods
+      .burn(token, burnAmount)
+      .send({ from: account })
+      .once('confirmation', (data: any) => {
+        dispatch('finish');
+      })
       .on('error', (error: any) => dispatch('error'));
   };
 
 export const approve =
   (contract: Contract, sender: string, account: string, amount: string) =>
   (dispatch: any) => {
+    dispatch('idle');
     const bigAmount = BigNumber.from(parseEther(amount));
     return contract.methods
       .approve(account, bigAmount)
@@ -74,19 +94,22 @@ export const maximumByCollateral = async (
   amount: string
 ) => {
   const value = BigNumber.from(parseEther(amount));
-  return contract.methods
+  const expectedGdaiAmount = await contract.methods
     .maximumByCollateral(token, value)
     .call({ from: account });
+  const synthDebt = await contract.methods
+    .synthDebt(account, token)
+    .call({ from: account });
+
+  return BigNumber.from(parseUnits(expectedGdaiAmount.toString()))
+    .sub(BigNumber.from(parseUnits(synthDebt.toString())))
+    .div(oneEther.toString());
 };
 
-export const maximumByDebt = async (
-  contract: Contract,
-  token: string,
-  account: string,
-  amount: string
-) => {
-  const value = BigNumber.from(parseEther(amount));
-  return contract.methods.maximumByDebt(token, value).call({ from: account });
+export const maximumByDebt = async (amount: string) => {
+  return BigNumber.from(parseEther(amount))
+    .mul(cRatio.toString())
+    .div(oneEther.toString());
 };
 
 export const simulateMint = async (
@@ -94,11 +117,62 @@ export const simulateMint = async (
   token: string,
   account: string,
   amountGHO: string,
-  amountGdai: string
+  amountGdai: string,
+  feedPriceGho: BigNumber,
+  feedPriceGdai: BigNumber
 ) => {
-  return contract.methods
-    .simulateCRatio(token, amountGHO, amountGdai)
+  const ghoAmount = BigNumber.from(parseUnits(amountGHO));
+  const gdaiAmount = BigNumber.from(parseUnits(amountGdai));
+
+  const synthDebt = await contract.methods
+    .synthDebt(account, token)
     .call({ from: account });
+  const collateralValue = await contract.methods
+    .collateralBalance(account, token)
+    .call({ from: account });
+  const collateralBalance = BigNumber.from(
+    parseUnits(collateralValue.toString())
+  ).add(parseUnits(ghoAmount.toString()));
+  const debtAmount = BigNumber.from(parseUnits(synthDebt.toString())).add(
+    parseUnits(gdaiAmount.toString())
+  );
+  return calculateCRatio(
+    collateralBalance,
+    debtAmount,
+    feedPriceGho,
+    feedPriceGdai
+  );
+};
+
+export const simulateBurn = async (
+  contract: Contract,
+  token: string,
+  account: string,
+  amountGdai: string,
+  feedPriceGho: BigNumber,
+  feedPriceGdai: BigNumber
+) => {
+  const gdaiAmount = BigNumber.from(parseUnits(amountGdai));
+  const synthDebt = await contract.methods
+    .synthDebt(account, token)
+    .call({ from: account });
+  const collateralValue = await contract.methods
+    .collateralBalance(account, token)
+    .call({ from: account });
+
+  const collateralBalance = BigNumber.from(
+    parseUnits(collateralValue.toString())
+  );
+  const debtAmount = BigNumber.from(parseEther(synthDebt)).sub(
+    parseUnits(gdaiAmount.toString())
+  );
+
+  return calculateCRatio(
+    collateralBalance,
+    debtAmount,
+    feedPriceGho,
+    feedPriceGdai
+  );
 };
 
 export const feedPrice = async (contract: Contract) => {
@@ -123,39 +197,29 @@ export const synthDebtOf = async (
   return contract.methods.synthDebt(account, token).call({ from: account });
 };
 
-export const positionExposeData = (
-  contract: Contract,
-  token: string,
-  account: string,
-  amountGHO: string,
-  amountGdai: string
-) => {
-  const ghoAmount = BigNumber.from(parseUnits(amountGHO));
-  const gdaiAmount = BigNumber.from(parseUnits(amountGdai));
-
-  return Promise.all([
-    simulateMint(
-      contract,
-      token,
-      account,
-      ghoAmount.toString(),
-      gdaiAmount.toString()
-    ),
-    collateralBalance(contract, token, account),
-    synthDebtOf(contract, token, account),
-  ]).then((values) => {
-    return {
-      cRatio: values[0].toString(),
-      collateralBalance: BigNumber.from(values[1]).add(ghoAmount),
-      synthDebt: BigNumber.from(values[2]).add(gdaiAmount),
-    };
-  });
-};
-
 export const promiseAll = async (
   allPromise: any,
   successCallback: any,
   errorCallback: any
 ) => {
   return Promise.all(allPromise).then(successCallback).catch(errorCallback);
+};
+
+export const calculateCRatio = async (
+  collateralBalance: BigNumber,
+  debtAmount: BigNumber,
+  feedPriceGho: BigNumber,
+  feedPriceGdai: BigNumber
+) => {
+  const collaterlaValue = collateralBalance.mul(
+    parseUnits(feedPriceGho.toString())
+  );
+  const debtValue = debtAmount.mul(parseUnits(feedPriceGdai.toString()));
+  return [
+    collaterlaValue
+      .mul(parseUnits(oneEther.toString()))
+      .div(parseUnits(debtValue.toString())),
+    collateralBalance.div(parseUnits(oneEther.toString())),
+    debtAmount.div(parseUnits(oneEther.toString())),
+  ];
 };
