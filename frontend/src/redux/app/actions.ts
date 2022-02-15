@@ -25,13 +25,22 @@ export const setCRatio = ({
 });
 
 export const setCRatioSimulateMint = (
-  cRatioSimulateMintValue: null | string,
+  cRatioSimulateValue: null | string,
   collateralBalance: null | string,
   synthDebt: null | string
 ) => ({
   type: Types.SET_CRATIO_SIMULATE_MINT,
-  cRatioSimulateMintValue,
+  cRatioSimulateValue,
   collateralBalance,
+  synthDebt,
+});
+
+export const setCRatioSimulateBurn = (
+  cRatioSimulateValue: null | string,
+  synthDebt: null | string
+) => ({
+  type: Types.SET_CRATIO_SIMULATE_BURN,
+  cRatioSimulateValue,
   synthDebt,
 });
 

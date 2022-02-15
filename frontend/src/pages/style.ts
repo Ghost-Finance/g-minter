@@ -5,28 +5,9 @@ const useStyle = makeStyles((theme: Theme) =>
     root: {
       flexGrow: 1,
       color: theme.palette.primary.contrastText,
-      left: '30%',
-      width: '100%',
       marginTop: 20,
-    },
-    paperContent: {
-      display: 'flex',
-      padding: 50,
-      alignItems: 'flex-start',
-    },
-    cardForm: {
-      marginTop: 20,
-      width: 'calc(60%)',
-      backgroundColor: '#393939',
-      border: 1,
-      [theme.breakpoints.down(1800)]: {
-        marginTop: 0,
-      },
     },
     contentCard: {
-      display: 'flex',
-      flexFlow: 'column',
-      justifyContent: 'center',
       width: '100%',
     },
     link: {
@@ -53,7 +34,7 @@ const useStyle = makeStyles((theme: Theme) =>
       width: '20px',
       marginLeft: '15px',
     },
-    buttonMint: {
+    active: {
       width: '325px !important',
       maxWidth: '325px',
       fontWeight: 'bold',
@@ -62,7 +43,7 @@ const useStyle = makeStyles((theme: Theme) =>
         marginBottom: '54px',
       },
     },
-    buttonMintGrey: {
+    disabled: {
       width: '325px !important',
       maxWidth: '325px',
       fontWeight: 'bold',
@@ -84,7 +65,6 @@ const useStyle = makeStyles((theme: Theme) =>
       fontSize: 36,
       textAlign: 'center',
       marginBottom: '90px',
-      fontWeight: 'bold',
       lineHeight: '37px',
       [theme.breakpoints.down(1800)]: {
         marginTop: '35px',
