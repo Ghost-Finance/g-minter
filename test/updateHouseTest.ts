@@ -182,7 +182,6 @@ describe('#UpdateHouse', async function() {
     beforeEach(async function() {
       amount = BigNumber.from(parseEther('10.0'));
       // Approve to PositionVault 100gDai
-      console.log('esta no before each do ');
       await state.token
         .attach(synthTokenAddress)
         .connect(alice)
@@ -275,7 +274,7 @@ describe('#UpdateHouse', async function() {
           bob.address,
           1,
           2,
-          balanceOfBob.toString()
+          BigNumber.from(parseEther('11')).toString()
         )
       ).to.be.true;
     });
@@ -302,7 +301,7 @@ describe('#UpdateHouse', async function() {
           bob.address,
           1,
           2,
-          balanceOfBob.toString()
+          BigNumber.from(parseEther('8.5')).toString()
         )
       ).to.be.true;
     });
@@ -329,7 +328,7 @@ describe('#UpdateHouse', async function() {
           alice.address,
           2,
           2,
-          balanceOfAlice.toString()
+          BigNumber.from(parseEther('11.5')).toString()
         )
       ).to.be.true;
     });
@@ -360,7 +359,7 @@ describe('#UpdateHouse', async function() {
           alice.address,
           2,
           2,
-          balanceOfAlice.toString()
+          BigNumber.from(parseEther('9')).toString()
         )
       ).to.be.true;
     });
