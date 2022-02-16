@@ -8,18 +8,21 @@ import MadeInSpaceLogo from '../../assets/MadeInSpace.svg';
 
 const stakesData = [
   {
+    key: process.env.GSPACEX_KEY,
     background: SpaceXBackground,
     logo: SpaceXLogo,
     title: 'SpaceX',
     subtitle: 'gSPX',
   },
   {
+    key: process.env.GNEURALINK_KEY,
     background: NeuraLinkBackground,
     logo: NeuralinkLogo,
     title: 'Neuralink',
     subtitle: 'gNLK',
   },
   {
+    key: process.env.GMADEINSPACE_KEY,
     background: MadeInSpaceBackground,
     logo: MadeInSpaceLogo,
     title: 'Made in Space',
