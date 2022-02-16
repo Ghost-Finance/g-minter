@@ -1,6 +1,6 @@
 {
   "name": "ghost-minter-view",
-  "version": "1.22.17",
+  "version": "0.1.0",
   "private": true,
   "devDependencies": {
     "husky": "^4.2.3",
