@@ -11,6 +11,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract UpdateHouse is CoreMath, Ownable {
 
+  using SafeMath for uint256;
+
   GTokenERC20 public token;
   GSpot public spot;
   DebtPool public debtPool;
@@ -74,10 +76,10 @@ contract UpdateHouse is CoreMath, Ownable {
     uint256 currentPrice = spot.read(dataPosition.synth);
     _addPositionVault(index, address(msg.sender), deltaAmount);
 
-    uint256 newSynthAmount = (deltaAmount * WAD) / currentPrice;
-    uint256 oldSynthPrice = dataPosition.synthTokenAmount * dataPosition.averagePrice;
-    uint256 newSynthPrice = newSynthAmount * currentPrice;
-    uint256 medianPrice = (newSynthPrice + oldSynthPrice) / (dataPosition.tokenAmount + newSynthAmount);
+    uint256 newSynthAmount = deltaAmount.div(currentPrice);
+    uint256 oldSynthPrice = dataPosition.synthTokenAmount.mul(dataPosition.averagePrice);
+    uint256 newSynthPrice = newSynthAmount.mul(currentPrice);
+    uint256 medianPrice = div(newSynthPrice.add(oldSynthPrice), dataPosition.tokenAmount.add(newSynthAmount));
 
     dataPosition.averagePrice = medianPrice;
   }

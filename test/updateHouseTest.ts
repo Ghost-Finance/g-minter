@@ -365,9 +365,8 @@ describe('#UpdateHouse', async function() {
       ).to.be.true;
     });
 
-    it.only('#increase Update amount to increase a position LONG', async function() {
+    it('#increase Update amount to increase a position LONG', async function() {
       const amount = BigNumber.from(parseEther('5'));
-      console.log(ethers.utils.formatBytes32String('GSPACEX'));
       //before increase position
       const alicePositionBefore = await updateHouse.data(1);
       expect(alicePositionBefore.averagePrice.toString()).to.be.equal(
@@ -392,26 +391,8 @@ describe('#UpdateHouse', async function() {
       const alicePositionAfter = await updateHouse.data(1);
       console.log(alicePositionAfter);
       expect(alicePositionAfter.averagePrice.toString()).to.not.equal(
-        alicePositionBefore.averagePrice.toString()
+        BigNumber.from(parseEther('10')).toString()
       );
-
-      // Alice finish the position
-      await updateHouse.connect(alice).finishPosition(1);
-      let balanceOfAlice = await state.token
-        .attach(synthTokenAddress)
-        .balanceOf(alice.address);
-      console.log(balanceOfAlice.toString());
-      // Check event Winner
-      expect(
-        await checkFinishPositionWithWinnerOrLoserEvent(
-          updateHouse,
-          'Winner',
-          alice.address,
-          2,
-          2,
-          balanceOfAlice.toString()
-        )
-      ).to.be.true;
     });
   });
 });
