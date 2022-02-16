@@ -50,7 +50,7 @@ describe('#UpdateHouse', async function() {
     await state.minter.createSynth(
       'GDAI',
       'GDAI',
-      BigNumber.from(parseEther('200.0')),
+      BigNumber.from(parseEther('500.0')),
       200,
       300,
       feedSynth.address
@@ -60,13 +60,13 @@ describe('#UpdateHouse', async function() {
     [alice, bob].map(async account => {
       await state.token
         .connect(account)
-        .approve(state.minter.address, BigNumber.from(parseEther('180.0')));
+        .approve(state.minter.address, BigNumber.from(parseEther('180')));
       await state.minter
         .connect(account)
         .mint(
           synthTokenAddress,
-          BigNumber.from(parseEther('180.0')),
-          BigNumber.from(parseEther('20.0'))
+          BigNumber.from(parseEther('180')),
+          BigNumber.from(parseEther('20'))
         );
     });
 
@@ -177,48 +177,50 @@ describe('#UpdateHouse', async function() {
   });
 
   describe('#finish postions', async function() {
-    let amount, positionData, balanceOf, synthDebt, tokenGdai;
+    let amount, positionDataAlice, positionDataBob, synthTokenAmountResult;
 
     beforeEach(async function() {
-      amount = BigNumber.from(parseEther('20.0'));
+      amount = BigNumber.from(parseEther('10.0'));
+      // Approve to PositionVault 100gDai
+      console.log('esta no before each do ');
       await state.token
         .attach(synthTokenAddress)
         .connect(alice)
         .approve(vault, amount);
+      await state.token
+        .attach(synthTokenAddress)
+        .connect(bob)
+        .approve(vault, amount);
 
-      // Add new position with all gDai from Alice
+      // Add new position with all gDai to Alice and Bob
       await updateHouse.connect(alice).createPosition(amount, gSpacexKey, 2);
-      balanceOf = await state.token
-        .attach(synthTokenAddress)
-        .balanceOf(alice.address);
-      synthDebt = await state.minter
-        .connect(alice)
-        .synthDebt(alice.address, synthTokenAddress);
-
-      await state.token
-        .attach(synthTokenAddress)
-        .connect(bob)
-        .approve(vault, amount);
-
       await updateHouse.connect(bob).createPosition(amount, gSpacexKey, 1);
-      balanceOf = await state.token
-        .attach(synthTokenAddress)
-        .balanceOf(bob.address);
-      synthDebt = await state.minter
-        .connect(bob)
-        .synthDebt(bob.address, synthTokenAddress);
 
-      positionData = await updateHouse.data(1);
-      expect(positionData.account).to.be.equal(alice.address);
-      expect(positionData.direction).to.be.equal(2); // Long postion
-      expect(positionData.averagePrice.toString()).to.be.equal(
+      // New position create to Alice
+      positionDataAlice = await updateHouse.data(1);
+      expect(positionDataAlice.account).to.be.equal(alice.address);
+      expect(positionDataAlice.direction).to.be.equal(2); // Long postion
+      expect(positionDataAlice.averagePrice.toString()).to.be.equal(
         averagePrice.toString()
       );
-      const synthTokenAmountResult =
+      synthTokenAmountResult =
         (amount.toString() / averagePrice.toString()) * 10 ** 18;
-      expect(positionData.synthTokenAmount.toString() / 10 ** 18).to.be.equal(
-        synthTokenAmountResult / 10 ** 18
+      expect(
+        positionDataAlice.synthTokenAmount.toString() / 10 ** 18
+      ).to.be.equal(synthTokenAmountResult / 10 ** 18);
+
+      // New position create to Bob
+      positionDataBob = await updateHouse.data(2);
+      expect(positionDataBob.account).to.be.equal(bob.address);
+      expect(positionDataBob.direction).to.be.equal(1); // Short postion
+      expect(positionDataBob.averagePrice.toString()).to.be.equal(
+        averagePrice.toString()
       );
+      synthTokenAmountResult =
+        (amount.toString() / averagePrice.toString()) * 10 ** 18;
+      expect(
+        positionDataBob.synthTokenAmount.toString() / 10 ** 18
+      ).to.be.equal(synthTokenAmountResult / 10 ** 18);
     });
 
     it('#finish validate account in position is correct', async function() {
@@ -230,8 +232,6 @@ describe('#UpdateHouse', async function() {
         );
       }
     });
-
-    it('#increase Update amount to increase a position LONG', async function() {});
 
     it('#decrease Update amount to decrease a position LONG', async function() {});
 
@@ -281,7 +281,7 @@ describe('#UpdateHouse', async function() {
     });
 
     it('#finish should burn gDai to account in a SHORT position', async function() {
-      // Decrease the price of gSpx in 10%
+      // Increase the price of gSpx in 10%
       await median.poke(BigNumber.from(parseEther('92')));
       let currentPrice = await gSpot.read(gSpacexKey);
       expect(currentPrice.toString()).to.be.equal(
@@ -357,6 +357,55 @@ describe('#UpdateHouse', async function() {
         await checkFinishPositionWithWinnerOrLoserEvent(
           updateHouse,
           'Loser',
+          alice.address,
+          2,
+          2,
+          balanceOfAlice.toString()
+        )
+      ).to.be.true;
+    });
+
+    it.only('#increase Update amount to increase a position LONG', async function() {
+      const amount = BigNumber.from(parseEther('5'));
+      console.log(ethers.utils.formatBytes32String('GSPACEX'));
+      //before increase position
+      const alicePositionBefore = await updateHouse.data(1);
+      expect(alicePositionBefore.averagePrice.toString()).to.be.equal(
+        BigNumber.from(parseEther('80.0')).toString()
+      );
+
+      // Increase gSpacex 10%
+      await median.poke(BigNumber.from(parseEther('92')));
+      let currentPrice = await gSpot.connect(alice).read(gSpacexKey);
+      expect(currentPrice.toString()).to.be.equal(
+        BigNumber.from(parseEther('92'))
+      );
+
+      // Alice add more 10gDai in her position after a increase
+      await state.token
+        .attach(synthTokenAddress)
+        .connect(alice)
+        .approve(vault, amount);
+      await updateHouse.connect(alice).increasePosition(1, amount);
+
+      // after increate position update the average price
+      const alicePositionAfter = await updateHouse.data(1);
+      console.log(alicePositionAfter);
+      expect(alicePositionAfter.averagePrice.toString()).to.not.equal(
+        alicePositionBefore.averagePrice.toString()
+      );
+
+      // Alice finish the position
+      await updateHouse.connect(alice).finishPosition(1);
+      let balanceOfAlice = await state.token
+        .attach(synthTokenAddress)
+        .balanceOf(alice.address);
+      console.log(balanceOfAlice.toString());
+      // Check event Winner
+      expect(
+        await checkFinishPositionWithWinnerOrLoserEvent(
+          updateHouse,
+          'Winner',
           alice.address,
           2,
           2,
