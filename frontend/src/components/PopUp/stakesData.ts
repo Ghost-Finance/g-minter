@@ -1,5 +1,5 @@
 import SpaceXBackground from '../../assets/images/space-x.jpeg';
-import NeuraLinkBackground from '../../assets/images/neuralink.jpeg';
+import NeuraLinkBackground from '../../assets/images/neuralink.png';
 import MadeInSpaceBackground from '../../assets/images/made-in-space.jpeg';
 
 import SpaceXLogo from '../../assets/SPX.svg';
