@@ -176,7 +176,7 @@ describe.only('#UpdateHouse', async function() {
     });
   });
 
-  describe('#finish postions', async function() {
+  describe.only('#finish postions', async function() {
     let amount, positionDataAlice, positionDataBob, synthTokenAmountResult;
 
     beforeEach(async function() {
@@ -232,10 +232,6 @@ describe.only('#UpdateHouse', async function() {
       }
     });
 
-    it('#increase Update amount to increase a position SHORT', async function() {});
-
-    it('#decrease Update amount to decrease a position SHORT', async function() {});
-
     it('#finish validate current price is not positive', async function() {
       try {
         await median.poke(BigNumber.from(parseEther('0')));
@@ -263,7 +259,7 @@ describe.only('#UpdateHouse', async function() {
       let balanceOfBob = await state.token
         .attach(synthTokenAddress)
         .balanceOf(bob.address);
-
+      console.log(balanceOfBob.toString());
       // Check event Winner
       expect(
         await checkFinishPositionWithWinnerOrLoserEvent(
@@ -410,7 +406,7 @@ describe.only('#UpdateHouse', async function() {
       ).to.be.true;
     });
 
-    it('Should PositionVault transfer the rest amount if user decrease and finalize your LONG position after synthPrice decrease', async function() {
+    it('Should PositionVault transfer the rest amount if user decrease your LONG position after synthPrice decrease', async function() {
       const amount = BigNumber.from(parseEther('5.0'));
       //before decrease position
       const alicePositionBefore = await updateHouse.data(1);
@@ -436,7 +432,7 @@ describe.only('#UpdateHouse', async function() {
       const alicePositionAfter = await updateHouse.data(1);
       expect(
         (alicePositionAfter.averagePrice.toString() / 10 ** 18).toFixed(2)
-      ).to.be.equal('88.00');
+      ).to.be.equal('72.00');
 
       // Alice call finish operation
       await updateHouse.connect(alice).finishPosition(1);

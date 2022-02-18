@@ -6,6 +6,7 @@ import './base/CoreMath.sol';
 import './DebtPool.sol';
 import './GTokenERC20.sol';
 import './PositionVault.sol';
+import 'hardhat/console.sol';
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract UpdateHouse is CoreMath, Ownable {
@@ -94,11 +95,11 @@ contract UpdateHouse is CoreMath, Ownable {
     uint256 currentPrice = spot.read(dataPosition.synth);
     require(currentPrice > 0, 'Invalid synth price');
 
-    uint256 positionFixValue = getPositionFix(dataPosition.synthTokenAmount, currentPrice, dataPosition.lastSynthPrice);
-    uint256 oldTokenAmount = dataPosition.tokenAmount.add(positionFixValue);
+    int positionFixValue = getPositionFix(dataPosition.direction, dataPosition.synthTokenAmount, currentPrice, dataPosition.lastSynthPrice);
+    uint256 oldTokenAmount = uint(int(dataPosition.tokenAmount) + positionFixValue);
     uint256 newTokenAmount = oldTokenAmount.sub(deltaAmount);
     uint256 newSynthTokenAmount = div(newTokenAmount.mul(dataPosition.synthTokenAmount), oldTokenAmount);
-    uint256 tokenAmount = newTokenAmount.sub(positionFixValue);
+    uint256 tokenAmount = uint(int(newTokenAmount) - positionFixValue);
     require(tokenAmount == deltaAmount);
 
     dataPosition.tokenAmount -= tokenAmount;
@@ -117,17 +118,17 @@ contract UpdateHouse is CoreMath, Ownable {
     uint256 currentPrice = spot.read(dataPosition.synth);
     require(currentPrice > 0, 'Current price not valid!');
 
-    uint256 positionFixValue = getPositionFix(dataPosition.synthTokenAmount, currentPrice, dataPosition.lastSynthPrice);
-    uint256 currentPricePosition;
-    if (dataPosition.direction == Direction.LONG) {
-      currentPricePosition = dataPosition.averagePrice < currentPrice ? (dataPosition.tokenAmount + positionFixValue) : (dataPosition.tokenAmount - positionFixValue);
-    } else if (dataPosition.direction == Direction.SHORT) {
-      currentPricePosition = dataPosition.averagePrice < currentPrice ? (dataPosition.tokenAmount - positionFixValue) : (dataPosition.tokenAmount + positionFixValue);
-    }
+    int positionFixValue = getPositionFix(dataPosition.direction,
+                                          dataPosition.synthTokenAmount,
+                                          currentPrice,
+                                          dataPosition.lastSynthPrice);
+
+    uint256 currentPricePosition = uint(int(dataPosition.tokenAmount) + positionFixValue);
 
     uint256 amount = vault.withdrawFullDeposit(index);
     uint256 amountToReceive;
     if (currentPricePosition >= dataPosition.tokenAmount) {
+      console.log("vai mintar");
       amountToReceive = currentPricePosition - dataPosition.tokenAmount;
       debtPool.mint(amountToReceive);
 
@@ -136,6 +137,7 @@ contract UpdateHouse is CoreMath, Ownable {
 
       emit Winner(address(msg.sender), amount + amountToReceive);
     } else {
+      console.log("vai burnar");
       amountToReceive = amount - currentPricePosition;
       vault.transferFrom(address(debtPool), amountToReceive);
       debtPool.burn(amountToReceive);
@@ -170,12 +172,13 @@ contract UpdateHouse is CoreMath, Ownable {
     return dataPosition;
   }
 
-  function getPositionFix(uint256 synthTokenAmount, uint256 currentPrice, uint256 lastPrice) public returns (uint256) {
-    uint256 newPrice = synthTokenAmount.mul(currentPrice) / WAD;
-    uint256 oldPrice = synthTokenAmount.mul(lastPrice) / WAD;
-    uint256 result = oldPrice > newPrice ? oldPrice - newPrice : newPrice - oldPrice;
+  function getPositionFix(Direction direction, uint256 synthTokenAmount, uint256 currentTokenSynthAmount, uint256 lastTokenSynthAmount) public returns (int) {
+    uint256 newPrice = synthTokenAmount.mul(currentTokenSynthAmount) / WAD;
+    uint256 oldPrice = synthTokenAmount.mul(lastTokenSynthAmount) / WAD;
 
-    return result;
+    int result = int(newPrice) - int(oldPrice);
+
+    return result * (direction == Direction.SHORT ? int(-1) : int(1));
   }
 
   function _addPositionVault(uint index, address account, uint amount) internal {
