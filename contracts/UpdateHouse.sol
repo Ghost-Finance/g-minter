@@ -27,8 +27,9 @@ contract UpdateHouse is CoreMath, Ownable {
     Direction direction;
     Status status;
     bytes32 synth;
-    uint256 averagePrice; // ok
-    uint256 tokenAmount; // ok
+    uint256 averagePrice;
+    uint256 lastSynthPrice;
+    uint256 tokenAmount;
     uint256 synthTokenAmount;
     uint256 created_at;
     uint256 updated_at;
@@ -40,6 +41,8 @@ contract UpdateHouse is CoreMath, Ownable {
 
   event Create(address account, PositionData data);
   event Finish(address account, Direction direction, Status status);
+  event Increase(address account, PositionData data);
+  event Decrease(address account, PositionData data);
   event Winner(address account, uint256 amount);
   event Loser(address account, uint256 amount);
 
@@ -74,28 +77,39 @@ contract UpdateHouse is CoreMath, Ownable {
     PositionData storage dataPosition = data[index];
     require(dataPosition.account == msg.sender && dataPosition.status != Status.FINISHED);
     uint256 currentPrice = spot.read(dataPosition.synth);
+    require(currentPrice > 0, 'Invalid synth price');
     _addPositionVault(index, address(msg.sender), deltaAmount);
 
-    uint256 newSynthAmount = deltaAmount.div(currentPrice);
-    uint256 oldSynthPrice = dataPosition.synthTokenAmount.mul(dataPosition.averagePrice);
-    uint256 newSynthPrice = newSynthAmount.mul(currentPrice);
-    uint256 medianPrice = div(newSynthPrice.add(oldSynthPrice), dataPosition.tokenAmount.add(newSynthAmount));
+    uint256 newSynthTokenAmount = mul(deltaAmount, WAD).div(currentPrice);
+    uint256 oldSynthPrice = div(dataPosition.synthTokenAmount.mul(dataPosition.averagePrice), WAD);
+    uint256 newSynthPrice = div(newSynthTokenAmount.mul(currentPrice), WAD);
+    uint256 averagePrice = div(mul(newSynthPrice.add(oldSynthPrice), WAD), dataPosition.synthTokenAmount.add(newSynthTokenAmount));
 
-    dataPosition.averagePrice = medianPrice;
+    dataPosition.averagePrice = averagePrice;
+    emit Increase(msg.sender, dataPosition);
   }
 
   function decreasePosition(uint index, uint256 deltaAmount) external {
     PositionData storage dataPosition = data[index];
     require(dataPosition.account == msg.sender && dataPosition.status != Status.FINISHED);
     uint256 currentPrice = spot.read(dataPosition.synth);
-    _removePositionVault(index, address(msg.sender), deltaAmount);
+    require(currentPrice > 0, 'Invalid synth price');
 
-    uint256 currentTokenAmount = dataPosition.tokenAmount - deltaAmount;
-    uint256 oldPrice = (dataPosition.tokenAmount / currentTokenAmount) * dataPosition.averagePrice;
-    uint256 newPrice = (deltaAmount / currentTokenAmount) * currentPrice;
-    uint256 currentAveragePrice = orderToSub(newPrice, oldPrice);
+    uint256 positionFixValue = getPositionFix(dataPosition.synthTokenAmount, currentPrice, dataPosition.lastSynthPrice);
+    console.log(positionFixValue);
+    uint256 oldTokenAmount = dataPosition.tokenAmount.add(positionFixValue);
+    uint256 newTokenAmount = oldTokenAmount.sub(deltaAmount);
+    uint256 newSynthTokenAmount = div(newTokenAmount.mul(dataPosition.synthTokenAmount), oldTokenAmount);
+    uint256 tokenAmount = newTokenAmount.sub(positionFixValue);
+    require(tokenAmount == deltaAmount);
 
-    dataPosition.averagePrice = currentAveragePrice;
+    dataPosition.tokenAmount -= tokenAmount;
+    dataPosition.averagePrice = (newTokenAmount * WAD).div(newSynthTokenAmount);
+    dataPosition.synthTokenAmount = newSynthTokenAmount;
+
+    _removePositionVault(index, address(msg.sender), tokenAmount);
+
+    emit Decrease(msg.sender, dataPosition);
   }
 
   function finishPosition(uint index) external {
@@ -104,9 +118,7 @@ contract UpdateHouse is CoreMath, Ownable {
     uint256 currentPrice = spot.read(dataPosition.synth);
     require(currentPrice > 0, 'Current price not valid!');
 
-    uint256 a = (dataPosition.synthTokenAmount * currentPrice) / WAD;
-    uint256 b = (dataPosition.synthTokenAmount * dataPosition.averagePrice) / WAD;
-    uint256 positionFixValue = b > a ? b - a : a - b;
+    uint256 positionFixValue = getPositionFix(dataPosition.synthTokenAmount, currentPrice, dataPosition.lastSynthPrice);
     uint256 currentPricePosition;
     if (dataPosition.direction == Direction.LONG) {
       currentPricePosition = dataPosition.averagePrice < currentPrice ? (dataPosition.tokenAmount + positionFixValue) : (dataPosition.tokenAmount - positionFixValue);
@@ -128,7 +140,6 @@ contract UpdateHouse is CoreMath, Ownable {
       vault.transferFrom(address(debtPool), amountToReceive);
       debtPool.burn(amountToReceive);
       vault.transferFrom(address(msg.sender), currentPricePosition);
-
       emit Loser(address(msg.sender), currentPricePosition);
     }
 
@@ -139,15 +150,16 @@ contract UpdateHouse is CoreMath, Ownable {
     emit Finish(address(msg.sender), dataPosition.direction, dataPosition.status);
   }
 
-  function _create(address account, Direction direction, bytes32 synthKey, uint256 averagePrice, uint256 amount) internal returns (PositionData memory) {
+  function _create(address account, Direction direction, bytes32 synthKey, uint256 price, uint256 amount) internal returns (PositionData memory) {
     PositionData memory dataPosition = PositionData(
       address(account),
       direction,
       Status.OPEN,
       synthKey,
-      averagePrice,
+      price,
+      price,
       amount,
-      radiv(amount, averagePrice),
+      radiv(amount, price),
       block.timestamp,
       block.timestamp
     );
@@ -155,6 +167,14 @@ contract UpdateHouse is CoreMath, Ownable {
     data[positionCount] = dataPosition;
 
     return dataPosition;
+  }
+
+  function getPositionFix(uint256 synthTokenAmount, uint256 currentPrice, uint256 lastPrice) public returns (uint256) {
+    uint256 newPrice = synthTokenAmount.mul(currentPrice) / WAD;
+    uint256 oldPrice = synthTokenAmount.mul(lastPrice) / WAD;
+    uint256 result = oldPrice > newPrice ? oldPrice - newPrice : newPrice - oldPrice;
+
+    return result;
   }
 
   function _addPositionVault(uint index, address account, uint amount) internal {
