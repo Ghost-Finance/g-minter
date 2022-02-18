@@ -15,7 +15,7 @@ let gSpotContractLabel: string = 'GSpot';
 let ssmContractLabel: string = 'Ssm';
 let medianTestContractLabel: string = 'GValueTest';
 
-describe('#UpdateHouse', async function() {
+describe.only('#UpdateHouse', async function() {
   let UpdateHouse,
     DebtPool,
     GSpot,
@@ -232,8 +232,6 @@ describe('#UpdateHouse', async function() {
       }
     });
 
-    it('#decrease Update amount to decrease a position LONG', async function() {});
-
     it('#increase Update amount to increase a position SHORT', async function() {});
 
     it('#decrease Update amount to decrease a position SHORT', async function() {});
@@ -274,7 +272,7 @@ describe('#UpdateHouse', async function() {
           bob.address,
           1,
           2,
-          BigNumber.from(parseEther('11')).toString()
+          '11.00'
         )
       ).to.be.true;
     });
@@ -301,7 +299,7 @@ describe('#UpdateHouse', async function() {
           bob.address,
           1,
           2,
-          BigNumber.from(parseEther('8.5')).toString()
+          '8.50'
         )
       ).to.be.true;
     });
@@ -328,7 +326,7 @@ describe('#UpdateHouse', async function() {
           alice.address,
           2,
           2,
-          BigNumber.from(parseEther('11.5')).toString()
+          '11.50'
         )
       ).to.be.true;
     });
@@ -359,12 +357,13 @@ describe('#UpdateHouse', async function() {
           alice.address,
           2,
           2,
-          BigNumber.from(parseEther('9')).toString()
+          '9.00'
         )
       ).to.be.true;
     });
 
-    it('#increase Update amount to increase a position LONG', async function() {
+    // TODO: Check increase/decrease is update the right values.
+    it('Should PositionVault transfer to winner the amount if synth price increase', async function() {
       const amount = BigNumber.from(parseEther('5'));
       //before increase position
       const alicePositionBefore = await updateHouse.data(1);
@@ -388,10 +387,113 @@ describe('#UpdateHouse', async function() {
 
       // after increate position update the average price
       const alicePositionAfter = await updateHouse.data(1);
-      console.log(alicePositionAfter);
-      expect(alicePositionAfter.averagePrice.toString()).to.not.equal(
-        BigNumber.from(parseEther('10')).toString()
+      expect(
+        (alicePositionAfter.averagePrice.toString() / 10 ** 18).toFixed(2)
+      ).to.be.equal('83.64');
+
+      // Alice call finish operation
+      await updateHouse.connect(alice).finishPosition(1);
+
+      const balanceOfAlice = await state.token
+        .attach(synthTokenAddress)
+        .balanceOf(alice.address);
+
+      expect(
+        await checkFinishPositionWithWinnerOrLoserEvent(
+          updateHouse,
+          'Winner',
+          alice.address,
+          2,
+          2,
+          '16.50'
+        )
+      ).to.be.true;
+    });
+
+    it('Should PositionVault transfer the rest amount if user decrease and finalize your LONG position after synthPrice decrease', async function() {
+      const amount = BigNumber.from(parseEther('5.0'));
+      //before decrease position
+      const alicePositionBefore = await updateHouse.data(1);
+      expect(alicePositionBefore.averagePrice.toString()).to.be.equal(
+        BigNumber.from(parseEther('80.0')).toString()
       );
+
+      // Decrease gSpacex 10%
+      await median.poke(BigNumber.from(parseEther('72.0')));
+      let currentPrice = await gSpot.connect(alice).read(gSpacexKey);
+      expect(currentPrice.toString()).to.be.equal(
+        BigNumber.from(parseEther('72.0'))
+      );
+
+      // Alice remove more 10gDai in her position after a decrease
+      await state.token
+        .attach(synthTokenAddress)
+        .connect(alice)
+        .approve(vault, amount);
+      await updateHouse.connect(alice).decreasePosition(1, amount);
+
+      // Check average price after decrease position
+      const alicePositionAfter = await updateHouse.data(1);
+      expect(
+        (alicePositionAfter.averagePrice.toString() / 10 ** 18).toFixed(2)
+      ).to.be.equal('88.00');
+
+      // Alice call finish operation
+      await updateHouse.connect(alice).finishPosition(1);
+
+      expect(
+        await checkFinishPositionWithWinnerOrLoserEvent(
+          updateHouse,
+          'Winner',
+          alice.address,
+          2,
+          2,
+          '5.00'
+        )
+      ).to.be.true;
+    });
+
+    it('Should PositionVault transfer the rest amount if user deacrease your LONG position after synthPrice increase', async function() {
+      const amount = BigNumber.from(parseEther('5.0'));
+      //before decrease position
+      const alicePositionBefore = await updateHouse.data(1);
+      expect(alicePositionBefore.averagePrice.toString()).to.be.equal(
+        BigNumber.from(parseEther('80.0')).toString()
+      );
+
+      // Decrease gSpacex 10%
+      await median.poke(BigNumber.from(parseEther('92.0')));
+      let currentPrice = await gSpot.connect(alice).read(gSpacexKey);
+      expect(currentPrice.toString()).to.be.equal(
+        BigNumber.from(parseEther('92.0'))
+      );
+
+      // Alice remove more 10gDai in her position after a decrease
+      await state.token
+        .attach(synthTokenAddress)
+        .connect(alice)
+        .approve(vault, amount);
+      await updateHouse.connect(alice).decreasePosition(1, amount);
+
+      // Check average price after decrease position
+      const alicePositionAfter = await updateHouse.data(1);
+      expect(
+        (alicePositionAfter.averagePrice.toString() / 10 ** 18).toFixed(2)
+      ).to.be.equal('92.00');
+
+      // Alice call finish operation
+      await updateHouse.connect(alice).finishPosition(1);
+
+      expect(
+        await checkFinishPositionWithWinnerOrLoserEvent(
+          updateHouse,
+          'Winner',
+          alice.address,
+          2,
+          2,
+          '5.00'
+        )
+      ).to.be.true;
     });
   });
 });

@@ -373,7 +373,7 @@ export const checkCreatePositionEvent = async (
   expect(eventAdd.data[1]).to.be.equal(status);
   expect(eventAdd.data[2]).to.be.equal(direction);
   expect(eventAdd.data[3]).to.be.equal(synthKey);
-  expect(eventAdd.data[5].toString()).to.be.equal(amount.toString());
+  expect(eventAdd.data[6].toString()).to.be.equal(amount.toString());
   contract.removeAllListeners();
 
   return true;
@@ -418,9 +418,11 @@ export const checkFinishPositionWithWinnerOrLoserEvent = async (
 
   const eventWinnerOrLoser = await winnerOrLoserEvent;
   expect(eventWinnerOrLoser.account).to.be.equal(account);
-  expect(eventWinnerOrLoser.amountToReceive.toString()).to.be.equal(
-    amountToReceive
-  );
+  expect(
+    (Number(eventWinnerOrLoser.amountToReceive.toString()) / 10 ** 18).toFixed(
+      2
+    )
+  ).to.be.equal(amountToReceive);
 
   const eventFinish = await finishEvent;
   expect(eventFinish.account).to.be.equal(account);

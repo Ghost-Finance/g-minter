@@ -6,7 +6,6 @@ import './base/CoreMath.sol';
 import './DebtPool.sol';
 import './GTokenERC20.sol';
 import './PositionVault.sol';
-import 'hardhat/console.sol';
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract UpdateHouse is CoreMath, Ownable {
@@ -96,7 +95,6 @@ contract UpdateHouse is CoreMath, Ownable {
     require(currentPrice > 0, 'Invalid synth price');
 
     uint256 positionFixValue = getPositionFix(dataPosition.synthTokenAmount, currentPrice, dataPosition.lastSynthPrice);
-    console.log(positionFixValue);
     uint256 oldTokenAmount = dataPosition.tokenAmount.add(positionFixValue);
     uint256 newTokenAmount = oldTokenAmount.sub(deltaAmount);
     uint256 newSynthTokenAmount = div(newTokenAmount.mul(dataPosition.synthTokenAmount), oldTokenAmount);
@@ -106,6 +104,7 @@ contract UpdateHouse is CoreMath, Ownable {
     dataPosition.tokenAmount -= tokenAmount;
     dataPosition.averagePrice = (newTokenAmount * WAD).div(newSynthTokenAmount);
     dataPosition.synthTokenAmount = newSynthTokenAmount;
+    dataPosition.lastSynthPrice = currentPrice;
 
     _removePositionVault(index, address(msg.sender), tokenAmount);
 
@@ -128,18 +127,20 @@ contract UpdateHouse is CoreMath, Ownable {
 
     uint256 amount = vault.withdrawFullDeposit(index);
     uint256 amountToReceive;
-    if (currentPricePosition > dataPosition.tokenAmount) {
+    if (currentPricePosition >= dataPosition.tokenAmount) {
       amountToReceive = currentPricePosition - dataPosition.tokenAmount;
       debtPool.mint(amountToReceive);
 
       vault.transferFrom(address(msg.sender), amount);
       debtPool.transferFrom(address(msg.sender), amountToReceive);
+
       emit Winner(address(msg.sender), amount + amountToReceive);
     } else {
       amountToReceive = amount - currentPricePosition;
       vault.transferFrom(address(debtPool), amountToReceive);
       debtPool.burn(amountToReceive);
       vault.transferFrom(address(msg.sender), currentPricePosition);
+
       emit Loser(address(msg.sender), currentPricePosition);
     }
 
