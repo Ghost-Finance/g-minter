@@ -35,6 +35,11 @@ type ChangeMedianEvent = {
   contractAddress: string;
 };
 
+type CreatePositionEvent = {
+  account: string;
+  data: Object;
+};
+
 type CreateSynthEvent = {
   address: string;
   name: string;
@@ -46,6 +51,12 @@ type DepositedCollateralEvent = {
   user: string;
   tokenCollateral: string;
   amount: number;
+};
+
+type FinishPositionEvent = {
+  account: string;
+  direction: number;
+  status: number;
 };
 
 type MintEvent = {
@@ -77,6 +88,11 @@ type TransferEvent = {
   amount: number;
 };
 
+type WinnerOrLoserEvent = {
+  account: string;
+  amountToReceive: string;
+};
+
 type WithdrawnCollateralEvent = {
   account: string;
   token: string;
@@ -92,10 +108,13 @@ export {
   CreateSynthEvent,
   ChangeMedianEvent,
   DepositedCollateralEvent,
+  FinishPositionEvent,
+  CreatePositionEvent,
   MintEvent,
   LiquidateEvent,
   StartAuctionHouseEvent,
   TokenDetails,
   TransferEvent,
+  WinnerOrLoserEvent,
   WithdrawnCollateralEvent,
 };

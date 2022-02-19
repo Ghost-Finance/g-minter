@@ -7,6 +7,7 @@ let minterContractLabelString: string = 'Minter';
 let tokenContractLabelString: string = 'GTokenERC20';
 let feedContractLabelString: string = 'Feed';
 let auctionHouseContractLabelString: string = 'AuctionHouse';
+let debtPoolContractLabelString: string = 'DebtPool';
 
 let contractCreatorOwner: SignerWithAddress;
 let contractAccounts: SignerWithAddress[];
@@ -14,7 +15,16 @@ let contractAccounts: SignerWithAddress[];
 const amount = BigNumber.from(parseEther('1000.0'));
 
 const setup = async () => {
-  let Token, Feed, Minter, AuctionHouse, minter, token, feed, auctionHouse;
+  let Token,
+    Feed,
+    Minter,
+    AuctionHouse,
+    DebtPool,
+    minter,
+    token,
+    feed,
+    auctionHouse,
+    debtPool;
 
   const [owners, ...accounts] = await ethers.getSigners();
   contractCreatorOwner = owners;
@@ -27,6 +37,7 @@ const setup = async () => {
     auctionHouseContractLabelString
   );
   Minter = await ethers.getContractFactory(minterContractLabelString);
+  DebtPool = await ethers.getContractFactory(debtPoolContractLabelString);
 
   token = await Token.deploy('GHO', 'GHO', amount);
   feed = await Feed.deploy(parseEther('1'), 'Feed Token');
@@ -53,6 +64,7 @@ const setup = async () => {
     Token,
     Feed,
     Minter,
+    DebtPool,
     AuctionHouse,
     minter,
     token,
