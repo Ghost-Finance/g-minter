@@ -15,7 +15,7 @@ let gSpotContractLabel: string = 'GSpot';
 let ssmContractLabel: string = 'Ssm';
 let medianTestContractLabel: string = 'GValueTest';
 
-describe.only('#UpdateHouse', async function() {
+describe('#UpdateHouse', async function() {
   let UpdateHouse,
     DebtPool,
     GSpot,
@@ -176,7 +176,7 @@ describe.only('#UpdateHouse', async function() {
     });
   });
 
-  describe.only('#finish postions', async function() {
+  describe('#finish postions', async function() {
     let amount, positionDataAlice, positionDataBob, synthTokenAmountResult;
 
     beforeEach(async function() {
