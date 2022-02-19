@@ -6,7 +6,6 @@ import './base/CoreMath.sol';
 import './DebtPool.sol';
 import './GTokenERC20.sol';
 import './PositionVault.sol';
-import 'hardhat/console.sol';
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract UpdateHouse is CoreMath, Ownable {
@@ -86,6 +85,8 @@ contract UpdateHouse is CoreMath, Ownable {
     uint256 averagePrice = div(mul(newSynthPrice.add(oldSynthPrice), WAD), dataPosition.synthTokenAmount.add(newSynthTokenAmount));
 
     dataPosition.averagePrice = averagePrice;
+    dataPosition.tokenAmount += deltaAmount;
+    dataPosition.synthTokenAmount = newSynthTokenAmount;
     emit Increase(msg.sender, dataPosition);
   }
 
@@ -128,7 +129,6 @@ contract UpdateHouse is CoreMath, Ownable {
     uint256 amount = vault.withdrawFullDeposit(index);
     uint256 amountToReceive;
     if (currentPricePosition >= dataPosition.tokenAmount) {
-      console.log("vai mintar");
       amountToReceive = currentPricePosition - dataPosition.tokenAmount;
       debtPool.mint(amountToReceive);
 
@@ -137,7 +137,6 @@ contract UpdateHouse is CoreMath, Ownable {
 
       emit Winner(address(msg.sender), amount + amountToReceive);
     } else {
-      console.log("vai burnar");
       amountToReceive = amount - currentPricePosition;
       vault.transferFrom(address(debtPool), amountToReceive);
       debtPool.burn(amountToReceive);

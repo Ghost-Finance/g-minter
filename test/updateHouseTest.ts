@@ -259,7 +259,7 @@ describe('#UpdateHouse', async function() {
       let balanceOfBob = await state.token
         .attach(synthTokenAddress)
         .balanceOf(bob.address);
-      console.log(balanceOfBob.toString());
+
       // Check event Winner
       expect(
         await checkFinishPositionWithWinnerOrLoserEvent(
@@ -401,7 +401,50 @@ describe('#UpdateHouse', async function() {
           alice.address,
           2,
           2,
-          '16.50'
+          '15.65'
+        )
+      ).to.be.true;
+    });
+
+    it('Should PositionVault transfer the rest amount if user decrease your LONG position after synthPrice decrease', async function() {
+      const amount = BigNumber.from(parseEther('5.0'));
+      //before decrease position
+      const alicePositionBefore = await updateHouse.data(1);
+      expect(alicePositionBefore.averagePrice.toString()).to.be.equal(
+        BigNumber.from(parseEther('80.0')).toString()
+      );
+
+      // Decrease gSpacex 10%
+      await median.poke(BigNumber.from(parseEther('92.0')));
+      let currentPrice = await gSpot.connect(alice).read(gSpacexKey);
+      expect(currentPrice.toString()).to.be.equal(
+        BigNumber.from(parseEther('92.0'))
+      );
+
+      // Alice remove more 10gDai in her position after a decrease
+      await state.token
+        .attach(synthTokenAddress)
+        .connect(alice)
+        .approve(vault, amount);
+      await updateHouse.connect(alice).increasePosition(1, amount);
+
+      // Check average price after decrease position
+      const alicePositionAfter = await updateHouse.data(1);
+      expect(
+        (alicePositionAfter.averagePrice.toString() / 10 ** 18).toFixed(2)
+      ).to.be.equal('83.64');
+
+      // Alice call finish operation
+      await updateHouse.connect(alice).finishPosition(1);
+
+      expect(
+        await checkFinishPositionWithWinnerOrLoserEvent(
+          updateHouse,
+          'Winner',
+          alice.address,
+          2,
+          2,
+          '15.65'
         )
       ).to.be.true;
     });
