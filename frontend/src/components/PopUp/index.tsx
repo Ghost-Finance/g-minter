@@ -14,11 +14,24 @@ import useStyle from './index.style';
 
 import arrow from '../../assets/arrow.png';
 
-const PopUp = () => {
+type Stake = {
+  key: string | undefined;
+  title: string;
+  subtitle: string;
+  logo: string;
+  background: string;
+};
+
+interface PopUpProps {
+  changeStake?: any;
+}
+
+const PopUp = ({ changeStake }: PopUpProps) => {
   const classes = useStyle();
   const [isPopupOpen, setIsPopUpOpen] = useState(true);
 
-  const closePopup = () => {
+  const closePopup = (stake: Stake) => {
+    changeStake(stake);
     setIsPopUpOpen(false);
   };
 
@@ -36,7 +49,6 @@ const PopUp = () => {
             nextEl: '.next',
           }}
           centeredSlides
-          onSwiper={swiper => console.log(swiper)}
         >
           <div className={classes.closePopUp}>
             <Link to="/" className={classes.link}>
@@ -76,8 +88,15 @@ const PopUp = () => {
                   backgroundImage: `url(${item.background})`,
                 }}
               >
-                <div className={classes.popUpContent} onClick={closePopup}>
-                  <div className={classes.popUpLogo}>{item.logo}</div>
+                <div
+                  className={classes.popUpContent}
+                  onClick={() => closePopup(item)}
+                >
+                  <img
+                    className={classes.popUpLogo}
+                    alt={item.title}
+                    src={item.logo}
+                  />
                   <p className={classes.popUpTitle}>{item.title}</p>
                   <p className={classes.popUpSubtitle}>{item.subtitle}</p>
                 </div>

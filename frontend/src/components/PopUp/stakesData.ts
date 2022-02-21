@@ -2,9 +2,9 @@ import SpaceXBackground from '../../assets/images/space-x.jpeg';
 import NeuraLinkBackground from '../../assets/images/neuralink.png';
 import MadeInSpaceBackground from '../../assets/images/made-in-space.jpeg';
 
-import SpaceXLogo from '../../assets/SPX.svg';
-import NeuralinkLogo from '../../assets/Neuralink.svg';
-import MadeInSpaceLogo from '../../assets/MadeInSpace.svg';
+import SpaceXLogo from '../../assets/images/spaceX-logo.png';
+import NeuralinkLogo from '../../assets/images/neuralink-logo.png';
+import MadeInSpaceLogo from '../../assets/images/madeinspace-logo.png';
 
 const stakesData = [
   {

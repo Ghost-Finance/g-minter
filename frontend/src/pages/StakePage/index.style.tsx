@@ -64,10 +64,16 @@ const useStyle = makeStyles((theme: Theme) =>
     formOptionShort: {
       backgroundColor: theme?.palette.primary.dark,
       color: theme?.palette.secondary.light,
+      '&:hover': {
+        backgroundColor: theme?.palette.primary.main,
+      },
     },
     formOptionLong: {
       backgroundColor: '#1E2000',
       color: theme?.brand.main,
+      '&:hover': {
+        backgroundColor: '#2b2e00',
+      },
     },
     formOptionImage: {
       height: '11px',
@@ -77,29 +83,25 @@ const useStyle = makeStyles((theme: Theme) =>
     formOptionImageShort: {
       transform: 'rotate(270deg)',
     },
-    formInfo: {
-      color: theme?.palette.secondary.main,
-      alignItems: 'center',
-      backgroundColor: theme?.palette.primary.main,
-      borderRadius: '56px',
-      display: 'flex',
-      padding: '0.75rem',
-      width: '18.5rem',
-    },
     formInfoImage: {
       height: '24px',
       marginRight: '1rem',
       width: '29px',
     },
     formInfoText: {
+      color: theme?.palette.secondary.main,
       marginRight: 'auto',
     },
     formInfoMax: {
+      backgroundColor: 'transparent',
       border: `2px solid ${theme?.palette.primary.light}`,
       borderRadius: '18px',
-      marginLeft: '1rem',
+      color: theme?.palette.secondary.main,
       padding: '0.25rem 0.625rem',
       textTransform: 'uppercase',
+      '&:hover': {
+        backgroundColor: theme?.palette.primary.light,
+      },
     },
     formText: {
       color: theme?.palette.secondary.dark,
@@ -112,6 +114,18 @@ const useStyle = makeStyles((theme: Theme) =>
       margin: '6rem 0',
       padding: '0.75rem 0',
       width: '18.75rem',
+    },
+    formInput: {
+      padding: '15px',
+      marginBottom: '10px',
+      background: 'transparent',
+      border: 'none',
+      outline: 'none',
+      width: '100px',
+      color: '#fff',
+      marginTop: '10px',
+      marginLeft: '55px',
+      letterSpacing: '0.008em',
     },
   })
 );
