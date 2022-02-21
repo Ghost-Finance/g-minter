@@ -33,6 +33,7 @@ const main = async () => {
   );
 
   console.log('Account 1 user address:', testUser.address);
+
   // Deploy Feed contract
   const GhoToken = await ethers.getContractFactory(tokenContractLabelString);
   const Feed = await ethers.getContractFactory(feedContractLabelString);
@@ -56,7 +57,6 @@ const main = async () => {
 
   // Generate synths
   const synthArgs = [].concat(gDaiArgs, feedGdai.address);
-  console.log(synthArgs);
   await minter.connect(deployer).createSynth(...synthArgs);
 
   let createSynthEvent = new Promise<CreateSynthEvent>((resolve, reject) => {
@@ -74,7 +74,8 @@ const main = async () => {
     }, 60000);
   });
   const eventCreateSynth = await createSynthEvent;
-  // await median.lift(testUser.address);
+
+  await median.lift(testUser.address);
 
   console.log(`Feed address contract: ${feedGho.address}`);
   console.log(`Feed 2 address contract: ${feedGdai.address}`);
@@ -181,7 +182,7 @@ const saveFrontendFiles = (
 
 main()
   .then(() => process.exit(0))
-  .catch(error => {
+  .catch((error) => {
     console.error(error);
     process.exit(1);
   });

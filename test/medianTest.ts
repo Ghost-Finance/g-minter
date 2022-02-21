@@ -406,7 +406,6 @@ describe('#MedianSpacex', async function() {
     try {
       await median.poke(feedData);
     } catch (error) {
-      console.log(error.message);
       expect(error.message).to.match(/Signer oracle message expired/);
     }
   });
@@ -529,7 +528,6 @@ describe('#MedianSpacex', async function() {
     );
     const signature = await wallet.signMessage(ethers.utils.arrayify(hash));
     const sig = ethers.utils.splitSignature(signature);
-    console.log(sig.v, sig.r, sig.s);
 
     const signatureAccountOne = await median.recover(
       BigNumber.from(parseEther('12')),

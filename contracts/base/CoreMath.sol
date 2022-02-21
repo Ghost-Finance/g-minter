@@ -10,6 +10,17 @@ contract CoreMath {
   uint256 constant RAY = 10**27;
   uint256 constant RAD = 10**45;
 
+  function wad() public pure returns (uint256) {
+    return WAD;
+  }
+
+  function ray() public pure returns (uint256) {
+    return RAY;
+  }
+
+  function rad() public pure returns (uint256) {
+    return RAD;
+  }
   function radiv(uint256 dividend, uint256 divisor) public pure returns (uint256) {
     return div(div(dividend * RAD, divisor), RAY);
   }
@@ -18,6 +29,14 @@ contract CoreMath {
     z = mul(x, y);
     require(y == 0 || z / y == x);
     z = div(z, RAY);
+  }
+
+  function orderToSub(uint256 a, uint256 b) internal pure returns (uint256) {
+    if (b > a) {
+      return 0;
+    }
+
+    return a - b;
   }
 
   function rpow(uint256 x, uint256 n, uint256 b) internal pure returns (uint256 z) {
