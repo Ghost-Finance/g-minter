@@ -12,6 +12,8 @@
     "test:coverage": "npx hardhat coverage --solcoverjs \".solcover.js\"",
     "deploy:local": "npx hardhat run scripts/deploy.ts --network \"localhost\"",
     "deploy:rinkeby": "npx hardhat run scripts/deploy.ts --network \"rinkeby\"",
+    "deploy-oracle:local": "npx hardhat run scripts/deployOracle.ts --network \"localhost\"",
+    "deploy-oracle:rinkeby": "npx hardhat run scripts/deployOracle.ts --network \"rinkeby\"",
     "deploy:fe:dev": "npm run build:fe:dev && firebase deploy --only hosting:develop",
     "verify:rinkeby": "npx hardhat --network \"rinkeby\" etherscan-verify",
     "node": "npx hardhat node",
