@@ -2,6 +2,7 @@
 // Fork by Maker Median.sol https://github.com/makerdao/median/blob/master/src/median.sol
 pragma solidity ^0.8.0;
 
+import "../interface/IMedian.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract MedianSpacex is Ownable {
@@ -30,8 +31,6 @@ contract MedianSpacex is Ownable {
   modifier toll { require(bud[msg.sender] == 1, "Address not permitted to read"); _;}
 
   event LogMedianPrice(uint256 val, uint256 age);
-
-  constructor() {}
 
   function read() external view toll returns (uint256) {
     (uint256 price, bool valid) = peek();
