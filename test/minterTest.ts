@@ -83,7 +83,7 @@ describe('Minter', async function() {
   });
 
   describe('Deposit Collateral', async function() {
-    let synthTokenAddress, amountToDeposit, accountOne;
+    let debtPool, synthTokenAddress, amountToDeposit, accountOne;
 
     beforeEach(async function() {
       accountOne = state.contractAccounts[0];
@@ -99,6 +99,11 @@ describe('Minter', async function() {
       );
 
       synthTokenAddress = await state.minter.getSynth(0);
+      debtPool = await state.DebtPool.deploy(
+        synthTokenAddress,
+        state.minter.address
+      );
+      await state.minter.addDebtPool(debtPool.address);
       await state.token
         .connect(accountOne)
         .approve(state.minter.address, amountToDeposit);
@@ -108,9 +113,10 @@ describe('Minter', async function() {
       try {
         await state.minter
           .connect(accountOne)
-          .depositCollateral(
+          .mint(
             synthTokenAddress,
-            BigNumber.from(parseEther('1000.0'))
+            BigNumber.from(parseEther('1000.0')),
+            BigNumber.from(parseEther('10.0'))
           );
       } catch (error) {
         expect(error.message).to.match(/ERC20: insufficient allowance/);
@@ -119,31 +125,20 @@ describe('Minter', async function() {
 
     it('Should return error to deposit collateral if is a invalid token', async function() {
       try {
-        await state.minter.depositCollateral(
+        await state.minter.mint(
           state.token.address,
-          amountToDeposit
+          amountToDeposit,
+          BigNumber.from(parseEther('20.0'))
         );
       } catch (error) {
         expect(error.message).to.match(/invalid token/);
       }
     });
-
-    it('Should return success when deposit the collateral', async function() {
-      await state.minter.depositCollateral(synthTokenAddress, amountToDeposit);
-
-      expect(
-        await checkDepositEvent(
-          state.minter,
-          state.contractCreatorOwner.address,
-          synthTokenAddress,
-          amountToDeposit
-        )
-      ).to.be.true;
-    });
   });
 
   describe('Mint/Burn a token', async function() {
-    let synthTokenAddress,
+    let debtPool,
+      synthTokenAddress,
       amountToMint,
       amountToDeposit,
       accountOne,
@@ -165,6 +160,11 @@ describe('Minter', async function() {
       );
 
       synthTokenAddress = await state.minter.getSynth(0);
+      debtPool = await state.DebtPool.deploy(
+        synthTokenAddress,
+        state.minter.address
+      );
+      await state.minter.addDebtPool(debtPool.address);
       await state.token
         .connect(accountOne)
         .approve(state.minter.address, amountToDeposit);

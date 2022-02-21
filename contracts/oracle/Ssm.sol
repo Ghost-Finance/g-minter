@@ -4,6 +4,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 
 interface IMedian {
   function peek() external view returns (uint256, bool);
+  function read() external view returns (uint256);
 }
 
 contract Ssm is AccessControl {
