@@ -2,7 +2,6 @@ import { artifacts, ethers } from 'hardhat';
 import * as fs from 'fs';
 import * as fse from 'fs-extra';
 import { formatEther } from 'ethers/lib/utils';
-import { boolean } from 'hardhat/internal/core/params/argumentTypes';
 
 const contractsDir = __dirname + '/../../frontend/src/contracts';
 const typechainSrcDir = __dirname + '/../../typechain';
