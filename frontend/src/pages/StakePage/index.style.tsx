@@ -85,12 +85,11 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     formInfoImage: {
       height: '24px',
-      marginRight: '1rem',
       width: '29px',
     },
     formInfoText: {
       color: theme?.palette.secondary.main,
-      marginRight: 'auto',
+      margin: '0 auto 0 1rem',
     },
     formInfoMax: {
       backgroundColor: 'transparent',

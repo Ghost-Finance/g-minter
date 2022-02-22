@@ -21,6 +21,7 @@ import GcardLink from '../../components/GcardLink';
 import GhostRatio from '../../components/GhostRatioComponent/GhostRatio';
 import LinkCard from '../../components/LinkCard';
 import GhostRatioMint from '../../components/GhostRatioComponent/GhostRatioMint';
+import GhostRatioStake from '../../components/GhostRatioComponent/GhostRadioStake';
 import { NetworkNames } from '../../config/enums';
 import InvalidNetwork from '../../components/InvalidNetwork';
 import cardsData from './cardsData';
@@ -58,6 +59,7 @@ const MainPage = () => {
     setRedirectHome,
   } = useRedirect();
   const [rootPage, setRootPageChanged] = useState(true);
+  const [stakePage, setStakePage] = useState(false);
   const [showDialogWrongNetwork, setDialogWrongNetWork] = useState<boolean>(
     false
   );
@@ -81,6 +83,8 @@ const MainPage = () => {
   useEffect(() => {
     dispatch(setStatus('pending'));
     setRootPageChanged(location.pathname === '/');
+    setStakePage(location.pathname === '/stake');
+
     setDialogWrongNetWork(network !== networkName);
 
     let intervalId: any;
@@ -212,6 +216,7 @@ const MainPage = () => {
             <LogoIcon />
           </div>
           {rootPage ? <GhostRatio /> : <GhostRatioMint />}
+          {stakePage && !rootPage ? <GhostRatioStake /> : <GhostRatio />}
         </NavElement>
       )}
       {rootPage && status !== 'error' && status !== 'pending' && (

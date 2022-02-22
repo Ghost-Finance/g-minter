@@ -5,6 +5,7 @@ import { Redirect } from 'react-router-dom';
 import useStyle from './index.style';
 import { useSelector } from '../../redux/hooks';
 
+import useOnlyDigitField from '../../hooks/useOnlyDigitField';
 import ButtonForm from '../../components/Button/ButtonForm';
 import InputContainer from '../../components/InputContainer';
 import { NumericalInput } from '../../components/InputMask';
@@ -14,6 +15,7 @@ import PopUp from '../../components/PopUp';
 import greyArrow from '../../assets/arrow.png';
 import yellowArrow from '../../assets/arrow-up-yellow.png';
 import gDaiIcon from '../../assets/dai-border.svg';
+import { GdaiIcon } from '../../components/Icons';
 
 const StakePage = () => {
   const { account } = useSelector(state => state.wallet);
@@ -28,6 +30,9 @@ const StakePage = () => {
   const stakeAction = (e: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault();
   };
+
+  const { onChange: onChangeSynph } = useOnlyDigitField('tel');
+  const { onChange: onChangeGDai } = useOnlyDigitField('tel');
 
   return (
     <>
@@ -80,6 +85,7 @@ const StakePage = () => {
                 <NumericalInput
                   placeholder="0.0"
                   className={classes.formInput}
+                  onChange={onChangeSynph}
                 />
 
                 <div>
@@ -101,14 +107,14 @@ const StakePage = () => {
             </div>
 
             <InputContainer>
-              <img
-                alt="gDai"
-                src={gDaiIcon}
-                className={classes.formInfoImage}
-              />
+              <GdaiIcon />
               <span className={classes.formInfoText}>gDAI</span>
 
-              <NumericalInput placeholder="0.0" className={classes.formInput} />
+              <NumericalInput
+                placeholder="0.0"
+                className={classes.formInput}
+                onChange={onChangeGDai}
+              />
 
               <div>
                 <ButtonForm text="MAX" className={classes.formInfoMax} />
