@@ -30,19 +30,28 @@ task('accounts', 'Prints the list of accounts', async (args, hre) => {
   }
 });
 
+task('string:bytes32', 'Convert string to bytes32', async (args: any, hre) => {
+  if (!args?.value) return;
+
+  console.log(hre.ethers.utils.formatBytes32String(args?.value));
+});
+
 task('addSsm', 'Add new ssm to oracle module').setAction(async (args, hre) => {
   const [owner] = await hre.ethers.getSigners();
   console.log(`Owner ${owner.address}`);
 
   const { spot, ssm, key } = args;
   if (!spot || !ssm || !key) return;
+  console.log(spot);
+  console.log(ssm);
+  console.log(key);
 
-  const GSpot = await hre.ethers.getContractFactory('GSpot');
+  // const GSpot = await hre.ethers.getContractFactory('GSpot');
 
-  const gSpot = GSpot.attach(spot);
-  await gSpot.connect(owner).addSsm(key, ssm);
+  // const gSpot = GSpot.attach(spot);
+  // await gSpot.connect(owner).addSsm(key, ssm);
 
-  console.log(`Fetch price: ${formatEther(await gSpot.read())}`);
+  // console.log(`Fetch price: ${formatEther(await gSpot.read())}`);
 });
 
 const config: HardhatUserConfig = {
