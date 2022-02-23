@@ -30,29 +30,39 @@ task('accounts', 'Prints the list of accounts', async (args, hre) => {
   }
 });
 
-task('string:bytes32', 'Convert string to bytes32', async (args: any, hre) => {
-  if (!args?.value) return;
+task('string:bytes32', 'Convert string to bytes32')
+  .addParam('value', 'The string to be convertdd')
+  .setAction(async (args: any, hre) => {
+    if (!args?.value) return;
 
-  console.log(hre.ethers.utils.formatBytes32String(args?.value));
-});
+    console.log(hre.ethers.utils.formatBytes32String(args?.value));
+  });
 
-task('addSsm', 'Add new ssm to oracle module').setAction(async (args, hre) => {
-  const [owner] = await hre.ethers.getSigners();
-  console.log(`Owner ${owner.address}`);
+task('addSsm', 'Add new ssm to oracle module')
+  .addParam('spot', 'Spot address')
+  .addParam('ssm', 'Ssm address')
+  .addParam('key', 'Bytes32 address')
+  .setAction(async (args, hre) => {
+    const [owner] = await hre.ethers.getSigners();
+    console.log(`Owner ${owner.address}`);
 
-  const { spot, ssm, key } = args;
-  if (!spot || !ssm || !key) return;
-  console.log(spot);
-  console.log(ssm);
-  console.log(key);
+    const { spot, ssm, key } = args;
+    if (!spot || !ssm || !key) return;
 
-  // const GSpot = await hre.ethers.getContractFactory('GSpot');
+    const GSpot = await hre.ethers.getContractFactory('GSpot');
+    const Ssm = await hre.ethers.getContractFactory('Ssm');
 
-  // const gSpot = GSpot.attach(spot);
-  // await gSpot.connect(owner).addSsm(key, ssm);
+    const gSpotContract = GSpot.attach(spot);
+    const ssmContract = Ssm.attach(ssm);
 
-  // console.log(`Fetch price: ${formatEther(await gSpot.read())}`);
-});
+    const readerRole = await ssmContract.READER_ROLE();
+    await ssmContract
+      .connect(owner)
+      .grantRole(readerRole, gSpotContract.address);
+    await gSpotContract.connect(owner).addSsm(key, ssmContract.address);
+
+    console.log(`Add new ssm feed price for synths`);
+  });
 
 const config: HardhatUserConfig = {
   solidity: {

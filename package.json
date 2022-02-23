@@ -11,7 +11,7 @@
     "test:local": "npx hardhat --network localhost test",
     "test:coverage": "npx hardhat coverage --solcoverjs \".solcover.js\"",
     "deploy:local": "npx hardhat run $DEPLOY_PATH --network \"localhost\" ",
-    "deploy:rinkeby": "npx hardhat run $npx_config_path --network \"rinkeby\"",
+    "deploy:rinkeby": "npx hardhat run $DEPLOY_PATH --network \"rinkeby\"",
     "deploy:fe:dev": "npm run build:fe:dev && firebase deploy --only hosting:develop",
     "verify:rinkeby": "npx hardhat --network \"rinkeby\" etherscan-verify",
     "node": "npx hardhat node",
