@@ -8,9 +8,10 @@ import ErrorTransactionMessage from './AlertMessage/ErrorTransactionMessage';
 import { useSelector } from '../../redux/hooks';
 import { useMinter } from '../../hooks/useContract';
 import { ContextPage } from '../ContentPage';
+import { filterByEvent } from '../../utils/calls';
 
 let CONFIRM_TRANSACTION: string = 'confirm';
-let WATING_TRANSACTION: string = 'waiting';
+let WAITING_TRANSACTION: string = 'waiting';
 let SUCCESS_TRANSACTION: string = 'finish';
 let ERROR_TRANSACTION: string = 'error';
 
@@ -20,12 +21,13 @@ const AlertPage = () => {
   //const [confirmed, setConfirmed] = useState(false);
   const [isFirstTransaction, setIsFirstTransaction] = useState(false);
   const { status } = useSelector(state => state.app);
+  const { account } = useSelector(state => state.wallet);
   const minterContract = useMinter();
   const { mintAction } = useContext(ContextPage);
 
   const messageComponents = {
     [CONFIRM_TRANSACTION]: () => <ConfirmTransactionMessage />,
-    [WATING_TRANSACTION]: () => <WaitingTransactionMessage />,
+    [WAITING_TRANSACTION]: () => <WaitingTransactionMessage />,
     [SUCCESS_TRANSACTION]: () => (
       <SuccessTransactionMessage
         isFirstTransaction={isFirstTransaction}
@@ -37,25 +39,14 @@ const AlertPage = () => {
 
   useEffect(() => {
     setMessage(status as string);
-
-    minterContract
-      .getPastEvents(
-        'Mint',
-        {
-          filter: { to: '0xb57CFE0d5950F7760FE90caA831BC8552aA5921C' },
-          fromBlock: 0,
-          toBlock: 'latest',
-        },
-        (error, data) => console.log(data)
-      )
-      .then(events => {
-        if (events.length) {
-          setIsFirstTransaction(false);
-        } else {
-          setIsFirstTransaction(true);
-        }
-      });
-  }, [status, minterContract]);
+    filterByEvent(minterContract, 'Mint', account as string).then(data => {
+      if (data.length) {
+        setIsFirstTransaction(false);
+      } else {
+        setIsFirstTransaction(true);
+      }
+    });
+  }, [status, minterContract, account]);
 
   return (
     <div className="modal">
