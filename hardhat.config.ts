@@ -8,6 +8,7 @@ import 'hardhat-typechain';
 import 'solidity-coverage';
 import { HardhatUserConfig } from 'hardhat/types';
 import { task } from 'hardhat/config';
+import { formatEther } from '@ethersproject/units';
 
 const {
   ALCHEMY_KEY,
@@ -27,6 +28,21 @@ task('accounts', 'Prints the list of accounts', async (args, hre) => {
   for (const account of accounts) {
     console.log(await account.address);
   }
+});
+
+task('addSsm', 'Add new ssm to oracle module').setAction(async (args, hre) => {
+  const [owner] = await hre.ethers.getSigners();
+  console.log(`Owner ${owner.address}`);
+
+  const { spot, ssm, key } = args;
+  if (!spot || !ssm || !key) return;
+
+  const GSpot = await hre.ethers.getContractFactory('GSpot');
+
+  const gSpot = GSpot.attach(spot);
+  await gSpot.connect(owner).addSsm(key, ssm);
+
+  console.log(`Fetch price: ${formatEther(await gSpot.read())}`);
 });
 
 const config: HardhatUserConfig = {
