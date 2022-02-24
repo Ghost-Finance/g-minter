@@ -26,8 +26,8 @@ const useStyle = makeStyles((theme: Theme) =>
       width: 'calc(50% - 40px)',
     },
     boxMessage: {
-      marginTop: 150,
-      marginBottom: 150,
+      marginTop: '6.5rem',
+      marginBottom: '6.5rem',
       [theme.breakpoints.down('md')]: {
         marginTop: 0,
         marginBottom: 0,

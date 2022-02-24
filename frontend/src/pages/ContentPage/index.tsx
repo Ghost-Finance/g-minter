@@ -11,8 +11,10 @@ export interface Props {
 export const ContextPage = createContext({
   redirect: false,
   redirectHome: false,
+  mintAction: false,
   setRedirect: (value: any) => {},
   setRedirectHome: (value: any) => {},
+  setMintAction: (value: any) => {},
 });
 
 export const ContentPage = (props: Props) => {

@@ -11,8 +11,13 @@ import BurnPage from '../BurnPage';
 import MintPage from '../MintPage';
 
 const MintAndBurnPage = () => {
-  const { redirect, redirectHome, setRedirect, setRedirectHome } =
-    useRedirect();
+  const {
+    redirect,
+    redirectHome,
+    setRedirect,
+    setRedirectHome,
+  } = useRedirect();
+  const [mintAction, setMintAction] = useState(false);
   const [page, setPage] = useState('mint');
   const classes = useStyles();
 
@@ -22,7 +27,14 @@ const MintAndBurnPage = () => {
 
   return (
     <ContextPage.Provider
-      value={{ redirect, redirectHome, setRedirect, setRedirectHome }}
+      value={{
+        redirect,
+        redirectHome,
+        mintAction,
+        setRedirect,
+        setRedirectHome,
+        setMintAction,
+      }}
     >
       <ContentPage>
         <CardContent typeCard={page}>
