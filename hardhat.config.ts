@@ -6,17 +6,19 @@ import '@nomiclabs/hardhat-etherscan';
 import '@nomiclabs/hardhat-waffle';
 import 'hardhat-typechain';
 import 'solidity-coverage';
-import { HardhatUserConfig } from 'hardhat/types';
+import { HardhatUserConfig, NetworkUserConfig } from 'hardhat/types';
 import { task } from 'hardhat/config';
 import { formatEther } from '@ethersproject/units';
 
 const {
   ALCHEMY_KEY,
-  INFURA_PROJECT_ID,
+  INFURA_PROJECT_URL,
   MNEMONIC_SEED,
   PRIVATE_KEY = '',
   SECOND_PRIVATE_KEY,
   ETHERSCAN_API_KEY,
+  GAS_PRICE,
+  GAS_LIMIT,
 } = process.env;
 
 const accounts =
@@ -64,6 +66,26 @@ task('addSsm', 'Add new ssm to oracle module')
     console.log(`Add new ssm feed price for synths`);
   });
 
+const getNetworkConfig = (chainId: number) => {
+  if (!INFURA_PROJECT_URL || !PRIVATE_KEY || !GAS_LIMIT || !GAS_PRICE) {
+    return {
+      url: 'please update .env file',
+    } as NetworkUserConfig;
+  }
+
+  return {
+    chainId,
+    url: INFURA_PROJECT_URL,
+    accounts: [PRIVATE_KEY],
+    gas: Number(GAS_LIMIT),
+    gasPrice: Number(GAS_PRICE) * 1000000000, // gwei unit
+    timeout: 600 * 1000, // milliseconds
+    throwOnCallFailures: true,
+    throwOnTransactionFailures: true,
+    loggingEnabled: true,
+  } as NetworkUserConfig;
+};
+
 const config: HardhatUserConfig = {
   solidity: {
     version: '0.8.0',
@@ -84,16 +106,7 @@ const config: HardhatUserConfig = {
   },
 
   networks: {
-    rinkeby: {
-      url: `https://rinkeby.infura.io/v3/${INFURA_PROJECT_ID}`,
-      // url:
-      //   'https://eth-rinkeby.alchemyapi.io/v2/I3n9-yYF98CHuv4s36G0rjfJeW6rwfDI',
-      accounts: accounts,
-      live: true,
-      saveDeployments: true,
-      gas: 12500000,
-      gasPrice: 1000000012,
-    },
+    rinkeby: getNetworkConfig(4),
     hardhat: {
       chainId: 1337,
       accounts: {
@@ -106,6 +119,6 @@ const config: HardhatUserConfig = {
       gasPrice: 5000000000000,
     },
   },
-};
+} as HardhatUserConfig;
 
 export default config;
