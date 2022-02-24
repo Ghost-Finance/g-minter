@@ -77,6 +77,7 @@ const MainPage = () => {
   } = useSelector(state => state.app);
   const { account, network } = useSelector(state => state.wallet);
   const dispatch = useDispatch();
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     dispatch(setStatus('pending'));
@@ -222,12 +223,26 @@ const MainPage = () => {
             justify="flex-start"
             alignContent="center"
           >
-            <Grid item xs={8} sm spacing={2} style={{ marginTop: 40 }}>
+            <Grid
+              item
+              xs={8}
+              sm
+              spacing={2}
+              style={{ marginTop: 40 }}
+              className={classes.walletContainer}
+            >
               <div className={classes.walletGrid}>
                 <ConnectWallet />
               </div>
             </Grid>
-            <Grid item xs={8} sm spacing={2} alignContent="center">
+            <Grid
+              item
+              xs={8}
+              sm
+              spacing={2}
+              alignContent="center"
+              className={classes.center}
+            >
               <InvalidNetwork
                 isOpen={showDialogWrongNetwork}
                 targetNetwork={networkName}

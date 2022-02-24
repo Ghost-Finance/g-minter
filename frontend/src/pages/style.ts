@@ -8,7 +8,9 @@ const useStyle = makeStyles((theme: Theme) =>
       marginTop: 20,
     },
     contentCard: {
-      width: '100%',
+      // width: '100%',
+      width: '66%',
+      justifyContent: 'space-between',
     },
     link: {
       textDecoration: 'none',

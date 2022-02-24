@@ -57,7 +57,7 @@ export const ContentPage = (props: Props) => {
               <ButtonForm text="Cancel" className={classes.buttonCancel} />
             </Link>
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={3}>
             <ConnectWallet />
           </Grid>
         </Grid>

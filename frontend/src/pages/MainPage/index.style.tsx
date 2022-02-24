@@ -8,6 +8,10 @@ export const useStyles = makeStyles((theme: Theme) =>
       height: '100%',
       flexDirection: 'row',
       flexFlow: 'row',
+      [theme.breakpoints.down('md')]: {
+        flexDirection: 'column',
+        flexFlow: 'column',
+      },
     },
     pageActived: {
       display: 'flex',
@@ -24,11 +28,9 @@ export const useStyles = makeStyles((theme: Theme) =>
     },
     main: {
       flexGrow: 1,
-      paddingLeft: theme.spacing(25),
-      paddingRight: theme.spacing(25),
+      padding: '0 10%',
       [theme.breakpoints.down('md')]: {
-        paddingLeft: theme.spacing(3),
-        paddingRight: theme.spacing(3),
+        padding: '0 5%',
       },
     },
     content: {
@@ -40,10 +42,8 @@ export const useStyles = makeStyles((theme: Theme) =>
     text: {
       color: theme.palette.primary.contrastText,
       fontSize: '1.125rem',
-      paddingLeft: 10,
       lineHeight: 2,
       [theme.breakpoints.down('md')]: {
-        paddingLeft: 0,
         fontSize: '1rem',
       },
     },
@@ -58,6 +58,13 @@ export const useStyles = makeStyles((theme: Theme) =>
       width: '100%',
       height: '100%',
     },
+    center: {
+      width: '100%',
+      maxWidth: '580px',
+      [theme.breakpoints.down('md')]: {
+        maxWidth: '100%',
+      },
+    },
     item: {
       marginTop: theme.spacing(20),
       [theme.breakpoints.down('md')]: {
@@ -68,6 +75,13 @@ export const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       flexFlow: 'row',
       justifyContent: 'flex-end',
+      width: '100%',
+    },
+    walletContainer: {
+      [theme.breakpoints.down('md')]: {
+        width: '100%',
+        maxWidth: '100%',
+      },
     },
     marginLogo: {
       marginLeft: '70px',

@@ -9,7 +9,7 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     cardForm: {
       marginTop: 20,
-      width: '62%',
+      width: '100%',
       backgroundColor: '#393939',
       border: 1,
       [theme.breakpoints.down('md')]: {

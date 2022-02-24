@@ -2,29 +2,25 @@ import { makeStyles, Theme } from '@material-ui/core';
 
 const useStyle = makeStyles((theme: Theme) => ({
   root: {
-    [theme.breakpoints.up('sm')]: {
-      width: 400,
-      flexShrink: 0,
-    },
+    width: '25%',
   },
   drawerPaper: {
-    width: 400,
     zIndex: 100,
     left: '80px',
+    width: '25%',
     backgroundColor: theme.palette.primary.dark,
     [theme.breakpoints.down('md')]: {
-      width: 300,
+      position: 'relative',
+      left: 0,
+      width: '100vw',
     },
   },
   drawerPaperWithoutBackground: {
-    width: 400,
+    //  width: '100%',
     zIndex: 100,
     left: 0,
     backgroundColor: 'transparent',
     border: 0,
-    [theme.breakpoints.down('md')]: {
-      width: 300,
-    },
   },
   content: {
     display: 'flex',
@@ -32,6 +28,9 @@ const useStyle = makeStyles((theme: Theme) => ({
     alignItems: 'center',
     paddingTop: '48px',
     padding: theme.spacing(1),
+    [theme.breakpoints.down('md')]: {
+      paddingTop: '22px',
+    },
   },
 }));
 
