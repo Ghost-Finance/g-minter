@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/core';
 
-export default makeStyles((theme) => ({
+export default makeStyles(theme => ({
   root: {
     marginTop: '10px',
     marginBottom: '20px',
@@ -12,6 +12,9 @@ export default makeStyles((theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#414141',
+    [theme.breakpoints.down('sm')]: {
+      width: '75vw',
+    },
   },
   value: {
     color: theme.palette.secondary.contrastText,

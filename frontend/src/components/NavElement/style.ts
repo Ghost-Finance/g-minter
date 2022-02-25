@@ -21,6 +21,11 @@ const useStyle = makeStyles((theme: Theme) => ({
     left: 0,
     backgroundColor: 'transparent',
     border: 0,
+    [theme.breakpoints.down('sm')]: {
+      position: 'static !important',
+      overflowY: 'visible !important',
+      flexDirection: 'row !important',
+    },
   },
   content: {
     display: 'flex',

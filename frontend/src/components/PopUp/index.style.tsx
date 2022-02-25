@@ -14,6 +14,9 @@ const useStyle = makeStyles((theme: Theme) =>
       backgroundRepeat: 'no-repeat',
       backgroundSize: '101%',
       padding: '14rem 0 7rem',
+      [theme.breakpoints.down('sm')]: {
+        backgroundSize: 'cover',
+      },
     },
     closePopUp: {
       backgroundColor: theme?.palette.primary.dark,
@@ -38,6 +41,13 @@ const useStyle = makeStyles((theme: Theme) =>
       top: '0',
       zIndex: 210,
       width: '40%',
+
+      [theme.breakpoints.down('sm')]: {
+        margin: '0 auto',
+        left: '5vw',
+        top: '6rem',
+        width: '90vw',
+      },
     },
     link: {
       color: theme?.palette.secondary.dark,
@@ -86,6 +96,11 @@ const useStyle = makeStyles((theme: Theme) =>
         position: 'absolute',
         top: '-2.5rem',
         width: '60%',
+      },
+
+      [theme.breakpoints.down('sm')]: {
+        margin: '6rem auto 0 auto',
+        width: '70%',
       },
     },
     popUpLogo: {

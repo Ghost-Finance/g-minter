@@ -25,6 +25,9 @@ export const useStyles = makeStyles((theme: Theme) =>
       backgroundPosition: 'center center',
       backgroundSize: 'cover',
       backgroundColor: theme.palette.primary.dark,
+      [theme.breakpoints.down('sm')]: {
+        height: 0,
+      },
     },
     main: {
       flexGrow: 1,

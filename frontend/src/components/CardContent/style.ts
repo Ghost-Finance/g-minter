@@ -14,7 +14,7 @@ const useStyle = makeStyles((theme: Theme) =>
       border: 1,
       [theme.breakpoints.down('md')]: {
         marginTop: 0,
-        width: 'calc(80% - 20px)',
+        width: '100%',
       },
     },
     default: {

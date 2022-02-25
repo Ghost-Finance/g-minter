@@ -17,6 +17,7 @@ export default makeStyles((theme: Theme) => ({
       width: '100%',
       height: '100%',
       float: 'none',
+      padding: theme.spacing(2, 5),
     },
   },
   content: {

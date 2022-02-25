@@ -6,11 +6,18 @@ const useStyle = makeStyles((theme: Theme) =>
       flexGrow: 1,
       color: theme.palette.primary.contrastText,
       marginTop: 20,
+      [theme.breakpoints.down('sm')]: {
+        margin: '4rem 0 0 0',
+      },
     },
     contentCard: {
       // width: '100%',
       width: '66%',
       justifyContent: 'space-between',
+
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+      },
     },
     link: {
       textDecoration: 'none',
