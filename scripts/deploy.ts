@@ -1,8 +1,6 @@
 import { artifacts, ethers } from 'hardhat';
 import { BigNumber, ContractFactory } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
-import * as fs from 'fs';
-import * as fse from 'fs-extra';
 import { CreateSynthEvent } from '../test/types/types';
 import { deployContracts, deployer, saveFrontendFiles } from './utils';
 

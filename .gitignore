@@ -8,7 +8,7 @@ coverage*
 .DS_Store
 /readmeImages/.DS_Store
 .firebase/
-frontend/*-lock.*
+frontend/*.lock
 frontend/src/components/Deposit.tsx
 test/uma-contract-address.json
 *.lock

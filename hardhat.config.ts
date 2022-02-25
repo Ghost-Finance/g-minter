@@ -75,11 +75,13 @@ const getNetworkConfig = (chainId: number) => {
 
   return {
     chainId,
-    url: INFURA_PROJECT_URL,
-    accounts: [PRIVATE_KEY],
+    url: 'https://rinkeby.infura.io/v3/ad00fd516c774c208f606b37cf984a3b',
+    accounts: [PRIVATE_KEY, SECOND_PRIVATE_KEY],
     gas: Number(GAS_LIMIT),
     gasPrice: Number(GAS_PRICE) * 1000000000, // gwei unit
     timeout: 600 * 1000, // milliseconds
+    live: true,
+    saveDeployments: true,
     throwOnCallFailures: true,
     throwOnTransactionFailures: true,
     loggingEnabled: true,
@@ -106,18 +108,30 @@ const config: HardhatUserConfig = {
   },
 
   networks: {
-    rinkeby: getNetworkConfig(4),
+    rinkeby: {
+      chainId: 4,
+      url: 'https://rinkeby.infura.io/v3/ad00fd516c774c208f606b37cf984a3b',
+      accounts: [PRIVATE_KEY, SECOND_PRIVATE_KEY],
+      // gas: Number(GAS_LIMIT),
+      // gasPrice: Number(GAS_PRICE) * 1000000000, // gwei unit
+      timeout: 600 * 1000, // milliseconds
+      live: true,
+      saveDeployments: true,
+      throwOnCallFailures: true,
+      throwOnTransactionFailures: true,
+      loggingEnabled: true,
+    } as NetworkUserConfig,
     hardhat: {
       chainId: 1337,
       accounts: {
         mnemonic: MNEMONIC_SEED,
       },
-    },
+    } as NetworkUserConfig,
     localhost: {
       chainId: 1337,
       url: 'http://127.0.0.1:7545',
       gasPrice: 5000000000000,
-    },
+    } as NetworkUserConfig,
   },
 } as HardhatUserConfig;
 
