@@ -8,7 +8,6 @@ import 'hardhat-typechain';
 import 'solidity-coverage';
 import { HardhatUserConfig, NetworkUserConfig } from 'hardhat/types';
 import { task } from 'hardhat/config';
-import { formatEther } from '@ethersproject/units';
 
 const {
   ALCHEMY_KEY,
@@ -75,7 +74,7 @@ const getNetworkConfig = (chainId: number) => {
 
   return {
     chainId,
-    url: 'https://rinkeby.infura.io/v3/ad00fd516c774c208f606b37cf984a3b',
+    url: INFURA_PROJECT_URL,
     accounts: [PRIVATE_KEY, SECOND_PRIVATE_KEY],
     gas: Number(GAS_LIMIT),
     gasPrice: Number(GAS_PRICE) * 1000000000, // gwei unit
@@ -108,19 +107,7 @@ const config: HardhatUserConfig = {
   },
 
   networks: {
-    rinkeby: {
-      chainId: 4,
-      url: 'https://rinkeby.infura.io/v3/ad00fd516c774c208f606b37cf984a3b',
-      accounts: [PRIVATE_KEY, SECOND_PRIVATE_KEY],
-      // gas: Number(GAS_LIMIT),
-      // gasPrice: Number(GAS_PRICE) * 1000000000, // gwei unit
-      timeout: 600 * 1000, // milliseconds
-      live: true,
-      saveDeployments: true,
-      throwOnCallFailures: true,
-      throwOnTransactionFailures: true,
-      loggingEnabled: true,
-    } as NetworkUserConfig,
+    rinkeby: getNetworkConfig(4),
     hardhat: {
       chainId: 1337,
       accounts: {
