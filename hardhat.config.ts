@@ -87,7 +87,7 @@ const getNetworkConfig = (chainId: number) => {
   } as NetworkUserConfig;
 };
 
-const config: HardhatUserConfig = {
+module.exports = {
   solidity: {
     version: '0.8.0',
     settings: {
@@ -121,5 +121,3 @@ const config: HardhatUserConfig = {
     } as NetworkUserConfig,
   },
 } as HardhatUserConfig;
-
-export default config;
