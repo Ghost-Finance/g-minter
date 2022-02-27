@@ -8,6 +8,7 @@ import 'hardhat-typechain';
 import 'solidity-coverage';
 import { HardhatUserConfig, NetworkUserConfig } from 'hardhat/types';
 import { task } from 'hardhat/config';
+import { constants } from 'ethers';
 
 const {
   ALCHEMY_KEY,
@@ -16,12 +17,35 @@ const {
   PRIVATE_KEY = '',
   SECOND_PRIVATE_KEY,
   ETHERSCAN_API_KEY,
+  CHAIN_ID,
   GAS_PRICE,
   GAS_LIMIT,
 } = process.env;
 
 const accounts =
   PRIVATE_KEY.length > 0 ? [PRIVATE_KEY, SECOND_PRIVATE_KEY] : [];
+
+const getNetworkConfig = (chainId: number) => {
+  if (!INFURA_PROJECT_URL || !PRIVATE_KEY || !GAS_LIMIT || !GAS_PRICE) {
+    return {
+      url: 'please update .env file',
+    } as NetworkUserConfig;
+  }
+
+  return {
+    chainId,
+    url: INFURA_PROJECT_URL,
+    accounts: [PRIVATE_KEY, SECOND_PRIVATE_KEY],
+    gas: Number(GAS_LIMIT),
+    gasPrice: Number(GAS_PRICE) * 1000000000, // gwei unit
+    timeout: 600 * 1000, // milliseconds
+    live: true,
+    saveDeployments: true,
+    throwOnCallFailures: true,
+    throwOnTransactionFailures: true,
+    loggingEnabled: true,
+  } as NetworkUserConfig;
+};
 
 task('accounts', 'Prints the list of accounts', async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -65,29 +89,7 @@ task('addSsm', 'Add new ssm to oracle module')
     console.log(`Add new ssm feed price for synths`);
   });
 
-const getNetworkConfig = (chainId: number) => {
-  if (!INFURA_PROJECT_URL || !PRIVATE_KEY || !GAS_LIMIT || !GAS_PRICE) {
-    return {
-      url: 'please update .env file',
-    } as NetworkUserConfig;
-  }
-
-  return {
-    chainId,
-    url: INFURA_PROJECT_URL,
-    accounts: [PRIVATE_KEY, SECOND_PRIVATE_KEY],
-    gas: Number(GAS_LIMIT),
-    gasPrice: Number(GAS_PRICE) * 1000000000, // gwei unit
-    timeout: 600 * 1000, // milliseconds
-    live: true,
-    saveDeployments: true,
-    throwOnCallFailures: true,
-    throwOnTransactionFailures: true,
-    loggingEnabled: true,
-  } as NetworkUserConfig;
-};
-
-module.exports = {
+const config: HardhatUserConfig = {
   solidity: {
     version: '0.8.0',
     settings: {
@@ -107,7 +109,7 @@ module.exports = {
   },
 
   networks: {
-    rinkeby: getNetworkConfig(4),
+    rinkeby: getNetworkConfig(Number(CHAIN_ID)),
     hardhat: {
       chainId: 1337,
       accounts: {
@@ -121,3 +123,6 @@ module.exports = {
     } as NetworkUserConfig,
   },
 } as HardhatUserConfig;
+
+console.log(config);
+export default config;
