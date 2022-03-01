@@ -223,3 +223,12 @@ export const calculateCRatio = async (
     debtAmount.div(parseUnits(oneEther.toString())),
   ];
 };
+
+export const getSynthAmount = async (
+  contract: Contract,
+  key: string,
+  account: string
+) => {
+  debugger;
+  return contract.methods.read(key).call({ from: account });
+};
