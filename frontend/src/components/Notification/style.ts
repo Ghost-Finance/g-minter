@@ -14,6 +14,15 @@ const useStyle = makeStyles((theme: Theme) =>
     standardInfo: {
       backgroundColor: theme.brand.dark
     },
+    standardSuccess: {
+      backgroundColor: theme.palette.success.main,
+    },
+    standardError: {
+      backgroundColor: theme.palette.error.main,
+    },
+    standardWarning: {
+      backgroundColor: theme.palette.warning.main,
+    }
   })
 );
 

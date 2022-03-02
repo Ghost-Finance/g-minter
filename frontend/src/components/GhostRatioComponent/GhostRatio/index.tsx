@@ -93,6 +93,7 @@ const GhostRatio = () => {
           icon={<SpaceXPulseIcon />}
           message={`Welcome to Defi revolution`}
           severity="warning"
+          color="info"
         />
       </>
     );
