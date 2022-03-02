@@ -10,8 +10,8 @@
     "test": "npx hardhat test",
     "test:local": "npx hardhat --network localhost test",
     "test:coverage": "npx hardhat coverage --solcoverjs \".solcover.js\"",
-    "deploy:local": "npx hardhat run scripts/deploy.ts --network \"localhost\"",
-    "deploy:rinkeby": "npx hardhat run scripts/deploy.ts --network \"rinkeby\"",
+    "deploy:local": "npx hardhat run $DEPLOY_PATH --network \"localhost\" ",
+    "deploy:rinkeby": "npx hardhat run $DEPLOY_PATH --network \"rinkeby\"",
     "deploy:fe:dev": "npm run build:fe:dev && firebase deploy --only hosting:develop",
     "verify:rinkeby": "npx hardhat --network \"rinkeby\" etherscan-verify",
     "node": "npx hardhat node",
@@ -33,7 +33,7 @@
   "author": "tyl3r<chineblane@gmail.com>",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.0",
-    "@nomiclabs/hardhat-etherscan": "^2.1.6",
+    "@nomiclabs/hardhat-etherscan": "^3.0.1",
     "@nomiclabs/hardhat-waffle": "^2.0.0",
     "@openzeppelin/contracts": "^4.2.0",
     "@typechain/ethers-v5": "^4.0.0",
@@ -55,7 +55,7 @@
     "pretty-quick": "^2.0.1",
     "solidity-coverage": "^0.7.17",
     "ts-generator": "^0.1.1",
-    "ts-node": "^9.0.0",
+    "ts-node": "9.0.0",
     "typechain": "^4.0.0",
     "typescript": "^4.1.2"
   },

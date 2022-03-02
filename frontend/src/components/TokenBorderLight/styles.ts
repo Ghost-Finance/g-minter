@@ -10,12 +10,18 @@ export default makeStyles(theme => ({
     border: `4px solid #414141`,
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: theme.palette.primary.main,
   },
-  value: {
-    color: theme.palette.secondary.contrastText,
+  label: {
+    flex: 'none',
+  },
+  priceLabel: {
+    display: 'flex',
+    justifyContent: 'space-around',
+    alignItems: 'baseline',
+    '&>p': {
+      color: theme.palette.secondary.dark,
+    }
   },
   center: {
     flexDirection: 'row',
