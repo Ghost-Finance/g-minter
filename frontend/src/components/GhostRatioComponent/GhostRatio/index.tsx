@@ -9,11 +9,13 @@ import { stakesData, SynthData } from '../../../config/synths';
 import { useSelector } from '../../../redux/hooks';
 import { getSynthAmount } from '../../../utils/calls';
 import { formatBalance, bigNumberToFloat } from '../../../utils/StringUtils';
+import { SpaceXPulseIcon } from '../../Icons';
 import CRatio from '../../CRatio';
 import useStyles from './styles';
 import theme from '../../../theme.style';
 import { useGSpot } from '../../../hooks/useContract';
 import { gSpotAddress } from '../../../utils/constants';
+import Notification from '../../Notification';
 
 const GhostRatio = () => {
   const classes = useStyles(theme);
@@ -87,6 +89,11 @@ const GhostRatio = () => {
               />
             ))}
         </ListSynths>
+        <Notification
+          icon={<SpaceXPulseIcon />}
+          message={`Welcome to Defi revolution`}
+          severity="warning"
+        />
       </>
     );
   };

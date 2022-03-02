@@ -20,7 +20,7 @@ export default makeStyles(theme => ({
     justifyContent: 'space-around',
     alignItems: 'baseline',
     '&>p': {
-      color: theme.palette.secondary.contrastText,
+      color: theme.palette.secondary.dark,
     }
   },
   center: {
