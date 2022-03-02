@@ -3,6 +3,7 @@ import { Box } from '@material-ui/core';
 import ListSynths from '../../ListSynths';
 import Token from '../../Token';
 import TokenLight from '../../TokenLight';
+import TokenBorderLight from '../../TokenBorderLight';
 import { GhostIcon, DaiIcon, GdaiIcon, GhoIcon } from '../../Icons';
 import { stakesData, SynthData } from '../../../config/synths';
 import { useSelector } from '../../../redux/hooks';
@@ -77,18 +78,12 @@ const GhostRatio = () => {
           {stakesData
             .map(listTokenSynth)
             .map((args: SynthData, key: number) => (
-              <TokenLight
+              <TokenBorderLight
                 key={key}
                 label={args.subtitle}
-                icon={
-                  <img
-                    src={args.logo}
-                    className={classes.logo}
-                    alt={args.title}
-                  />
-                }
-                amount={'0'}
-                valueNumber={args.amount || ''}
+                icon={<img src={args.logo} alt={args.title} />}
+                amount={0}
+                valueNumber={`${args.amount || ''} gDai`}
               />
             ))}
         </ListSynths>
