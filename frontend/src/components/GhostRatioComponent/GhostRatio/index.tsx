@@ -4,10 +4,10 @@ import ListSynths from '../../ListSynths';
 import Token from '../../Token';
 import TokenLight from '../../TokenLight';
 import { GhostIcon, DaiIcon, GdaiIcon, GhoIcon } from '../../Icons';
-import { stakesData, SythData } from '../../../config/synths';
+import { stakesData, SynthData } from '../../../config/synths';
 import { useSelector } from '../../../redux/hooks';
 import { getSynthAmount } from '../../../utils/calls';
-import { formatBalance } from '../../../utils/StringUtils';
+import { formatBalance, bigNumberToFloat } from '../../../utils/StringUtils';
 import CRatio from '../../CRatio';
 import useStyles from './styles';
 import theme from '../../../theme.style';
@@ -30,12 +30,18 @@ const GhostRatio = () => {
     synthDebtPrice,
   } = app;
 
-  async function synthAmount(key: string) {
-    debugger;
-    const result = await getSynthAmount(gSpotContract, key, account as string);
+  const getSynthAmountByKey = async (key: string) => {
+    const amount = await getSynthAmount(gSpotContract, key, account as string);
+    return bigNumberToFloat(amount.toString());
+  };
 
-    return formatBalance(result);
-  }
+  const listTokenSynth = (part: SynthData) => {
+    getSynthAmountByKey(part.key).then((amount) => (part.amount = amount));
+
+    return {
+      ...part,
+    };
+  };
 
   const tokenValues = () => (
     <>
@@ -52,32 +58,43 @@ const GhostRatio = () => {
     </>
   );
 
-  const tokenLightValues = () => (
-    <>
-      <TokenLight
-        icon={<GdaiIcon />}
-        label="gDAI"
-        amount={formatBalance(Number(synthDebt || '0'))}
-        valueNumber={synthDebtPrice || '$ 0,00'}
-      />
-      <TokenLight
-        icon={<GhoIcon />}
-        label="GHO"
-        amount={formatBalance(Number(collateralBalance || '0'))}
-        valueNumber={collateralBalancePrice || '$ 0,00'}
-      />
-      <ListSynths label={'Staking'} isSubtitle={true}>
-        {stakesData.map((synth: SythData) => (
-          <Token
-            icon={synth.logo}
-            label={synth.subtitle}
-            valueNumber={synth.key ? Number(synthAmount(synth.key) || '0') : 0}
-          />
-        ))}
-      </ListSynths>
-    </>
-  );
-
+  const tokenLightValues = () => {
+    return (
+      <>
+        <TokenLight
+          icon={<GdaiIcon />}
+          label="gDAI"
+          amount={formatBalance(Number(synthDebt || '0'))}
+          valueNumber={synthDebtPrice || '$ 0,00'}
+        />
+        <TokenLight
+          icon={<GhoIcon />}
+          label="GHO"
+          amount={formatBalance(Number(collateralBalance || '0'))}
+          valueNumber={collateralBalancePrice || '$ 0,00'}
+        />
+        <ListSynths label={'Staking'} isSubtitle={true}>
+          {stakesData
+            .map(listTokenSynth)
+            .map((args: SynthData, key: number) => (
+              <TokenLight
+                key={key}
+                label={args.subtitle}
+                icon={
+                  <img
+                    src={args.logo}
+                    className={classes.logo}
+                    alt={args.title}
+                  />
+                }
+                amount={'0'}
+                valueNumber={args.amount || ''}
+              />
+            ))}
+        </ListSynths>
+      </>
+    );
+  };
   useEffect(() => {
     setPosition(
       parseInt(collateralBalance || '0') > 0 && parseInt(synthDebt || '0') > 0

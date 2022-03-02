@@ -8,7 +8,6 @@ import contractAddress from '../contracts/contract-address.json';
 
 const useContract = (abi: any, address: string) => {
   const web3 = useWeb3();
-  debugger;
   const [contract, setContract] = useState(new web3.eth.Contract(abi, address));
 
   useEffect(() => {

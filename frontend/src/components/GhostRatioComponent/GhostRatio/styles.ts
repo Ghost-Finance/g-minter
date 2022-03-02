@@ -22,4 +22,8 @@ export default makeStyles((theme: Theme) => ({
     flexFlow: 'column',
     padding: '25px',
   },
+  logo: {
+    width: 40,
+    height: 40,
+  },
 }));

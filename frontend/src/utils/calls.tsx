@@ -229,6 +229,5 @@ export const getSynthAmount = async (
   key: string,
   account: string
 ) => {
-  debugger;
   return contract.methods.read(key).call({ from: account });
 };
