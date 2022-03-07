@@ -60,6 +60,7 @@ const MainPage = () => {
   } = useRedirect();
   const [rootPage, setRootPageChanged] = useState(true);
   const [stakePage, setStakePage] = useState(false);
+  const [mintAction, setMintAction] = useState(true);
   const [showDialogWrongNetwork, setDialogWrongNetWork] = useState<boolean>(
     false
   );
@@ -289,8 +290,10 @@ const MainPage = () => {
                   value={{
                     redirect,
                     redirectHome,
+                    mintAction,
                     setRedirect,
                     setRedirectHome,
+                    setMintAction,
                   }}
                 >
                   <ContentPage>

@@ -6,20 +6,46 @@ import '@nomiclabs/hardhat-etherscan';
 import '@nomiclabs/hardhat-waffle';
 import 'hardhat-typechain';
 import 'solidity-coverage';
-import { HardhatUserConfig } from 'hardhat/types';
+import { HardhatUserConfig, NetworkUserConfig } from 'hardhat/types';
 import { task } from 'hardhat/config';
+import { constants } from 'ethers';
 
 const {
   ALCHEMY_KEY,
-  INFURA_PROJECT_ID,
+  INFURA_PROJECT_URL,
   MNEMONIC_SEED,
   PRIVATE_KEY = '',
   SECOND_PRIVATE_KEY,
   ETHERSCAN_API_KEY,
+  CHAIN_ID,
+  GAS_PRICE,
+  GAS_LIMIT,
 } = process.env;
 
 const accounts =
   PRIVATE_KEY.length > 0 ? [PRIVATE_KEY, SECOND_PRIVATE_KEY] : [];
+
+const getNetworkConfig = (chainId: number) => {
+  if (!INFURA_PROJECT_URL || !PRIVATE_KEY || !GAS_LIMIT || !GAS_PRICE) {
+    return {
+      url: 'please update .env file',
+    } as NetworkUserConfig;
+  }
+
+  return {
+    chainId,
+    url: INFURA_PROJECT_URL,
+    accounts: [PRIVATE_KEY, SECOND_PRIVATE_KEY],
+    gas: Number(GAS_LIMIT),
+    gasPrice: Number(GAS_PRICE) * 1000000000, // gwei unit
+    timeout: 600 * 1000, // milliseconds
+    live: true,
+    saveDeployments: true,
+    throwOnCallFailures: true,
+    throwOnTransactionFailures: true,
+    loggingEnabled: true,
+  } as NetworkUserConfig;
+};
 
 task('accounts', 'Prints the list of accounts', async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -28,6 +54,40 @@ task('accounts', 'Prints the list of accounts', async (args, hre) => {
     console.log(await account.address);
   }
 });
+
+task('string:bytes32', 'Convert string to bytes32')
+  .addParam('value', 'The string to be convertdd')
+  .setAction(async (args: any, hre) => {
+    if (!args?.value) return;
+
+    console.log(hre.ethers.utils.formatBytes32String(args?.value));
+  });
+
+task('addSsm', 'Add new ssm to oracle module')
+  .addParam('spot', 'Spot address')
+  .addParam('ssm', 'Ssm address')
+  .addParam('key', 'Bytes32 address')
+  .setAction(async (args, hre) => {
+    const [owner] = await hre.ethers.getSigners();
+    console.log(`Owner ${owner.address}`);
+
+    const { spot, ssm, key } = args;
+    if (!spot || !ssm || !key) return;
+
+    const GSpot = await hre.ethers.getContractFactory('GSpot');
+    const Ssm = await hre.ethers.getContractFactory('Ssm');
+
+    const gSpotContract = GSpot.attach(spot);
+    const ssmContract = Ssm.attach(ssm);
+
+    const readerRole = await ssmContract.READER_ROLE();
+    await ssmContract
+      .connect(owner)
+      .grantRole(readerRole, gSpotContract.address);
+    await gSpotContract.connect(owner).addSsm(key, ssmContract.address);
+
+    console.log(`Add new ssm feed price for synths`);
+  });
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -49,28 +109,20 @@ const config: HardhatUserConfig = {
   },
 
   networks: {
-    rinkeby: {
-      url: `https://rinkeby.infura.io/v3/${INFURA_PROJECT_ID}`,
-      // url:
-      //   'https://eth-rinkeby.alchemyapi.io/v2/I3n9-yYF98CHuv4s36G0rjfJeW6rwfDI',
-      accounts: accounts,
-      live: true,
-      saveDeployments: true,
-      gas: 12500000,
-      gasPrice: 1000000012,
-    },
+    rinkeby: getNetworkConfig(Number(CHAIN_ID)),
     hardhat: {
       chainId: 1337,
       accounts: {
         mnemonic: MNEMONIC_SEED,
       },
-    },
+    } as NetworkUserConfig,
     localhost: {
       chainId: 1337,
       url: 'http://127.0.0.1:7545',
       gasPrice: 5000000000000,
-    },
+    } as NetworkUserConfig,
   },
-};
+} as HardhatUserConfig;
 
+console.log(config);
 export default config;

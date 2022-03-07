@@ -12,6 +12,7 @@ import { convertCurrency } from '../utils';
 type T = {
   label: string;
   icon?: JSX.Element;
+  amount?: number;
   valueNumber: number | string;
   center?: boolean;
   full?: boolean;
@@ -20,6 +21,7 @@ type T = {
 const TokenBorderLight = ({
   label,
   icon,
+  amount,
   valueNumber,
   center,
   full,
@@ -32,14 +34,14 @@ const TokenBorderLight = ({
     </ListItemAvatar>
   );
 
-  const _label = <ListItemText primary={label} />;
+  const _label = <ListItemText primary={label} className={classes.label} />;
 
-  const _price = center ? (
-    <ListItemText primary={valueNumber} />
-  ) : (
-    <ListItemSecondaryAction className={classes.value}>
-      {valueNumber}
-    </ListItemSecondaryAction>
+  const _price = (
+    <ListItemText
+      primary={amount}
+      secondary={valueNumber}
+      className={classes.priceLabel}
+    />
   );
 
   return (

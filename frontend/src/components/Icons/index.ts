@@ -4,6 +4,7 @@ import DaiIcon from './DaiIcon';
 import EtherIcon from './EtherIcon';
 import SynthsIcon from './SynthsIcon';
 import SpaceXIcon from './SpaceXIcon';
+import SpaceXPulseIcon from './SpaceXPulseIcon';
 import MintCardIcon from './MintCardIcon';
 import BurnCardIcon from './BurnCardIcon';
 import RewardCardIcon from './RewardCardIcon';
@@ -23,6 +24,7 @@ export {
   BurnCardIcon,
   RewardCardIcon,
   SynthCardIcon,
+  SpaceXPulseIcon,
   GdaiIcon,
   DaiCoinIcon,
   GhoIcon,

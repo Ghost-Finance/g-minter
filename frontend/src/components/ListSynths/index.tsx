@@ -1,7 +1,9 @@
 import React from 'react';
 import { makeStyles, Theme, Typography, List } from '@material-ui/core';
+import { ClassNameMap } from '@material-ui/styles';
 interface Props {
   label: string;
+  isSubtitle?: boolean;
   children?: JSX.Element | JSX.Element[];
 }
 
@@ -9,19 +11,27 @@ const useStyles = makeStyles((theme: Theme) => ({
   root: {
     marginBottom: '10px',
   },
-  label: {
+  title: {
     color: theme.palette.secondary.dark,
     letterSpacing: '0.08em',
-    textTransform: 'uppercase',
+    textTransform: 'capitalize',
     lineHeight: '15px',
+  },
+  subtitle: {
+    fontSize: '13px',
+    marginLeft: '20px',
   },
 }));
 
-const ListSynths = ({ label, children }: Props) => {
+const ListSynths = ({ label, isSubtitle, children }: Props) => {
   const classes = useStyles();
   return (
     <List className={classes.root}>
-      <Typography className={classes.label}>{label}</Typography>
+      <Typography
+        className={`${classes.title} ${(isSubtitle && classes.subtitle) || ''}`}
+      >
+        {label}
+      </Typography>
       {children}
     </List>
   );
