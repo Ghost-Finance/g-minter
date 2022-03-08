@@ -15,9 +15,14 @@ let WAITING_TRANSACTION: string = 'waiting';
 let SUCCESS_TRANSACTION: string = 'finish';
 let ERROR_TRANSACTION: string = 'error';
 
-const AlertPage = () => {
+interface Props {
+  open?: boolean;
+}
+
+const AlertPage = ({ open }: Props) => {
   const classes = useStyle();
-  const [message, setMessage] = useState('confirm');
+  const [message, setMessage] = useState('');
+  const [messageAction, setMessageAction] = useState('');
   //const [confirmed, setConfirmed] = useState(false);
   const [isFirstTransaction, setIsFirstTransaction] = useState(false);
   const { status } = useSelector((state) => state.app);
@@ -31,14 +36,17 @@ const AlertPage = () => {
     [SUCCESS_TRANSACTION]: () => (
       <SuccessTransactionMessage
         isFirstTransaction={isFirstTransaction}
-        currentAction={action}
+        currentAction={messageAction as string}
       />
     ),
     [ERROR_TRANSACTION]: () => <ErrorTransactionMessage />,
   };
 
   useEffect(() => {
-    setMessage(status as string);
+    setMessage(
+      (status as string) === 'success' ? 'finish' : (status as string)
+    );
+    setMessageAction(action);
     filterByEvent(minterContract, 'Mint', account as string).then((data) => {
       if (data.length) {
         setIsFirstTransaction(false);
@@ -46,16 +54,17 @@ const AlertPage = () => {
         setIsFirstTransaction(true);
       }
     });
-  }, [status, minterContract, account]);
-
+  }, [status, action, minterContract, account]);
+  debugger;
   return (
-    <div className="modal">
+    <div
+      className={`${classes.alert} ${open ? classes.active : classes.close}`}
+    >
       <Grid container direction="column" className={classes.root}>
         <Grid className={classes.paperContent} item>
           <div className={classes.cardForm}>
-            {(messageComponents[message as string] &&
-              messageComponents[message as string]()) ||
-              messageComponents[CONFIRM_TRANSACTION]()}
+            {messageComponents[message as string] &&
+              messageComponents[message as string]()}
           </div>
         </Grid>
       </Grid>

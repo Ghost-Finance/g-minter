@@ -272,7 +272,7 @@ const MainPage = () => {
             <Route
               path="/mint"
               children={
-                <ContentPage>
+                <ContentPage showCancel={true}>
                   <CardContent typeCard="mint">
                     <MintPage title={'Mint your gDai'} />
                   </CardContent>
@@ -283,7 +283,6 @@ const MainPage = () => {
             <Route path="/rewards" children={<RewardPage />} />
             <Route path="/stake" children={<StakePage />} />
             <Route path="/wallet-connect" children={<WalletConnectPage />} />
-            <Route path="/alert" children={<AlertPage />} />
           </Switch>
         </CSSTransition>
       </TransitionGroup>

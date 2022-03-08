@@ -2,11 +2,26 @@ import { makeStyles, createStyles, Theme } from '@material-ui/core';
 
 const useStyle = makeStyles((theme: Theme) =>
   createStyles({
+    alert: {
+      position: 'fixed',
+      zIndex: 100,
+      left: 0,
+      top: 0,
+      width: '100%',
+      height: '100%',
+      overflow: 'auto',
+      backgroundColor: theme.palette.primary.main,
+    },
+    active: {
+      display: 'block',
+    },
+    close: {
+      display: 'none',
+    },
     root: {
       flexGrow: 1,
       color: theme.palette.primary.contrastText,
       left: '30%',
-      width: '100%',
       marginTop: 20,
     },
     paperContent: {
@@ -46,9 +61,9 @@ const useStyle = makeStyles((theme: Theme) =>
       color: '#444',
     },
     button: {
-      backgroundColor: theme.palette.primary.light,
+      backgroundColor: `${theme.palette.primary.light} !important`,
       '&:hover': {
-        backgroundColor: theme.palette.primary.light,
+        backgroundColor: `${theme.palette.primary.light} !important`,
       },
     },
     buttonCancel: {
