@@ -10,6 +10,7 @@ type Props = {
 
 let MintLabel: string = 'mint';
 let BurnLabel: string = 'burn';
+let StakeLabel: string = 'stake';
 
 const CardContent = ({ typeCard, children }: Props) => {
   const classes = useStyle();
