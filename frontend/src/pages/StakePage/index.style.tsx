@@ -9,7 +9,34 @@ const useStyle = makeStyles((theme: Theme) =>
       position: 'absolute',
       top: 0,
       width: '100vw',
+      opacity: '0.5',
     },
+    headerStake: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      marginLeft: '3rem',
+      position: 'absolute',
+      top: '3rem',
+      width: '60vw',
+      zIndex: 210,
+    },
+    cancelButton: {
+      backgroundColor: theme?.palette.primary.dark,
+      '&:hover': {
+        backgroundColor: theme?.palette.primary.light,
+      },
+      borderRadius: '1.5rem',
+      cursor: 'pointer',
+      display: 'inline-block',
+      padding: '1rem 1.125rem',
+    },
+    link: {
+      color: theme?.palette.secondary.dark,
+      textDecoration: 'none',
+      fontSize: '0.825rem',
+      fontWeight: 'bold',
+    },
+    walletGrid: {},
     formWrapper: {
       alignItems: 'center',
       borderBottom: `4px solid ${theme?.brand.main}`,
@@ -52,36 +79,6 @@ const useStyle = makeStyles((theme: Theme) =>
       display: 'flex',
       marginBottom: '1rem',
       height: '3rem',
-    },
-    formOption: {
-      border: 'none',
-      borderRadius: '24px',
-      fontFamily: 'Inter',
-      fontWeight: 700,
-      margin: '0 1rem',
-      padding: '1rem',
-    },
-    formOptionShort: {
-      backgroundColor: theme?.palette.primary.dark,
-      color: theme?.palette.secondary.light,
-      '&:hover': {
-        backgroundColor: theme?.palette.primary.main,
-      },
-    },
-    formOptionLong: {
-      backgroundColor: '#1E2000',
-      color: theme?.brand.main,
-      '&:hover': {
-        backgroundColor: '#2b2e00',
-      },
-    },
-    formOptionImage: {
-      height: '11px',
-      marginRight: '0.5rem',
-      width: '11px',
-    },
-    formOptionImageShort: {
-      transform: 'rotate(270deg)',
     },
     formInfoImage: {
       height: '24px',

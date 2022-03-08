@@ -3,17 +3,30 @@ import { makeStyles, createStyles, Theme } from '@material-ui/core';
 const useStyle = makeStyles((theme: Theme) =>
   createStyles({
     popUpWrapper: {
+      height: '100vh',
       left: '4%',
       position: 'absolute',
-      top: '5vh',
+      top: '0',
       width: '92%',
       zIndex: 200,
     },
     popUp: {
-      backgroundColor: theme?.palette.primary.light,
+      alignItems: 'center',
       backgroundRepeat: 'no-repeat',
       backgroundSize: '101%',
+      display: 'flex',
+      justifyContent: 'center',
       padding: '14rem 0 7rem',
+    },
+    popUpCover: {
+      backgroundColor: 'rgba(51, 51, 51, 0.4)',
+      height: '100%',
+      left: 0,
+      position: 'absolute',
+      pointerEvents: 'none',
+      top: 0,
+      width: '100%',
+      zIndex: 1,
     },
     closePopUp: {
       backgroundColor: theme?.palette.primary.dark,
@@ -53,7 +66,9 @@ const useStyle = makeStyles((theme: Theme) =>
       height: '48px',
       width: '48px',
     },
-    prevButton: {},
+    prevButton: {
+      marginBottom: '-2px',
+    },
     nextButton: {
       right: '3.5rem',
       transform: 'rotate(180deg)',
@@ -69,16 +84,17 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     popUpContent: {
       alignItems: 'center',
-      backgroundColor: 'rgba(30, 30, 30, 0.5)',
+      backgroundColor: 'rgba(30, 30, 30, 0.8)',
       borderBottom: `4px solid ${theme?.brand.main}`,
       display: 'flex',
       flexDirection: 'column',
-      margin: '2rem 0 0 20.375rem',
+      marginTop: '2rem',
       paddingTop: '2rem',
       position: 'relative',
       width: '40%',
+      zIndex: 2,
       '&::before': {
-        backgroundColor: 'rgba(30, 30, 30, 0.5)',
+        backgroundColor: 'rgba(30, 30, 30, 0.8)',
         borderTopLeftRadius: '48px',
         borderTopRightRadius: '48px',
         content: '""',
@@ -86,6 +102,7 @@ const useStyle = makeStyles((theme: Theme) =>
         position: 'absolute',
         top: '-2.5rem',
         width: '60%',
+        zIndex: 2,
       },
     },
     popUpLogo: {

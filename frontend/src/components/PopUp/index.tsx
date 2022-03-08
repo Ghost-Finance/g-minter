@@ -59,13 +59,11 @@ const PopUp = ({ changeStake }: PopUpProps) => {
           <div className={classes.popUpHeader}>
             <p className={classes.popupText}>Choose a gSynth</p>
             <div>
-              <button
-                className={`prev ${classes.prevButton} ${classes.navButton}`}
-              >
+              <button className={`prev ${classes.navButton}`}>
                 <img
                   alt="Previous slide"
                   src={arrow}
-                  className={classes.buttonImage}
+                  className={`${classes.buttonImage} ${classes.prevButton}`}
                 />
               </button>
               <button
@@ -79,6 +77,7 @@ const PopUp = ({ changeStake }: PopUpProps) => {
               </button>
             </div>
           </div>
+          <div className={classes.popUpCover}></div>
 
           {stakesData.map(item => (
             <SwiperSlide key={item.title}>

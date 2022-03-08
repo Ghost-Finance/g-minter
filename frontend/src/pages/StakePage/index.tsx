@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 
 import useStyle from './index.style';
 import { useSelector } from '../../redux/hooks';
@@ -14,8 +14,9 @@ import PopUp from '../../components/PopUp';
 
 import greyArrow from '../../assets/arrow.png';
 import yellowArrow from '../../assets/arrow-up-yellow.png';
-import gDaiIcon from '../../assets/dai-border.svg';
 import { GdaiIcon } from '../../components/Icons';
+import ConnectWallet from '../../components/Button/ConnectWallet';
+import Checkbox from '../../components/Checkbox';
 
 const StakePage = () => {
   const { account } = useSelector(state => state.wallet);
@@ -54,24 +55,23 @@ const StakePage = () => {
               src={chosenStake.background}
               className={classes.coverImage}
             />
+            <div className={classes.headerStake}>
+              <div className={classes.cancelButton}>
+                <Link to="/" className={classes.link}>
+                  Cancel
+                </Link>
+              </div>
+              <div className={classes.walletGrid}>
+                <ConnectWallet />
+              </div>
+            </div>
           </div>
           <form className={classes.formWrapper} onSubmit={stakeAction}>
             <p className={classes.formTitle}>{chosenStake.title}</p>
             <p className={classes.formSubtitle}>{chosenStake.subtitle}</p>
 
             <div className={classes.formLine}>
-              <ButtonForm
-                className={`${classes.formOption} ${classes.formOptionShort}`}
-              >
-                <>
-                  <img
-                    className={`${classes.formOptionImage} ${classes.formOptionImageShort}`}
-                    alt="Arrow down"
-                    src={greyArrow}
-                  />
-                  Short
-                </>
-              </ButtonForm>
+              <Checkbox image={greyArrow} label="Short" rotate={true} />
               <InputContainer>
                 <img
                   alt={chosenStake.title}
@@ -92,18 +92,7 @@ const StakePage = () => {
                   <ButtonForm text="MAX" className={classes.formInfoMax} />
                 </div>
               </InputContainer>
-              <ButtonForm
-                className={`${classes.formOption} ${classes.formOptionLong}`}
-              >
-                <>
-                  <img
-                    className={classes.formOptionImage}
-                    alt="Arrow up"
-                    src={yellowArrow}
-                  />
-                  Long
-                </>
-              </ButtonForm>
+              <Checkbox image={yellowArrow} label="Long" yellow={true} />
             </div>
 
             <InputContainer>
