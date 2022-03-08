@@ -47,13 +47,12 @@ const BurnPage = () => {
     ...gdaiField
   } = useOnlyDigitField('tel');
 
-  const { account } = useSelector(state => state.wallet);
-  const { balanceOfGdai } = useSelector(state => state.app);
+  const { account } = useSelector((state) => state.wallet);
+  const { balanceOfGdai } = useSelector((state) => state.app);
   const dispatch = useDispatch();
 
-  const { setRedirectHome, setRedirect, setMintAction } = useContext(
-    ContextPage
-  );
+  const { setRedirectHome, setRedirect, setCurrentAction } =
+    useContext(ContextPage);
 
   function dispatchLoading(key: string) {
     dispatch(setStatus(key));
@@ -98,7 +97,7 @@ const BurnPage = () => {
   }
 
   useEffect(() => {
-    setMintAction(false);
+    setCurrentAction('burn');
     setRedirectHome(account === null);
     dispatchLoading('pending');
     setBtnDisabled(true);

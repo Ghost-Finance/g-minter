@@ -49,12 +49,11 @@ const MintPage = ({ title }: Props) => {
   const feedGdaiContract = useFeed(feedGdaiAddress);
 
   const dispatch = useDispatch();
-  const { account } = useSelector(state => state.wallet);
-  const { balanceOfGho } = useSelector(state => state.app);
+  const { account } = useSelector((state) => state.wallet);
+  const { balanceOfGho } = useSelector((state) => state.app);
 
-  const { setRedirectHome, setRedirect, setMintAction } = useContext(
-    ContextPage
-  );
+  const { setRedirectHome, setRedirect, setCurrentAction } =
+    useContext(ContextPage);
   const [btnDisabled, setBtnDisabled] = useState(true);
   const {
     reset: resetGhoField,
@@ -167,7 +166,7 @@ const MintPage = ({ title }: Props) => {
   }
 
   useEffect(() => {
-    setMintAction(true);
+    setCurrentAction('mint');
     setRedirectHome(account === null);
     dispatchLoading('pending');
     setBtnDisabled(true);

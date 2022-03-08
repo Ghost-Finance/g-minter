@@ -11,7 +11,6 @@ import NavElement from '../../components/NavElement';
 import { ContentPage, ContextPage } from '../ContentPage';
 import CardContent from '../../components/CardContent';
 import MintPage from '../MintPage';
-import BurnPage from '../BurnPage';
 import MintAndBurnPage from '../MintAndBurnPage';
 import RewardPage from '../RewardPage';
 import StakePage from '../StakePage';
@@ -51,17 +50,9 @@ const MainPage = () => {
   const pagesWithoutNavElement = ['/alert', '/wallet-connect'];
   const classes = useStyles();
   const location = useLocation();
-  const {
-    redirect,
-    redirectHome,
-    setRedirect,
-    setRedirectHome,
-  } = useRedirect();
   const [rootPage, setRootPageChanged] = useState(true);
-  const [mintAction, setMintAction] = useState(true);
-  const [showDialogWrongNetwork, setDialogWrongNetWork] = useState<boolean>(
-    false
-  );
+  const [showDialogWrongNetwork, setDialogWrongNetWork] =
+    useState<boolean>(false);
   const [cardsDataArray, setCardsDataArray] = useState(cardsData);
   const minterContract = useMinter();
   const feedGhoContract = useFeed(feedGhoAddress);
@@ -75,8 +66,8 @@ const MainPage = () => {
     synthDebt,
     status,
     networkName,
-  } = useSelector(state => state.app);
-  const { account, network } = useSelector(state => state.wallet);
+  } = useSelector((state) => state.app);
+  const { account, network } = useSelector((state) => state.wallet);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -99,7 +90,7 @@ const MainPage = () => {
       if (parseInt(balanceOfGdai || '') <= 0) return;
 
       let cardsDataArrayAfterMint = cardsData.filter(
-        card => card.to !== '/mint' && card.to !== '/stake'
+        (card) => card.to !== '/mint' && card.to !== '/stake'
       );
       cardsDataArrayAfterMint.unshift({
         to: '/stake',
@@ -281,22 +272,11 @@ const MainPage = () => {
             <Route
               path="/mint"
               children={
-                <ContextPage.Provider
-                  value={{
-                    redirect,
-                    redirectHome,
-                    mintAction,
-                    setRedirect,
-                    setRedirectHome,
-                    setMintAction,
-                  }}
-                >
-                  <ContentPage>
-                    <CardContent typeCard="mint">
-                      <MintPage title={'Mint your gDai'} />
-                    </CardContent>
-                  </ContentPage>
-                </ContextPage.Provider>
+                <ContentPage>
+                  <CardContent typeCard="mint">
+                    <MintPage title={'Mint your gDai'} />
+                  </CardContent>
+                </ContentPage>
               }
             />
             <Route path="/mint-burn" children={<MintAndBurnPage />} />

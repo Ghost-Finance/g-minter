@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Grid } from '@material-ui/core';
 import useStyle from './index.style';
+import { ContextPage } from '../ContentPage';
 import ConfirmTransactionMessage from './AlertMessage/ConfirmTransactionMessage';
 import WaitingTransactionMessage from './AlertMessage/WaitingTransactionMessage';
 import SuccessTransactionMessage from './AlertMessage/SuccessTransactionMessage';
 import ErrorTransactionMessage from './AlertMessage/ErrorTransactionMessage';
 import { useSelector } from '../../redux/hooks';
 import { useMinter } from '../../hooks/useContract';
-import { ContextPage } from '../ContentPage';
 import { filterByEvent } from '../../utils/calls';
 
 let CONFIRM_TRANSACTION: string = 'confirm';
@@ -20,10 +20,10 @@ const AlertPage = () => {
   const [message, setMessage] = useState('confirm');
   //const [confirmed, setConfirmed] = useState(false);
   const [isFirstTransaction, setIsFirstTransaction] = useState(false);
-  const { status } = useSelector(state => state.app);
-  const { account } = useSelector(state => state.wallet);
+  const { status } = useSelector((state) => state.app);
+  const { account } = useSelector((state) => state.wallet);
+  const { action } = useContext(ContextPage);
   const minterContract = useMinter();
-  const { mintAction } = useContext(ContextPage);
 
   const messageComponents = {
     [CONFIRM_TRANSACTION]: () => <ConfirmTransactionMessage />,
@@ -31,7 +31,7 @@ const AlertPage = () => {
     [SUCCESS_TRANSACTION]: () => (
       <SuccessTransactionMessage
         isFirstTransaction={isFirstTransaction}
-        isMintAction={mintAction}
+        currentAction={action}
       />
     ),
     [ERROR_TRANSACTION]: () => <ErrorTransactionMessage />,
@@ -39,7 +39,7 @@ const AlertPage = () => {
 
   useEffect(() => {
     setMessage(status as string);
-    filterByEvent(minterContract, 'Mint', account as string).then(data => {
+    filterByEvent(minterContract, 'Mint', account as string).then((data) => {
       if (data.length) {
         setIsFirstTransaction(false);
       } else {

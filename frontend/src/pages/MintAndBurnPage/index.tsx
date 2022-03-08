@@ -11,14 +11,10 @@ import BurnPage from '../BurnPage';
 import MintPage from '../MintPage';
 
 const MintAndBurnPage = () => {
-  const {
-    redirect,
-    redirectHome,
-    setRedirect,
-    setRedirectHome,
-  } = useRedirect();
-  const [mintAction, setMintAction] = useState(false);
+  const { redirect, redirectHome, setRedirect, setRedirectHome } =
+    useRedirect();
   const [page, setPage] = useState('mint');
+  const [action, setCurrentAction] = useState('');
   const classes = useStyles();
 
   const handleChange = (event: React.ChangeEvent<{}>, newPage: string) => {
@@ -30,10 +26,10 @@ const MintAndBurnPage = () => {
       value={{
         redirect,
         redirectHome,
-        mintAction,
+        action,
         setRedirect,
         setRedirectHome,
-        setMintAction,
+        setCurrentAction,
       }}
     >
       <ContentPage>

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 import { Redirect } from 'react-router-dom';
 
 //import { Grid } from '@material-ui/core';
@@ -8,7 +7,7 @@ import { useSelector } from '../../redux/hooks';
 import PopUp from '../../components/PopUp';
 
 const StakePage = () => {
-  const { account } = useSelector(state => state.wallet);
+  const { account } = useSelector((state) => state.wallet);
   const [redirectHome, setRedirectHome] = useState(false);
   const classes = useStyle();
 
