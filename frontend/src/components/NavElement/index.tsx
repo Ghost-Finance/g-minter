@@ -1,6 +1,6 @@
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 import useStyles from './style';
-import { Drawer, Hidden } from '@material-ui/core';
+import { Drawer } from '@material-ui/core';
 
 interface Props {
   children?: JSX.Element[] | JSX.Element;
@@ -13,7 +13,6 @@ const NavElement = ({ children, styleWithBackgound }: Props): ReactElement => {
   return (
     <>
       <nav className={classes.root} aria-label="C-Ratio">
-        {/* <Hidden xsDown implementation="css"> */}
         <Drawer
           classes={{
             paper: styleWithBackgound
@@ -25,7 +24,6 @@ const NavElement = ({ children, styleWithBackgound }: Props): ReactElement => {
         >
           <div className={classes.content}>{children}</div>
         </Drawer>
-        {/* </Hidden> */}
       </nav>
     </>
   );

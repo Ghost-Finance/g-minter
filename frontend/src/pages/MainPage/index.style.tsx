@@ -27,6 +27,7 @@ export const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: theme.palette.primary.dark,
       [theme.breakpoints.down('sm')]: {
         height: 0,
+        display: 'none',
       },
     },
     main: {

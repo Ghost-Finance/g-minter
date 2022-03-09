@@ -34,7 +34,7 @@ const useStyle = makeStyles((theme: Theme) => ({
     },
   },
   button: {
-    width: '325px !important',
+    width: '100%',
     maxWidth: '325px',
     fontWeight: 'bold',
     marginBottom: '90px',

@@ -9,9 +9,10 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     cardForm: {
       marginTop: 20,
-      width: '100%',
+      width: 'calc(100% - 40px)',
       backgroundColor: '#393939',
       border: 1,
+      padding: '0 20px',
       [theme.breakpoints.down('md')]: {
         marginTop: 0,
         width: '100%',
@@ -22,7 +23,8 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     mint: {
       margin: '0 auto',
-      width: '320px !important',
+      width: '100% !important',
+      maxWidth: '320px !important',
       height: '40px',
       backgroundColor: theme.palette.primary.dark,
       borderRadius: '0 0 40px 40px',

@@ -110,7 +110,7 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     topBox: {
       margin: '0 auto',
-      width: '325px !important',
+      width: '100%',
       maxWidth: '325px',
       height: '41px',
       backgroundColor: '#171717',

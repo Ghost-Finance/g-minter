@@ -13,7 +13,7 @@ export default makeStyles(theme => ({
     alignItems: 'center',
     backgroundColor: '#414141',
     [theme.breakpoints.down('sm')]: {
-      width: '75vw',
+      // width: '75vw',
     },
   },
   value: {

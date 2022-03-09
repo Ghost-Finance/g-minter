@@ -3,6 +3,9 @@ import { makeStyles, Theme } from '@material-ui/core';
 const useStyle = makeStyles((theme: Theme) => ({
   root: {
     width: '25%',
+    [theme.breakpoints.down('md')]: {
+      width: '100%',
+    },
   },
   drawerPaper: {
     zIndex: 100,
@@ -16,7 +19,6 @@ const useStyle = makeStyles((theme: Theme) => ({
     },
   },
   drawerPaperWithoutBackground: {
-    //  width: '100%',
     zIndex: 100,
     left: 0,
     backgroundColor: 'transparent',
@@ -35,6 +37,7 @@ const useStyle = makeStyles((theme: Theme) => ({
     padding: theme.spacing(1),
     [theme.breakpoints.down('md')]: {
       paddingTop: '22px',
+      width: '100%',
     },
   },
 }));
