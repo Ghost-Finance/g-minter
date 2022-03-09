@@ -117,7 +117,7 @@ const SuccessTransactionMessage = ({
     ),
     [STAKE]: () => <></>,
   };
-  debugger;
+
   return (
     <div>
       <div className={classes.icon}>
