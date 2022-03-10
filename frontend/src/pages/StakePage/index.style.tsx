@@ -39,7 +39,6 @@ const useStyle = makeStyles((theme: Theme) =>
     walletGrid: {},
     formWrapper: {
       alignItems: 'center',
-      borderBottom: `4px solid ${theme?.brand.main}`,
       backgroundColor: theme?.palette.primary.light,
       display: 'flex',
       flexDirection: 'column',
