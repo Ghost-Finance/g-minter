@@ -12,14 +12,14 @@ export const useStyles = makeStyles((theme: Theme) =>
     pageActived: {
       display: 'flex',
       width: '100%',
-      backgroundColor: theme.palette.primary.dark,
+      backgroundColor: theme.palette.primary.light,
     },
     pageActivedTop: {
       width: '100%',
       height: 300,
       backgroundPosition: 'center center',
       backgroundSize: 'cover',
-      backgroundColor: theme.palette.primary.main,
+      backgroundColor: theme.palette.primary.dark,
     },
     main: {
       flexGrow: 1,

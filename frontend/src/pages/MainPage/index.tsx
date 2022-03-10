@@ -52,18 +52,13 @@ const MainPage = () => {
   const pagesWithoutNavElement = ['/alert', '/wallet-connect'];
   const classes = useStyles();
   const location = useLocation();
-  const {
-    redirect,
-    redirectHome,
-    setRedirect,
-    setRedirectHome,
-  } = useRedirect();
+  const { redirect, redirectHome, setRedirect, setRedirectHome } =
+    useRedirect();
   const [rootPage, setRootPageChanged] = useState(true);
   const [stakePage, setStakePage] = useState(false);
   const [mintAction, setMintAction] = useState(true);
-  const [showDialogWrongNetwork, setDialogWrongNetWork] = useState<boolean>(
-    false
-  );
+  const [showDialogWrongNetwork, setDialogWrongNetWork] =
+    useState<boolean>(false);
   const [cardsDataArray, setCardsDataArray] = useState(cardsData);
   const minterContract = useMinter();
   const feedGhoContract = useFeed(feedGhoAddress);
@@ -77,8 +72,8 @@ const MainPage = () => {
     synthDebt,
     status,
     networkName,
-  } = useSelector(state => state.app);
-  const { account, network } = useSelector(state => state.wallet);
+  } = useSelector((state) => state.app);
+  const { account, network } = useSelector((state) => state.wallet);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -103,7 +98,7 @@ const MainPage = () => {
       if (parseInt(balanceOfGdai || '') <= 0) return;
 
       let cardsDataArrayAfterMint = cardsData.filter(
-        card => card.to !== '/mint' && card.to !== '/stake'
+        (card) => card.to !== '/mint' && card.to !== '/stake'
       );
       cardsDataArrayAfterMint.unshift({
         to: '/stake',
@@ -216,8 +211,13 @@ const MainPage = () => {
           <div>
             <LogoIcon />
           </div>
-          {rootPage ? <GhostRatio /> : <GhostRatioMint />}
-          {stakePage && !rootPage ? <GhostRatioStake /> : <GhostRatio />}
+          {rootPage ? (
+            <GhostRatio />
+          ) : stakePage ? (
+            <GhostRatioStake />
+          ) : (
+            <GhostRatioMint />
+          )}
         </NavElement>
       )}
       {rootPage && status !== 'error' && status !== 'pending' && (
