@@ -53,12 +53,6 @@ const StakePage = () => {
     setValue: setGdaiValue,
     ...gdaiField
   } = useOnlyDigitField('tel');
-  const {
-    reset: resetGSynthField,
-    valid: synthFieldValid,
-    setValue: setSynthValue,
-    ...synthField
-  } = useOnlyDigitField('tel');
   const dispatch = useDispatch();
 
   function dispatchLoading(key: string) {
@@ -177,57 +171,29 @@ const StakePage = () => {
               <div className={classes.formLine}>
                 <Checkbox image={greyArrow} label="Short" rotate={true} />
                 <InputContainer>
-                  <img
-                    alt={chosenStake.title}
-                    src={chosenStake.logo}
-                    className={classes.formInfoImage}
-                  />
-                  <span className={classes.formInfoText}>
-                    {chosenStake.subtitle}
-                  </span>
+                  <GdaiIcon />
+                  <span className={classes.formInfoText}>gDAI</span>
 
                   <NumericalInput
-                    placeholder="0.0"
-                    id="synth"
+                    id="gdai"
+                    placeholder="stake 0.0"
+                    value={gdaiValue}
                     className={classes.formInput}
-                    {...synthField}
+                    {...gdaiField}
                   />
 
                   <div>
-                    <ButtonForm text="MAX" className={classes.formInfoMax} />
+                    <ButtonForm
+                      text="MAX"
+                      className={classes.formInfoMax}
+                      onClick={handleMaxGdai}
+                    />
                   </div>
                 </InputContainer>
                 <Checkbox image={yellowArrow} label="Long" yellow={true} />
               </div>
 
-              <InputContainer>
-                <GdaiIcon />
-                <span className={classes.formInfoText}>gDAI</span>
-
-                <NumericalInput
-                  id="gdai"
-                  placeholder="0.0"
-                  value={gdaiValue}
-                  className={classes.formInput}
-                  {...gdaiField}
-                />
-
-                <div>
-                  <ButtonForm
-                    text="MAX"
-                    className={classes.formInfoMax}
-                    onClick={handleMaxGdai}
-                  />
-                </div>
-              </InputContainer>
-
               <p className={classes.formText}>Gas Fee $0.00/0 GWEI</p>
-
-              {/* <ButtonForm
-                className={classes.formSubmit}
-                text={`Stake in ${chosenStake.subtitle}`}
-                disabled={btnDisabled}
-              /> */}
             </FormBox>
           </div>
         </>
