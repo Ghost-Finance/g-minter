@@ -24,6 +24,10 @@ const useStyle = makeStyles((theme: Theme) =>
     cardForm: {
       marginTop: 20,
       width: 'calc(50% - 40px)',
+      [theme.breakpoints.down('md')]: {
+        width: '100%',
+        padding: '0 20px',
+      },
     },
     boxMessage: {
       marginTop: '6.5rem',

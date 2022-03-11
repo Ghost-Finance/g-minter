@@ -21,8 +21,8 @@ import theme from '../../../theme.style';
 const GhostRatio = () => {
   const classes = useStyles(theme);
   const [position, setPosition] = useState(0);
-  const { account } = useSelector((state) => state.wallet);
-  const app = useSelector((state) => state.app);
+  const { account } = useSelector(state => state.wallet);
+  const app = useSelector(state => state.app);
   const {
     cRatioValue,
     balanceOfGho,
@@ -74,7 +74,7 @@ const GhostRatio = () => {
   }, [collateralBalance, synthDebt, cRatioValue]);
 
   return (
-    <Box component="div" m={3}>
+    <Box component="div" p={3} className={classes.box}>
       <div className={classes.content}>
         <CRatio
           size={200}

@@ -89,7 +89,7 @@ export default makeStyles(theme => ({
     display: 'flex',
     flexFlow: 'row',
     alignItems: 'center',
-    width: '100%',
+    width: 'calc(100% - 24px)',
     padding: theme.spacing(6, 1),
     ...theme.mixins.toolbar,
   },
@@ -114,6 +114,7 @@ export default makeStyles(theme => ({
     justifyContent: 'center',
     paddingLeft: 55,
     paddingRight: 8,
+    width: 'calc(100% - 24px)',
     [theme.breakpoints.down('md')]: {
       padding: '50px 8px',
     },
@@ -129,8 +130,9 @@ export default makeStyles(theme => ({
     display: 'flex',
     flexFlow: 'row',
     justifyItems: 'center',
-    width: '100%',
+    // width: '100%',
     height: '100%',
+    width: 'calc(100% - 24px)',
     padding: theme.spacing(0, 3),
   },
   menuMediaSocialItem: {

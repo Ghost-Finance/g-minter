@@ -35,7 +35,7 @@ const useStyle = makeStyles((theme: Theme) =>
       justifyContent: 'center',
       alignItems: 'center',
       '& > div:nth-child(n)': {
-        width: 80,
+        width: 70,
         height: 40,
         padding: 10,
         marginLeft: 12,
