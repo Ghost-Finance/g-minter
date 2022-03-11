@@ -65,6 +65,9 @@ const useStyle = makeStyles((theme: Theme) =>
       cursor: 'pointer',
       height: '48px',
       width: '48px',
+      '&:first-of-type': {
+        marginRight: '10px',
+      },
     },
     prevButton: {
       marginBottom: '-2px',

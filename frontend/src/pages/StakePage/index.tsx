@@ -17,6 +17,7 @@ import yellowArrow from '../../assets/arrow-up-yellow.png';
 import { GdaiIcon } from '../../components/Icons';
 import ConnectWallet from '../../components/Button/ConnectWallet';
 import Checkbox from '../../components/Checkbox';
+import { classicNameResolver } from 'typescript';
 
 const StakePage = () => {
   const { account } = useSelector(state => state.wallet);
@@ -49,7 +50,7 @@ const StakePage = () => {
 
       {chosenStake && (
         <>
-          <div>
+          <div className={classes.content}>
             <img
               alt={chosenStake.title}
               src={chosenStake.background}

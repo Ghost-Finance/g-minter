@@ -216,8 +216,13 @@ const MainPage = () => {
           <div>
             <LogoIcon />
           </div>
-          {rootPage ? <GhostRatio /> : <GhostRatioMint />}
-          {stakePage && !rootPage ? <GhostRatioStake /> : <GhostRatio />}
+          {rootPage ? (
+            <GhostRatio />
+          ) : stakePage ? (
+            <GhostRatioStake />
+          ) : (
+            <GhostRatioMint />
+          )}
         </NavElement>
       )}
       {rootPage && status !== 'error' && status !== 'pending' && (

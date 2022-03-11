@@ -22,7 +22,8 @@ export default makeStyles((theme: Theme) => ({
   content: {
     width: '100%',
     display: 'flex',
-    flexFlow: 'column',
+    justifyContent: 'center',
+    // flexFlow: 'column',
     padding: '25px',
   },
 }));

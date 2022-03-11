@@ -2,6 +2,11 @@ import { makeStyles, createStyles, Theme } from '@material-ui/core';
 
 const useStyle = makeStyles((theme: Theme) =>
   createStyles({
+    content: {
+      backgroundColor: '#1E1E1E',
+      width: '100vw',
+      minHeight: '100vh',
+    },
     coverImage: {
       height: '300px',
       left: 0,
@@ -19,6 +24,13 @@ const useStyle = makeStyles((theme: Theme) =>
       top: '3rem',
       width: '60vw',
       zIndex: 210,
+      right: '4rem',
+    },
+    link: {
+      color: theme?.palette.secondary.dark,
+      textDecoration: 'none',
+      fontSize: '0.825rem',
+      fontWeight: 'bold',
     },
     cancelButton: {
       backgroundColor: theme?.palette.primary.dark,
@@ -29,12 +41,6 @@ const useStyle = makeStyles((theme: Theme) =>
       cursor: 'pointer',
       display: 'inline-block',
       padding: '1rem 1.125rem',
-    },
-    link: {
-      color: theme?.palette.secondary.dark,
-      textDecoration: 'none',
-      fontSize: '0.825rem',
-      fontWeight: 'bold',
     },
     walletGrid: {},
     formWrapper: {
