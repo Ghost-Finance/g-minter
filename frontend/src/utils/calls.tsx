@@ -215,18 +215,14 @@ export const calculateCRatio = async (
     parseUnits(feedPriceGho.toString())
   );
   const debtValue = debtAmount.mul(parseUnits(feedPriceGdai.toString()));
-  debugger;
-  console.log(
-    collaterlaValue
-      .mul(parseUnits(oneEther.toString()))
-      .div(parseUnits(debtValue.toString()))
-  );
-  console.log(debtAmount.div(parseUnits(oneEther.toString())));
-  debugger;
+  const cRatioValue = debtValue.isZero()
+    ? collaterlaValue.div(parseUnits(oneEther.toString()))
+    : collaterlaValue
+        .mul(parseUnits(oneEther.toString()))
+        .div(parseEther(debtValue.toString()));
+
   return [
-    collaterlaValue
-      .mul(parseUnits(oneEther.toString()))
-      .div(parseUnits(debtValue.toString())),
+    cRatioValue,
     collateralBalance.div(parseUnits(oneEther.toString())),
     debtAmount.div(parseUnits(oneEther.toString())),
   ];

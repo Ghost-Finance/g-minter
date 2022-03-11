@@ -3,17 +3,27 @@ import { makeStyles, createStyles, Theme } from '@material-ui/core';
 const useStyle = makeStyles((theme: Theme) =>
   createStyles({
     popUpWrapper: {
+      position: 'fixed',
+      zIndex: 100,
+      left: 30,
+      right: 30,
+      top: 50,
+      bottom: 30,
       height: '100vh',
-      left: '4%',
-      position: 'absolute',
-      top: '0',
-      width: '92%',
-      zIndex: 200,
+      overflow: 'auto',
+      [theme.breakpoints.down('sm')]: {
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        width: '100%',
+        height: '100%',
+      },
     },
     popUp: {
       alignItems: 'center',
       backgroundRepeat: 'no-repeat',
-      backgroundSize: '101%',
+      backgroundSize: '100%',
       display: 'flex',
       justifyContent: 'center',
       padding: '14rem 0 7rem',
@@ -50,7 +60,7 @@ const useStyle = makeStyles((theme: Theme) =>
       position: 'absolute',
       top: '0',
       zIndex: 210,
-      width: '40%',
+      width: '50%',
     },
     link: {
       color: theme?.palette.secondary.dark,
@@ -65,6 +75,7 @@ const useStyle = makeStyles((theme: Theme) =>
       cursor: 'pointer',
       height: '48px',
       width: '48px',
+      margin: 10,
     },
     prevButton: {
       marginBottom: '-2px',

@@ -39,7 +39,6 @@ const StakePage = () => {
   const feedGdaiContract = useFeed(feedGdaiAddress);
   const { account } = useSelector((state) => state.wallet);
   const { balanceOfGdai } = useSelector((state) => state.app);
-  console.log(balanceOfGdai);
   const [redirectHome, setRedirectHome] = useState(false);
   const [chosenStake, setChosenStake] = useState<any>();
   const [btnDisabled, setBtnDisabled] = useState(true);
@@ -61,11 +60,10 @@ const StakePage = () => {
 
   async function handleMaxGdai(e: any) {
     e.preventDefault();
-    debugger;
     let balanceOfGdai = bigNumberToFloat(
       await balanceOf(gDaiContract, account as string)
     );
-    debugger;
+
     if (balanceOfGdai <= 0) {
       return;
     }
@@ -90,9 +88,8 @@ const StakePage = () => {
           feedPriceGho,
           feedPriceGdai
         );
-        debugger;
+
         let ratio = bigNumberToFloat(cRatio) * 100;
-        debugger;
         setBtnDisabled(
           ratio < 900 ||
             parseInt(balanceOfGdai || '0') <= 0 ||
@@ -109,7 +106,6 @@ const StakePage = () => {
         );
         dispatchLoading('success');
       } catch (error) {
-        debugger;
         setBtnDisabled(true);
         dispatchLoading('error');
       }
