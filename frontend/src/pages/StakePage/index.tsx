@@ -1,31 +1,22 @@
 import React, { useState, useEffect } from 'react';
-
 import { Redirect, Link } from 'react-router-dom';
-
 import useStyle from './index.style';
 import {
   gDaiAddress,
   feedGdaiAddress,
   feedGhoAddress,
 } from '../../utils/constants';
-
 import { useDispatch, useSelector } from '../../redux/hooks';
 import { useERC20, useFeed, useMinter } from '../../hooks/useContract';
-
 import { bigNumberToFloat } from '../../utils/StringUtils';
-
 import { balanceOf, feedPrice, simulateBurn } from '../../utils/calls';
-
 import { setStatus, setCRatioSimulateMint } from '../../redux/app/actions';
-
 import useOnlyDigitField from '../../hooks/useOnlyDigitField';
 import FormBox from '../../components/FormBox';
 import ButtonForm from '../../components/Button/ButtonForm';
 import InputContainer from '../../components/InputContainer';
 import { NumericalInput } from '../../components/InputMask';
-
 import PopUp from '../../components/PopUp';
-
 import greyArrow from '../../assets/arrow.png';
 import yellowArrow from '../../assets/arrow-up-yellow.png';
 import { GdaiIcon } from '../../components/Icons';

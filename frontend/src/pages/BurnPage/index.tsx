@@ -47,13 +47,12 @@ const BurnPage = () => {
     ...gdaiField
   } = useOnlyDigitField('tel');
 
-  const { account } = useSelector(state => state.wallet);
-  const { balanceOfGdai } = useSelector(state => state.app);
+  const { account } = useSelector((state) => state.wallet);
+  const { balanceOfGdai } = useSelector((state) => state.app);
   const dispatch = useDispatch();
 
-  const { setRedirectHome, setRedirect, setMintAction } = useContext(
-    ContextPage
-  );
+  const { action, setRedirectHome, setRedirect, setCurrentAction } =
+    useContext(ContextPage);
 
   function dispatchLoading(key: string) {
     dispatch(setStatus(key));
@@ -62,7 +61,7 @@ const BurnPage = () => {
   async function handleBurn() {
     if (btnDisabled || gdaiValue === '') return;
     setRedirect(true);
-    dispatchLoading('idle');
+    setCurrentAction('burn');
     try {
       await approve(
         gDaiContract,
@@ -77,7 +76,6 @@ const BurnPage = () => {
         gdaiValue,
         account as string
       )(dispatchLoading);
-
       resetGdaiField();
     } catch (error) {
       dispatchLoading('error');
@@ -98,7 +96,6 @@ const BurnPage = () => {
   }
 
   useEffect(() => {
-    setMintAction(false);
     setRedirectHome(account === null);
     dispatchLoading('pending');
     setBtnDisabled(true);
@@ -130,7 +127,6 @@ const BurnPage = () => {
             synthDebt.toString()
           )
         );
-        dispatchLoading('success');
       } catch (error) {
         setBtnDisabled(true);
         dispatchLoading('error');
@@ -142,7 +138,7 @@ const BurnPage = () => {
 
       fetchData();
       dispatchLoading('idle');
-    }, 3000);
+    }, 2000);
 
     return () => {
       clearTimeout(requestId);

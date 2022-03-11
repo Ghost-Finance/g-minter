@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const useRedirect = () => {
   const [redirect, setRedirect] = useState(false);
