@@ -1,27 +1,13 @@
 import React, { useState } from 'react';
-
 import { Link } from 'react-router-dom';
-
-import { Navigation } from 'swiper';
-import { Swiper, SwiperSlide } from 'swiper/react/swiper-react.js';
 import 'swiper/swiper.scss';
 import 'swiper/modules/navigation/navigation.scss';
 import 'swiper/modules/pagination/pagination.scss';
-
-import stakesData from './stakesData';
-
+import { Navigation } from 'swiper';
+import { Swiper, SwiperSlide } from 'swiper/react/swiper-react.js';
+import { stakesData, SynthData } from '../../config/synths';
 import useStyle from './index.style';
-
 import arrow from '../../assets/arrow.png';
-
-type Stake = {
-  key: string | undefined;
-  title: string;
-  subtitle: string;
-  logo: string;
-  background: string;
-};
-
 interface PopUpProps {
   changeStake?: any;
 }
@@ -30,7 +16,7 @@ const PopUp = ({ changeStake }: PopUpProps) => {
   const classes = useStyle();
   const [isPopupOpen, setIsPopUpOpen] = useState(true);
 
-  const closePopup = (stake: Stake) => {
+  const closePopup = (stake: SynthData) => {
     changeStake(stake);
     setIsPopUpOpen(false);
   };

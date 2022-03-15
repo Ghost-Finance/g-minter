@@ -1,5 +1,6 @@
 import { Contract } from 'web3-eth-contract';
 import { BigNumber } from '@ethersproject/bignumber';
+import { bigNumberToFloat } from './StringUtils';
 import { parseEther, parseUnits } from '@ethersproject/units';
 
 let oneEther = BigNumber.from(parseEther('1'));
@@ -246,4 +247,16 @@ export const getSynthAmount = async (
   account: string
 ) => {
   return contract.methods.read(key).call({ from: account });
+};
+
+export const balanceOfSynth = async (
+  contract: Contract,
+  key: string,
+  amount: number,
+  account: string
+) => {
+  const amountSynth = bigNumberToFloat(
+    await getSynthAmount(contract, key, account)
+  );
+  return amount / amountSynth;
 };

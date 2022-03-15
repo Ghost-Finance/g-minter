@@ -3,13 +3,24 @@ import { Redirect, Link } from 'react-router-dom';
 import useStyle from './index.style';
 import {
   gDaiAddress,
+  gSpotAddress,
   feedGdaiAddress,
   feedGhoAddress,
 } from '../../utils/constants';
 import { useDispatch, useSelector } from '../../redux/hooks';
-import { useERC20, useFeed, useMinter } from '../../hooks/useContract';
-import { bigNumberToFloat } from '../../utils/StringUtils';
-import { balanceOf, feedPrice, simulateBurn } from '../../utils/calls';
+import {
+  useERC20,
+  useFeed,
+  useMinter,
+  useGSpot,
+} from '../../hooks/useContract';
+import { bigNumberToFloat, formatBalance } from '../../utils/StringUtils';
+import {
+  balanceOf,
+  balanceOfSynth,
+  feedPrice,
+  simulateBurn,
+} from '../../utils/calls';
 import { setStatus, setCRatioSimulateMint } from '../../redux/app/actions';
 import useOnlyDigitField from '../../hooks/useOnlyDigitField';
 import FormBox from '../../components/FormBox';
@@ -26,6 +37,7 @@ import Checkbox from '../../components/Checkbox';
 const StakePage = () => {
   const minterContract = useMinter();
   const gDaiContract = useERC20(gDaiAddress);
+  const gSpotContract = useGSpot(gSpotAddress as string);
   const feedGhoContract = useFeed(feedGhoAddress);
   const feedGdaiContract = useFeed(feedGdaiAddress);
   const { account } = useSelector((state) => state.wallet);
@@ -44,22 +56,35 @@ const StakePage = () => {
     ...gdaiField
   } = useOnlyDigitField('tel');
   const dispatch = useDispatch();
+  const {
+    reset: resetSynthField,
+    valid: synthFieldValid,
+    value: synthValue,
+    setValue: setSynthValue,
+    ...synthField
+  } = useOnlyDigitField('tel');
 
   function dispatchLoading(key: string) {
     dispatch(setStatus(key));
   }
 
-  async function handleMaxGdai(e: any) {
+  async function handleMaxAmounts(e: any) {
     e.preventDefault();
     let balanceOfGdai = bigNumberToFloat(
       await balanceOf(gDaiContract, account as string)
     );
 
-    if (balanceOfGdai <= 0) {
-      return;
-    }
+    if (balanceOfGdai <= 0) return;
 
-    setGdaiValue(balanceOfGdai.toString());
+    let synthBalance = await balanceOfSynth(
+      gSpotContract,
+      chosenStake.key,
+      balanceOfGdai,
+      account as string
+    );
+
+    setGdaiValue(formatBalance(balanceOfGdai).toString());
+    setSynthValue(formatBalance(synthBalance).toString());
   }
 
   useEffect(() => {
@@ -158,12 +183,42 @@ const StakePage = () => {
               <div className={classes.formLine}>
                 <Checkbox image={greyArrow} label="Short" rotate={true} />
                 <InputContainer>
+                  <img
+                    alt={chosenStake.title}
+                    src={chosenStake.logo}
+                    className={classes.formInfoImage}
+                  />
+                  <span className={classes.formInfoText}>
+                    {chosenStake.subtitle}
+                  </span>
+
+                  <NumericalInput
+                    id="synth"
+                    placeholder="0.0 gDai"
+                    value={synthValue}
+                    className={classes.formInput}
+                    {...synthField}
+                  />
+
+                  <div>
+                    <ButtonForm
+                      text="MAX"
+                      className={classes.formInfoMax}
+                      onClick={handleMaxAmounts}
+                    />
+                  </div>
+                </InputContainer>
+                <Checkbox image={yellowArrow} label="Long" yellow={true} />
+              </div>
+
+              <div className={classes.formLine}>
+                <InputContainer>
                   <GdaiIcon />
                   <span className={classes.formInfoText}>gDAI</span>
 
                   <NumericalInput
                     id="gdai"
-                    placeholder="stake 0.0"
+                    placeholder="0.0"
                     value={gdaiValue}
                     className={classes.formInput}
                     {...gdaiField}
@@ -173,11 +228,10 @@ const StakePage = () => {
                     <ButtonForm
                       text="MAX"
                       className={classes.formInfoMax}
-                      onClick={handleMaxGdai}
+                      onClick={handleMaxAmounts}
                     />
                   </div>
                 </InputContainer>
-                <Checkbox image={yellowArrow} label="Long" yellow={true} />
               </div>
 
               <p className={classes.formText}>Gas Fee $0.00/0 GWEI</p>
