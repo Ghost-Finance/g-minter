@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 import { Redirect, Link } from 'react-router-dom';
 
 import useStyle from './index.style';
@@ -17,10 +16,9 @@ import yellowArrow from '../../assets/arrow-up-yellow.png';
 import { GdaiIcon } from '../../components/Icons';
 import ConnectWallet from '../../components/Button/ConnectWallet';
 import Checkbox from '../../components/Checkbox';
-import { classicNameResolver } from 'typescript';
 
 const StakePage = () => {
-  const { account } = useSelector(state => state.wallet);
+  const { account } = useSelector((state) => state.wallet);
   const [redirectHome, setRedirectHome] = useState(false);
   const [chosenStake, setChosenStake] = useState<any>();
   const classes = useStyle();

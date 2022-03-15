@@ -11,7 +11,6 @@ import NavElement from '../../components/NavElement';
 import { ContentPage, ContextPage } from '../ContentPage';
 import CardContent from '../../components/CardContent';
 import MintPage from '../MintPage';
-import BurnPage from '../BurnPage';
 import MintAndBurnPage from '../MintAndBurnPage';
 import RewardPage from '../RewardPage';
 import StakePage from '../StakePage';
@@ -52,15 +51,7 @@ const MainPage = () => {
   const pagesWithoutNavElement = ['/alert', '/wallet-connect'];
   const classes = useStyles();
   const location = useLocation();
-  const {
-    redirect,
-    redirectHome,
-    setRedirect,
-    setRedirectHome,
-  } = useRedirect();
   const [rootPage, setRootPageChanged] = useState(true);
-  const [stakePage, setStakePage] = useState(false);
-  const [mintAction, setMintAction] = useState(true);
   const [showDialogWrongNetwork, setDialogWrongNetWork] = useState<boolean>(
     false
   );
@@ -291,29 +282,17 @@ const MainPage = () => {
             <Route
               path="/mint"
               children={
-                <ContextPage.Provider
-                  value={{
-                    redirect,
-                    redirectHome,
-                    mintAction,
-                    setRedirect,
-                    setRedirectHome,
-                    setMintAction,
-                  }}
-                >
-                  <ContentPage>
-                    <CardContent typeCard="mint">
-                      <MintPage title={'Mint your gDai'} />
-                    </CardContent>
-                  </ContentPage>
-                </ContextPage.Provider>
+                <ContentPage showCancel={true}>
+                  <CardContent typeCard="mint">
+                    <MintPage title={'Mint your gDai'} />
+                  </CardContent>
+                </ContentPage>
               }
             />
             <Route path="/mint-burn" children={<MintAndBurnPage />} />
             <Route path="/rewards" children={<RewardPage />} />
             <Route path="/stake" children={<StakePage />} />
             <Route path="/wallet-connect" children={<WalletConnectPage />} />
-            <Route path="/alert" children={<AlertPage />} />
           </Switch>
         </CSSTransition>
       </TransitionGroup>
