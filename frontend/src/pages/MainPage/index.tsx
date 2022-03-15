@@ -48,13 +48,14 @@ import { useSelector } from '../../redux/hooks';
 import { bigNumberToFloat, formatCurrency } from '../../utils/StringUtils';
 
 const MainPage = () => {
-  const pagesWithoutNavElement = ['/alert', '/wallet-connect'];
+  const pagesWithoutNavElement = ['/wallet-connect'];
   const classes = useStyles();
   const location = useLocation();
   const [rootPage, setRootPageChanged] = useState(true);
   const [stakePage, setStakePage] = useState(false);
-  const [showDialogWrongNetwork, setDialogWrongNetWork] =
-    useState<boolean>(false);
+  const [showDialogWrongNetwork, setDialogWrongNetWork] = useState<boolean>(
+    false
+  );
   const [cardsDataArray, setCardsDataArray] = useState(cardsData);
   const minterContract = useMinter();
   const feedGhoContract = useFeed(feedGhoAddress);
@@ -68,8 +69,8 @@ const MainPage = () => {
     synthDebt,
     status,
     networkName,
-  } = useSelector((state) => state.app);
-  const { account, network } = useSelector((state) => state.wallet);
+  } = useSelector(state => state.app);
+  const { account, network } = useSelector(state => state.wallet);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -94,7 +95,7 @@ const MainPage = () => {
       if (parseInt(balanceOfGdai || '') <= 0) return;
 
       let cardsDataArrayAfterMint = cardsData.filter(
-        (card) => card.to !== '/mint' && card.to !== '/stake'
+        card => card.to !== '/mint' && card.to !== '/stake'
       );
       cardsDataArrayAfterMint.unshift({
         to: '/stake',

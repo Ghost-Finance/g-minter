@@ -17,7 +17,7 @@ import {
 import { bigNumberToFloat, formatBalance } from '../../utils/StringUtils';
 import {
   balanceOf,
-  balanceOfSynth,
+  getSynthAmount,
   feedPrice,
   simulateBurn,
 } from '../../utils/calls';
@@ -76,15 +76,32 @@ const StakePage = () => {
 
     if (balanceOfGdai <= 0) return;
 
-    let synthBalance = await balanceOfSynth(
-      gSpotContract,
-      chosenStake.key,
-      balanceOfGdai,
-      account as string
+    let synthTokenAmount = bigNumberToFloat(
+      await getSynthAmount(gSpotContract, chosenStake.key, account as string)
     );
 
     setGdaiValue(formatBalance(balanceOfGdai).toString());
-    setSynthValue(formatBalance(synthBalance).toString());
+    setSynthValue(formatBalance(balanceOfGdai / synthTokenAmount).toString());
+  }
+
+  async function changeMaxGdai() {
+    if (Number(gdaiValue) === 0 || Number(synthValue) !== 0) return;
+    let synthTokenAmount = bigNumberToFloat(
+      await getSynthAmount(gSpotContract, chosenStake.key, account as string)
+    );
+    setSynthValue(
+      formatBalance(Number(gdaiValue) / synthTokenAmount).toString()
+    );
+  }
+
+  async function changeMaxSynth() {
+    if (Number(synthValue) === 0 || Number(gdaiValue) !== 0) return;
+    let synthTokenAmount = bigNumberToFloat(
+      await getSynthAmount(gSpotContract, chosenStake.key, account as string)
+    );
+    setGdaiValue(
+      formatBalance(Number(synthValue) * synthTokenAmount).toString()
+    );
   }
 
   useEffect(() => {
@@ -130,14 +147,16 @@ const StakePage = () => {
     const requestId = setTimeout(() => {
       setBtnDisabled(!(parseInt(gdaiValue) > 0));
 
+      changeMaxGdai();
+      changeMaxSynth();
       fetchData();
       dispatchLoading('idle');
-    }, 3000);
+    }, 2000);
 
     return () => {
       clearTimeout(requestId);
     };
-  }, [account, chosenStake, gdaiValue, dispatch, minterContract]);
+  }, [account, chosenStake, gdaiValue, synthValue, dispatch, minterContract]);
 
   const stakeAction = () => {};
 

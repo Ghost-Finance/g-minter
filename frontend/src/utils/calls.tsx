@@ -248,15 +248,3 @@ export const getSynthAmount = async (
 ) => {
   return contract.methods.read(key).call({ from: account });
 };
-
-export const balanceOfSynth = async (
-  contract: Contract,
-  key: string,
-  amount: number,
-  account: string
-) => {
-  const amountSynth = bigNumberToFloat(
-    await getSynthAmount(contract, key, account)
-  );
-  return amount / amountSynth;
-};
