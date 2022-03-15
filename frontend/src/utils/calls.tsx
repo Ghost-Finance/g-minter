@@ -5,64 +5,60 @@ import { parseEther, parseUnits } from '@ethersproject/units';
 let oneEther = BigNumber.from(parseEther('1'));
 let cRatio = BigNumber.from(parseEther('9'));
 
-export const mint = (
-  contract: Contract,
-  token: string,
-  amountToDeposit: string,
-  amountToMint: string,
-  account: string
-) => (dispatch: any) => {
-  const depositAmount = BigNumber.from(parseEther(amountToDeposit));
-  const mintAmount = BigNumber.from(parseEther(amountToMint));
+export const mint =
+  (
+    contract: Contract,
+    token: string,
+    amountToDeposit: string,
+    amountToMint: string,
+    account: string
+  ) =>
+  (dispatch: any) => {
+    const depositAmount = BigNumber.from(parseEther(amountToDeposit));
+    const mintAmount = BigNumber.from(parseEther(amountToMint));
 
-  contract.methods
-    .mint(token, depositAmount, mintAmount)
-    .send({ from: account })
-    .once('confirmation', () => {
-      dispatch('finish');
-    })
-    .on('error', (error: any) => dispatch('error'));
-};
+    contract.methods
+      .mint(token, depositAmount, mintAmount)
+      .send({ from: account })
+      .once('confirmation', () => {
+        dispatch('finish');
+      })
+      .on('error', (error: any) => dispatch('error'));
+  };
 
-export const burn = (
-  contract: Contract,
-  token: string,
-  amount: string,
-  account: string
-) => (dispatch: any) => {
-  const burnAmount = BigNumber.from(parseEther(amount));
+export const burn =
+  (contract: Contract, token: string, amount: string, account: string) =>
+  (dispatch: any) => {
+    const burnAmount = BigNumber.from(parseEther(amount));
 
-  return contract.methods
-    .burn(token, burnAmount)
-    .send({ from: account })
-    .once('confirmation', (data: any) => {
-      dispatch('finish');
-    })
-    .on('error', (error: any) => dispatch('error'));
-};
+    return contract.methods
+      .burn(token, burnAmount)
+      .send({ from: account })
+      .once('confirmation', (data: any) => {
+        dispatch('finish');
+      })
+      .on('error', (error: any) => dispatch('error'));
+  };
 
-export const approve = (
-  contract: Contract,
-  sender: string,
-  account: string,
-  amount: string
-) => (dispatch: any) => {
-  dispatch('idle');
-  const bigAmount = BigNumber.from(parseEther(amount));
-  return contract.methods
-    .approve(account, bigAmount)
-    .send({ from: sender })
-    .once('sent', () => {
-      dispatch('confirm');
-    })
-    .on('transactionHash', () => {
-      dispatch('waiting');
-    })
-    .on('Approve', (data: any) => {
-      return data;
-    })
-    .on('error', (error: any) => dispatch('error'));
-};
+export const approve =
+  (contract: Contract, sender: string, account: string, amount: string) =>
+  (dispatch: any) => {
+    dispatch('idle');
+    const bigAmount = BigNumber.from(parseEther(amount));
+    return contract.methods
+      .approve(account, bigAmount)
+      .send({ from: sender })
+      .once('sent', () => {
+        dispatch('confirm');
+      })
+      .on('transactionHash', () => {
+        dispatch('waiting');
+      })
+      .on('Approve', (data: any) => {
+        return data;
+      })
+      .on('error', (error: any) => dispatch('error'));
+  };
 
 export const depositCollateral = async (
   token: string,
@@ -206,9 +202,7 @@ export const promiseAll = async (
   successCallback: any,
   errorCallback: any
 ) => {
-  return Promise.all(allPromise)
-    .then(successCallback)
-    .catch(errorCallback);
+  return Promise.all(allPromise).then(successCallback).catch(errorCallback);
 };
 
 export const calculateCRatio = async (
@@ -240,4 +234,12 @@ export const filterByEvent = async (
     fromBlock: 0,
     toBlock: 'latest',
   });
+};
+
+export const getSynthAmount = async (
+  contract: Contract,
+  key: string,
+  account: string
+) => {
+  return contract.methods.read(key).call({ from: account });
 };

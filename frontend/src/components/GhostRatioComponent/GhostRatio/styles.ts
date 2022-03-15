@@ -25,4 +25,8 @@ export default makeStyles((theme: Theme) => ({
       padding: '0 25px 5px',
     },
   },
+  logo: {
+    width: 40,
+    height: 40,
+  },
 }));

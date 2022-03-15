@@ -1,11 +1,9 @@
+//SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "../interface/IMedian.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-interface IMedian {
-  function peek() external view returns (uint256, bool);
-  function read() external view returns (uint256);
-}
 
 contract Ssm is AccessControl {
   uint256 public stopped;
