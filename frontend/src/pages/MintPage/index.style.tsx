@@ -54,7 +54,7 @@ const useStyle = makeStyles((theme: Theme) =>
       marginLeft: '15px',
     },
     buttonMint: {
-      width: '325px !important',
+      width: '100%',
       maxWidth: '325px',
       fontWeight: 'bold',
       marginBottom: '90px',
@@ -63,7 +63,7 @@ const useStyle = makeStyles((theme: Theme) =>
       },
     },
     buttonMintGrey: {
-      width: '325px !important',
+      width: '100%',
       maxWidth: '325px',
       fontWeight: 'bold',
       marginBottom: '90px',
@@ -115,10 +115,13 @@ const useStyle = makeStyles((theme: Theme) =>
       marginTop: '10px',
       marginLeft: '55px',
       letterSpacing: '0.008em',
+      [theme.breakpoints.down('md')]: {
+        marginLeft: '10px',
+      },
     },
     topBox: {
       margin: '0 auto',
-      width: '325px !important',
+      width: '100%',
       maxWidth: '325px',
       height: '41px',
       backgroundColor: theme.palette.primary.dark,

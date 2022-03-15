@@ -7,6 +7,7 @@ export default makeStyles(theme => ({
     textAlign: 'center',
     padding: '12px 25px',
     maxWidth: '210px',
+    whiteSpace: 'nowrap',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -81,5 +82,8 @@ export default makeStyles(theme => ({
   },
   link: {
     textDecoration: 'none',
+    width: '100%',
+    justifyContent: 'flex-end',
+    display: 'flex',
   },
 }));

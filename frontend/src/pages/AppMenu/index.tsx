@@ -43,7 +43,7 @@ const AppMenu = (): React.ReactElement => {
           edge="start"
           className={classes.menuButton}
         >
-          <MenuIcon />
+          <MenuIcon fontSize="large" />
         </IconButton>
       </AppBar>
       <Drawer

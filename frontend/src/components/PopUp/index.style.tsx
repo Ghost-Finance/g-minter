@@ -17,6 +17,9 @@ const useStyle = makeStyles((theme: Theme) =>
       display: 'flex',
       justifyContent: 'center',
       padding: '14rem 0 7rem',
+      [theme.breakpoints.down('sm')]: {
+        backgroundSize: 'cover',
+      },
     },
     popUpCover: {
       backgroundColor: 'rgba(51, 51, 51, 0.4)',
@@ -51,6 +54,13 @@ const useStyle = makeStyles((theme: Theme) =>
       top: '0',
       zIndex: 210,
       width: '40%',
+
+      [theme.breakpoints.down('sm')]: {
+        margin: '0 auto',
+        left: '5vw',
+        top: '6rem',
+        width: '90vw',
+      },
     },
     link: {
       color: theme?.palette.secondary.dark,
@@ -106,6 +116,11 @@ const useStyle = makeStyles((theme: Theme) =>
         top: '-2.5rem',
         width: '60%',
         zIndex: 2,
+      },
+
+      [theme.breakpoints.down('sm')]: {
+        margin: '6rem auto 0 auto',
+        width: '70%',
       },
     },
     popUpLogo: {

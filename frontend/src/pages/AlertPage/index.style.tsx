@@ -39,6 +39,10 @@ const useStyle = makeStyles((theme: Theme) =>
     cardForm: {
       marginTop: 20,
       width: 'calc(50% - 40px)',
+      [theme.breakpoints.down('md')]: {
+        width: '100%',
+        padding: '0 20px',
+      },
     },
     boxMessage: {
       marginTop: '6.5rem',
@@ -125,7 +129,7 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     topBox: {
       margin: '0 auto',
-      width: '325px !important',
+      width: '100%',
       maxWidth: '325px',
       height: '41px',
       backgroundColor: '#171717',

@@ -23,6 +23,7 @@ const GhostRatio = () => {
   const { account } = useSelector(state => state.wallet);
   const app = useSelector(state => state.app);
   const gSpotContract = useGSpot(gSpotAddress as string);
+  
   const {
     cRatioValue,
     balanceOfGho,
@@ -107,7 +108,7 @@ const GhostRatio = () => {
   }, [collateralBalance, synthDebt, cRatioValue]);
 
   return (
-    <Box component="div" m={3}>
+    <Box component="div" p={3} className={classes.box}>
       <div className={classes.content}>
         <CRatio
           size={200}

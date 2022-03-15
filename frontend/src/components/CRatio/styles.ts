@@ -4,9 +4,16 @@ export default makeStyles((theme: Theme) => ({
   root: {
     margin: 'auto',
     padding: 10,
+    width: 200,
+    height: 200,
+    [theme.breakpoints.down('md')]: {
+      width: '160px',
+      height: '160px',
+    },
   },
   svg: {
     display: 'block',
+    width: '100%',
   },
   svgCircle: {
     fill: theme.palette.primary.main,
@@ -29,5 +36,7 @@ export default makeStyles((theme: Theme) => ({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    width: 'calc(100% - 25px + 4px)',
+    height: 'calc(100% - 25px + 4px)',
   },
 }));

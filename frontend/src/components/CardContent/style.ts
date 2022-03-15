@@ -9,12 +9,13 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     cardForm: {
       marginTop: 20,
-      width: '62%',
+      width: 'calc(100% - 40px)',
       backgroundColor: '#393939',
       border: 1,
+      padding: '0 20px',
       [theme.breakpoints.down('md')]: {
         marginTop: 0,
-        width: 'calc(80% - 20px)',
+        width: '100%',
       },
     },
     default: {
@@ -22,7 +23,8 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     mint: {
       margin: '0 auto',
-      width: '320px !important',
+      width: '100% !important',
+      maxWidth: '320px !important',
       height: '40px',
       backgroundColor: theme.palette.primary.dark,
       borderRadius: '0 0 40px 40px',
@@ -33,7 +35,7 @@ const useStyle = makeStyles((theme: Theme) =>
       justifyContent: 'center',
       alignItems: 'center',
       '& > div:nth-child(n)': {
-        width: 80,
+        width: 70,
         height: 40,
         padding: 10,
         marginLeft: 12,
