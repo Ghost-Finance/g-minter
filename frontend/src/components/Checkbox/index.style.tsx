@@ -6,8 +6,15 @@ export const useStyles = makeStyles((theme: Theme) => ({
     borderRadius: '24px',
     fontFamily: 'Inter',
     fontWeight: 700,
-    margin: '0 1rem',
-    padding: '1rem',
+    margin: '0 10px 10px 10px',
+  },
+  checkbox: {
+    display: 'flex',
+    flexDirection: 'row',
+    padding: 17,
+    marginLeft: 0,
+    marginRight: 0,
+    borderRadius: 50,
   },
   checkboxYellow: {
     backgroundColor: '#1E2000',
@@ -23,10 +30,15 @@ export const useStyles = makeStyles((theme: Theme) => ({
       backgroundColor: theme?.palette.primary.main,
     },
   },
+  gridCenter: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   label: {
-    color: theme.palette.secondary.dark,
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase',
+    fontWeight: 700,
+    fontSize: 14,
+    textTransform: 'capitalize',
     lineHeight: '15px',
   },
   labelImage: {

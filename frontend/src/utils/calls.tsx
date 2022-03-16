@@ -5,6 +5,8 @@ import { parseEther, parseUnits } from '@ethersproject/units';
 
 let oneEther = BigNumber.from(parseEther('1'));
 let cRatio = BigNumber.from(parseEther('9'));
+let LONG: string = 'Long';
+let SHORT: string = 'Short';
 
 export const mint =
   (
@@ -34,6 +36,24 @@ export const burn =
 
     return contract.methods
       .burn(token, burnAmount)
+      .send({ from: account })
+      .once('confirmation', (data: any) => {
+        dispatch('finish');
+      })
+      .on('error', (error: any) => dispatch('error'));
+  };
+
+export const createPosition =
+  (
+    contract: Contract,
+    key: string,
+    amount: string,
+    direction: number,
+    account: string
+  ) =>
+  (dispatch: any) => {
+    return contract.methods
+      .createPosition(amount, key, direction)
       .send({ from: account })
       .once('confirmation', (data: any) => {
         dispatch('finish');

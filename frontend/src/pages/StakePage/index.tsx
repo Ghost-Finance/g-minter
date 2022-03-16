@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Redirect, Link } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
 import useStyle from './index.style';
 import {
   gDaiAddress,
   gSpotAddress,
   feedGdaiAddress,
   feedGhoAddress,
+  updateHouseAddress,
 } from '../../utils/constants';
 import { useDispatch, useSelector } from '../../redux/hooks';
 import {
@@ -13,6 +13,7 @@ import {
   useFeed,
   useMinter,
   useGSpot,
+  useUpdateHouse,
 } from '../../hooks/useContract';
 import { bigNumberToFloat, formatBalance } from '../../utils/StringUtils';
 import {
@@ -20,19 +21,25 @@ import {
   getSynthAmount,
   feedPrice,
   simulateBurn,
+  createPosition,
 } from '../../utils/calls';
 import { setStatus, setCRatioSimulateMint } from '../../redux/app/actions';
 import useOnlyDigitField from '../../hooks/useOnlyDigitField';
+import { ContentPage, ContextPage } from '../ContentPage';
+import CardContent from '../../components/CardContent';
 import FormBox from '../../components/FormBox';
+import RadioGroup from '@material-ui/core/RadioGroup';
 import ButtonForm from '../../components/Button/ButtonForm';
 import InputContainer from '../../components/InputContainer';
 import { NumericalInput } from '../../components/InputMask';
 import PopUp from '../../components/PopUp';
-import greyArrow from '../../assets/arrow.png';
-import yellowArrow from '../../assets/arrow-up-yellow.png';
 import { GdaiIcon } from '../../components/Icons';
-import ConnectWallet from '../../components/Button/ConnectWallet';
+import { ArrowUp, ArrowDown } from '../../components/Icons/CoreIcons';
 import Checkbox from '../../components/Checkbox';
+import theme from '../../theme.style';
+
+const SHORT: string = 'Short';
+const LONG: string = 'Long';
 
 const StakePage = () => {
   const minterContract = useMinter();
@@ -40,13 +47,21 @@ const StakePage = () => {
   const gSpotContract = useGSpot(gSpotAddress as string);
   const feedGhoContract = useFeed(feedGhoAddress);
   const feedGdaiContract = useFeed(feedGdaiAddress);
+  const updateHouseContract = useUpdateHouse(updateHouseAddress);
   const { account } = useSelector((state) => state.wallet);
   const { balanceOfGdai } = useSelector((state) => state.app);
-  const [redirectHome, setRedirectHome] = useState(false);
+  const { action, setRedirectHome, setRedirect, setCurrentAction } =
+    useContext(ContextPage);
   const [chosenStake, setChosenStake] = useState<any>();
   const [btnDisabled, setBtnDisabled] = useState(true);
+  const [direction, setDirection] = useState(LONG);
 
   const classes = useStyle();
+
+  const DIRECTION = {
+    [SHORT]: 1,
+    [LONG]: 2,
+  };
 
   const {
     reset: resetGdaiField,
@@ -66,6 +81,28 @@ const StakePage = () => {
 
   function dispatchLoading(key: string) {
     dispatch(setStatus(key));
+  }
+
+  async function handleStake() {
+    if (btnDisabled || parseInt(gdaiValue) <= 0 || !DIRECTION[direction])
+      return;
+
+    setRedirect(true);
+    setCurrentAction('stake');
+    try {
+      await createPosition(
+        updateHouseContract,
+        chosenStake.key,
+        gdaiValue,
+        DIRECTION[direction],
+        account as string
+      )(dispatchLoading);
+
+      resetSynthField();
+      resetGdaiField();
+    } catch (error) {
+      dispatchLoading('error');
+    }
   }
 
   async function handleMaxAmounts(e: any) {
@@ -103,6 +140,10 @@ const StakePage = () => {
       formatBalance(Number(synthValue) * synthTokenAmount).toString()
     );
   }
+
+  const handleDirection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setDirection((event.target as HTMLInputElement).value);
+  };
 
   useEffect(() => {
     setRedirectHome(account === null);
@@ -158,76 +199,81 @@ const StakePage = () => {
     };
   }, [account, chosenStake, gdaiValue, synthValue, dispatch, minterContract]);
 
-  const stakeAction = () => {};
-
   return (
     <>
-      {redirectHome ? (
-        <Redirect
-          to={{
-            pathname: '/',
-          }}
-        />
-      ) : null}
-
       <PopUp changeStake={setChosenStake} />
 
       {chosenStake && (
-        <>
-          <div>
-            <img
-              alt={chosenStake.title}
-              src={chosenStake.background}
-              className={classes.coverImage}
-            />
-            <div className={classes.headerStake}>
-              <div className={classes.cancelButton}>
-                <Link to="/" className={classes.link}>
-                  Cancel
-                </Link>
-              </div>
-              <div className={classes.walletGrid}>
-                <ConnectWallet />
-              </div>
-            </div>
-          </div>
-          <div className={classes.formWrapper}>
+        <ContentPage showCancel={true} backgroundImage={chosenStake.background}>
+          <CardContent typeCard="stake">
             <FormBox
               title={chosenStake.title}
               titleButton={`Stake in ${chosenStake.subtitle}`}
-              onClick={stakeAction}
+              onClick={handleStake}
               disableButton={btnDisabled}
             >
               <p className={classes.formSubtitle}>{chosenStake.subtitle}</p>
               <div className={classes.formLine}>
-                <Checkbox image={greyArrow} label="Short" rotate={true} />
-                <InputContainer>
-                  <img
-                    alt={chosenStake.title}
-                    src={chosenStake.logo}
-                    className={classes.formInfoImage}
+                <RadioGroup row value={direction} onChange={handleDirection}>
+                  <Checkbox
+                    label={
+                      <>
+                        <ArrowDown
+                          color={
+                            direction === 'Short'
+                              ? theme.brand.main
+                              : theme.palette.secondary.light
+                          }
+                        />
+                        &nbsp;<span>Short</span>
+                      </>
+                    }
+                    value={SHORT}
+                    checked={direction === SHORT}
                   />
-                  <span className={classes.formInfoText}>
-                    {chosenStake.subtitle}
-                  </span>
-
-                  <NumericalInput
-                    id="synth"
-                    placeholder="0.0 gDai"
-                    value={synthValue}
-                    className={classes.formInput}
-                    {...synthField}
-                  />
-
-                  <div>
-                    <ButtonForm
-                      text="MAX"
-                      className={classes.formInfoMax}
-                      onClick={handleMaxAmounts}
+                  <InputContainer>
+                    <img
+                      alt={chosenStake.title}
+                      src={chosenStake.logo}
+                      className={classes.formInfoImage}
                     />
-                  </div>
-                </InputContainer>
-                <Checkbox image={yellowArrow} label="Long" yellow={true} />
+                    <span className={classes.formInfoText}>
+                      {chosenStake.subtitle}
+                    </span>
+
+                    <NumericalInput
+                      id="synth"
+                      placeholder="0.0 gDai"
+                      value={synthValue}
+                      className={classes.formInput}
+                      {...synthField}
+                    />
+
+                    <div>
+                      <ButtonForm
+                        text="MAX"
+                        className={classes.formInfoMax}
+                        onClick={handleMaxAmounts}
+                      />
+                    </div>
+                  </InputContainer>
+                  <Checkbox
+                    label={
+                      <>
+                        <ArrowUp
+                          color={
+                            direction === LONG
+                              ? theme.brand.main
+                              : theme.palette.secondary.light
+                          }
+                        />
+                        &nbsp;<span>Long</span>
+                      </>
+                    }
+                    value={LONG}
+                    checked={direction === LONG}
+                  />
+                </RadioGroup>
               </div>
 
               <div className={classes.formLine}>
@@ -255,8 +301,8 @@ const StakePage = () => {
 
               <p className={classes.formText}>Gas Fee $0.00/0 GWEI</p>
             </FormBox>
-          </div>
-        </>
+          </CardContent>
+        </ContentPage>
       )}
     </>
   );

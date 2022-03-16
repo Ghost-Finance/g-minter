@@ -10,4 +10,6 @@ export const feedGhoAddress: string = contractAddress.FeedGho;
 
 export const feedGdaiAddress: string = contractAddress.FeedGdai;
 
-export const gSpotAddress: String = contractAddress.GSpot;
+export const gSpotAddress: string = contractAddress.GSpot;
+
+export const updateHouseAddress: string = contractAddress.UpdateHouse;
