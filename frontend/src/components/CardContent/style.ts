@@ -42,6 +42,13 @@ const useStyle = makeStyles((theme: Theme) =>
         borderRadius: '0 0 40px 40px',
       },
     },
+    stake: {
+      margin: '0 auto',
+      width: '320px !important',
+      height: '40px',
+      // backgroundColor: theme.palette.primary.dark,
+      borderRadius: '0 0 40px 40px',
+    },
   })
 );
 
