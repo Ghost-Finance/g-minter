@@ -52,8 +52,10 @@ export const createPosition =
     account: string
   ) =>
   (dispatch: any) => {
+    const stakeAmount = BigNumber.from(parseEther(amount));
+
     return contract.methods
-      .createPosition(amount, key, direction)
+      .createPosition(stakeAmount, key, direction)
       .send({ from: account })
       .once('confirmation', (data: any) => {
         dispatch('finish');

@@ -13,3 +13,5 @@ export const feedGdaiAddress: string = contractAddress.FeedGdai;
 export const gSpotAddress: string = contractAddress.GSpot;
 
 export const updateHouseAddress: string = contractAddress.UpdateHouse;
+
+export const vaultAddress: string = contractAddress.Vault;

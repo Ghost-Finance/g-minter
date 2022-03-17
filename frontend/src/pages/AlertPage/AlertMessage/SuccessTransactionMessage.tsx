@@ -115,7 +115,29 @@ const SuccessTransactionMessage = ({
         </div>
       </>
     ),
-    [STAKE]: () => <></>,
+    [STAKE]: () => (
+      <>
+        <div className={classes.boxMessage}>
+          <h1 className={classes.title}>
+            Well done, <br />
+            You have a new stake position!
+          </h1>
+
+          <p className={classes.subTitle}>
+            Go back to home and see your
+            <br />
+          </p>
+        </div>
+
+        <div className={classes.containerRow}>
+          <Link to="/" className={classes.link}>
+            <Button className={classes.buttonDefault}>
+              Back to home {`->`}
+            </Button>
+          </Link>
+        </div>
+      </>
+    ),
   };
 
   return (

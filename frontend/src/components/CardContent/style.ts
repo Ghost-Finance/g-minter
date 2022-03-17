@@ -46,8 +46,8 @@ const useStyle = makeStyles((theme: Theme) =>
       margin: '0 auto',
       width: '320px !important',
       height: '40px',
-      // backgroundColor: theme.palette.primary.dark,
-      borderRadius: '0 0 40px 40px',
+      backgroundColor: theme.palette.primary.dark,
+      borderRadius: '0px 0px 40px 40px',
     },
   })
 );

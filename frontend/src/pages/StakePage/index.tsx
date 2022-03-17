@@ -6,6 +6,7 @@ import {
   feedGdaiAddress,
   feedGhoAddress,
   updateHouseAddress,
+  vaultAddress,
 } from '../../utils/constants';
 import { useDispatch, useSelector } from '../../redux/hooks';
 import {
@@ -22,6 +23,7 @@ import {
   feedPrice,
   simulateBurn,
   createPosition,
+  approve,
 } from '../../utils/calls';
 import { setStatus, setCRatioSimulateMint } from '../../redux/app/actions';
 import useOnlyDigitField from '../../hooks/useOnlyDigitField';
@@ -50,7 +52,7 @@ const StakePage = () => {
   const updateHouseContract = useUpdateHouse(updateHouseAddress);
   const { account } = useSelector((state) => state.wallet);
   const { balanceOfGdai } = useSelector((state) => state.app);
-  const { action, setRedirectHome, setRedirect, setCurrentAction } =
+  const { setRedirectHome, setRedirect, setCurrentAction } =
     useContext(ContextPage);
   const [chosenStake, setChosenStake] = useState<any>();
   const [btnDisabled, setBtnDisabled] = useState(true);
@@ -90,6 +92,13 @@ const StakePage = () => {
     setRedirect(true);
     setCurrentAction('stake');
     try {
+      await approve(
+        gDaiContract,
+        account as string,
+        vaultAddress,
+        gdaiValue
+      )(dispatchLoading);
+
       await createPosition(
         updateHouseContract,
         chosenStake.key,
@@ -164,6 +173,7 @@ const StakePage = () => {
         );
 
         let ratio = bigNumberToFloat(cRatio) * 100;
+        debugger;
         setBtnDisabled(
           ratio < 900 ||
             parseInt(balanceOfGdai || '0') <= 0 ||
