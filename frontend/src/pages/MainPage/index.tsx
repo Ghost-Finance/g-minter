@@ -51,7 +51,6 @@ const MainPage = () => {
   const classes = useStyles();
   const location = useLocation();
   const [rootPage, setRootPageChanged] = useState(true);
-  const [stakePage, setStakePage] = useState(false);
   const [showDialogWrongNetwork, setDialogWrongNetWork] = useState<boolean>(
     false
   );
@@ -75,8 +74,6 @@ const MainPage = () => {
   useEffect(() => {
     dispatch(setStatus('pending'));
     setRootPageChanged(location.pathname === '/');
-    // setStakePage(location.pathname === '/stake');
-
     setDialogWrongNetWork(network !== networkName);
 
     let intervalId: any;
@@ -207,7 +204,13 @@ const MainPage = () => {
           <div>
             <LogoIcon />
           </div>
-          {rootPage ? <GhostRatio /> : <GhostRatioMint />}
+          {rootPage ? (
+            <GhostRatio />
+          ) : stakePage ? (
+            <GhostRatioStake />
+          ) : (
+            <GhostRatioMint />
+          )}
         </NavElement>
       )}
       {rootPage && status !== 'error' && status !== 'pending' && (

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { FormControlLabel, Radio } from '@material-ui/core';
-
 import { useStyles } from './index.style';
 
 interface Props {
