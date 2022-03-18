@@ -83,7 +83,13 @@ const GhostRatio = () => {
               <TokenBorderLight
                 key={key}
                 label={args.subtitle}
-                icon={<img src={args.logo} alt={args.title} />}
+                icon={
+                  <img
+                    src={args.logo}
+                    className={classes.logo}
+                    alt={args.title}
+                  />
+                }
                 amount={0}
                 valueNumber={`${args.amount || ''} gDai`}
               />

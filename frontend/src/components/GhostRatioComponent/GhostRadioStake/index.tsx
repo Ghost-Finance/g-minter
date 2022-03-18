@@ -3,19 +3,18 @@ import { Box } from '@material-ui/core';
 import ListSynths from '../../ListSynths';
 import TokenLight from '../../TokenLight';
 import TokenBorderLight from '../../TokenBorderLight';
-import { GhostIcon, DaiIcon } from '../../Icons';
+import { GhostIcon, DaiIcon, SpaceXIcon } from '../../Icons';
 import CRatio from '../../CRatio';
 import useStyles from './styles';
 import theme from '../../../theme.style';
 import { useSelector } from '../../../redux/hooks';
 import { formatBalance } from '../../../utils/StringUtils';
 
-const GhostRatioMint = () => {
+const GhostRatioStake = () => {
   const classes = useStyles(theme);
 
   const {
     cRatioSimulateValue,
-    balanceOfGho,
     balanceOfGdai,
     collateralBalance,
     synthDebt,
@@ -47,12 +46,14 @@ const GhostRatioMint = () => {
           />
         </ListSynths>
 
-        <ListSynths label="Wallet">
-          <TokenBorderLight
-            icon={<GhostIcon />}
-            label="GHO"
-            valueNumber={formatBalance(Number(balanceOfGho || '0'))}
+        <ListSynths label="Staking">
+          <TokenLight
+            icon={<SpaceXIcon iconColor={`${theme?.brand.main}`} />}
+            label="gSPX"
+            valueNumber={'10'}
           />
+        </ListSynths>
+        <ListSynths label="Available">
           <TokenBorderLight
             icon={<DaiIcon />}
             label="gDai"
@@ -64,4 +65,4 @@ const GhostRatioMint = () => {
   );
 };
 
-export default GhostRatioMint;
+export default GhostRatioStake;

@@ -1,12 +1,10 @@
-// background image
 import SpaceXBackground from '../assets/images/space-x.jpeg';
 import NeuraLinkBackground from '../assets/images/neuralink.png';
 import MadeInSpaceBackground from '../assets/images/made-in-space.jpeg';
 
-// icons
-import SpaceXIcon from '../assets/spaceX-logo.svg';
-import NeuralinkLogo from '../assets/Neuralink.svg';
-import MadeInSpaceLogo from '../assets/MadeInSpace.svg';
+import SpaceXLogo from '../assets/images/spaceX-logo.png';
+import NeuralinkLogo from '../assets/images/neuralink-logo.png';
+import MadeInSpaceLogo from '../assets/images/madeinspace-logo.png';
 
 require('dotenv').config();
 
@@ -21,9 +19,11 @@ export interface SynthData {
 
 export const stakesData = [
   {
-    key: process?.env?.GSPACEX_KEY || '0x4753504143455800000000000000000000000000000000000000000000000000',
+    key:
+      process.env.GSPACEX_KEY ||
+      '0x4753504143455800000000000000000000000000000000000000000000000000',
     background: SpaceXBackground,
-    logo: SpaceXIcon,
+    logo: SpaceXLogo,
     title: 'SpaceX',
     subtitle: 'gSPX',
   },

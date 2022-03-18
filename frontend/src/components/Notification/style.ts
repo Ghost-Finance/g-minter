@@ -12,7 +12,7 @@ const useStyle = makeStyles((theme: Theme) =>
       },
     },
     standardInfo: {
-      backgroundColor: theme.brand.dark
+      backgroundColor: theme.brand.dark,
     },
     standardSuccess: {
       backgroundColor: theme.palette.success.main,
@@ -22,7 +22,7 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     standardWarning: {
       backgroundColor: theme.palette.warning.main,
-    }
+    },
   })
 );
 

@@ -12,7 +12,6 @@ export const useStyles = makeStyles((theme: Theme) =>
     pageActived: {
       display: 'flex',
       width: '100%',
-      height: '100vh',
       backgroundColor: theme.palette.primary.light,
     },
     pageActivedTop: {

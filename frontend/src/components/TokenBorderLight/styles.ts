@@ -21,7 +21,7 @@ export default makeStyles(theme => ({
     alignItems: 'baseline',
     '&>p': {
       color: theme.palette.secondary.dark,
-    }
+    },
   },
   center: {
     flexDirection: 'row',

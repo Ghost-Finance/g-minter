@@ -4,7 +4,7 @@ import { Button } from '@material-ui/core';
 import useStyles from './styles';
 
 interface Props {
-  text: string;
+  text?: string;
   className?: string;
   children?: JSX.Element;
   onClick?: any;

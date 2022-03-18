@@ -55,7 +55,7 @@ const AlertPage = ({ open }: Props) => {
       }
     });
   }, [status, action, minterContract, account]);
-  debugger;
+
   return (
     <div
       className={`${classes.alert} ${open ? classes.active : classes.close}`}

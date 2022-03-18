@@ -20,6 +20,7 @@ import GcardLink from '../../components/GcardLink';
 import GhostRatio from '../../components/GhostRatioComponent/GhostRatio';
 import LinkCard from '../../components/LinkCard';
 import GhostRatioMint from '../../components/GhostRatioComponent/GhostRatioMint';
+import GhostRatioStake from '../../components/GhostRatioComponent/GhostRadioStake';
 import { NetworkNames } from '../../config/enums';
 import InvalidNetwork from '../../components/InvalidNetwork';
 import cardsData from './cardsData';
@@ -47,12 +48,14 @@ import { useSelector } from '../../redux/hooks';
 import { bigNumberToFloat, formatCurrency } from '../../utils/StringUtils';
 
 const MainPage = () => {
-  const pagesWithoutNavElement = ['/alert', '/wallet-connect'];
+  const pagesWithoutNavElement = ['/wallet-connect'];
   const classes = useStyles();
   const location = useLocation();
   const [rootPage, setRootPageChanged] = useState(true);
-  const [showDialogWrongNetwork, setDialogWrongNetWork] =
-    useState<boolean>(false);
+  const [stakePage, setStakePage] = useState(false);
+  const [showDialogWrongNetwork, setDialogWrongNetWork] = useState<boolean>(
+    false
+  );
   const [cardsDataArray, setCardsDataArray] = useState(cardsData);
   const minterContract = useMinter();
   const feedGhoContract = useFeed(feedGhoAddress);
@@ -66,13 +69,15 @@ const MainPage = () => {
     synthDebt,
     status,
     networkName,
-  } = useSelector((state) => state.app);
-  const { account, network } = useSelector((state) => state.wallet);
+  } = useSelector(state => state.app);
+  const { account, network } = useSelector(state => state.wallet);
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(setStatus('pending'));
     setRootPageChanged(location.pathname === '/');
+    setStakePage(location.pathname === '/stake');
+
     setDialogWrongNetWork(network !== networkName);
 
     let intervalId: any;
@@ -90,7 +95,7 @@ const MainPage = () => {
       if (parseInt(balanceOfGdai || '') <= 0) return;
 
       let cardsDataArrayAfterMint = cardsData.filter(
-        (card) => card.to !== '/mint' && card.to !== '/stake'
+        card => card.to !== '/mint' && card.to !== '/stake'
       );
       cardsDataArrayAfterMint.unshift({
         to: '/stake',
@@ -203,7 +208,13 @@ const MainPage = () => {
           <div>
             <LogoIcon />
           </div>
-          {rootPage ? <GhostRatio /> : <GhostRatioMint />}
+          {rootPage ? (
+            <GhostRatio />
+          ) : stakePage ? (
+            <GhostRatioStake />
+          ) : (
+            <GhostRatioMint />
+          )}
         </NavElement>
       )}
       {rootPage && status !== 'error' && status !== 'pending' && (

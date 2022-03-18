@@ -1,5 +1,6 @@
 import { Contract } from 'web3-eth-contract';
 import { BigNumber } from '@ethersproject/bignumber';
+import { bigNumberToFloat } from './StringUtils';
 import { parseEther, parseUnits } from '@ethersproject/units';
 
 let oneEther = BigNumber.from(parseEther('1'));
@@ -215,10 +216,14 @@ export const calculateCRatio = async (
     parseUnits(feedPriceGho.toString())
   );
   const debtValue = debtAmount.mul(parseUnits(feedPriceGdai.toString()));
+  const cRatioValue = debtValue.isZero()
+    ? collaterlaValue.div(parseUnits(oneEther.toString()))
+    : collaterlaValue
+        .mul(parseUnits(oneEther.toString()))
+        .div(parseEther(debtValue.toString()));
+
   return [
-    collaterlaValue
-      .mul(parseUnits(oneEther.toString()))
-      .div(parseUnits(debtValue.toString())),
+    cRatioValue,
     collateralBalance.div(parseUnits(oneEther.toString())),
     debtAmount.div(parseUnits(oneEther.toString())),
   ];

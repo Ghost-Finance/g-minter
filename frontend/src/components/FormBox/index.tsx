@@ -25,13 +25,13 @@ export const FormBox = ({
         {title}
       </Typography>
 
-      {children}
+      <div className={classes.container}>{children}</div>
 
       <ButtonForm
         text={titleButton || '#'}
-        className={`${classes.button} ${(disableButton &&
-          classes.disableButton) ||
-          ''}`}
+        className={`${classes.button} ${
+          (disableButton && classes.disableButton) || ''
+        }`}
         onClick={onClick}
         disabled={disableButton}
       />
