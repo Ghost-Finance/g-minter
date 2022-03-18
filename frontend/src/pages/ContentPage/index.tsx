@@ -7,9 +7,6 @@ import ButtonForm from '../../components/Button/ButtonForm';
 import ConnectWallet from '../../components/Button/ConnectWallet';
 import useRedirect from '../../hooks/useRedirect';
 
-interface ImageBackgroundProps {
-  backgroundImage: string;
-}
 export interface ContentProps {
   showCancel?: boolean;
   backgroundImage?: string;
