@@ -8,7 +8,7 @@ interface Props {
   children: ReactNode;
   titleButton?: string;
   disableButton?: boolean;
-  onClick?: () => void;
+  onClick: () => void;
 }
 
 export const FormBox = ({
@@ -29,10 +29,13 @@ export const FormBox = ({
 
       <ButtonForm
         text={titleButton || '#'}
-        className={`${classes.button} ${
-          (disableButton && classes.disableButton) || ''
-        }`}
-        onClick={onClick}
+        className={`${classes.button} ${(disableButton &&
+          classes.disableButton) ||
+          ''}`}
+        onClick={(e: any) => {
+          e.preventDefault();
+          onClick();
+        }}
         disabled={disableButton}
       />
 
