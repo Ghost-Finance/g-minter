@@ -18,7 +18,7 @@ import ConnectWallet from '../../components/Button/ConnectWallet';
 import Checkbox from '../../components/Checkbox';
 
 const StakePage = () => {
-  const { account } = useSelector((state) => state.wallet);
+  const { account } = useSelector(state => state.wallet);
   const [redirectHome, setRedirectHome] = useState(false);
   const [chosenStake, setChosenStake] = useState<any>();
   const classes = useStyle();
@@ -115,6 +115,30 @@ const StakePage = () => {
               className={classes.formSubmit}
               text={`Stake in ${chosenStake.subtitle}`}
             />
+            <div className={classes.formIcon}>
+              <svg>
+                <circle
+                  cx="34"
+                  cy="34"
+                  r="32"
+                  fill="#171717"
+                  stroke="#EEFF00"
+                  stroke-width="4"
+                />
+                <path
+                  d="M27.6082 25.0316H19.0009L18.6005 25.906L27.9418 32.7669L33.7468 29.6728L27.6082 25.0316Z"
+                  fill="#EEFF00"
+                />
+                <path
+                  d="M39.8854 34.2467L35.0813 38.0135L43.2883 44H51.8289L52.2293 43.3274L39.8854 34.2467Z"
+                  fill="#EEFF00"
+                />
+                <path
+                  d="M18.6005 44L18 42.991C42.6077 19.6908 80.2532 13.9554 96 14.0003C59.382 16.8523 34.2583 35.1884 26.2737 44H18.6005Z"
+                  fill="#EEFF00"
+                />
+              </svg>
+            </div>
           </form>
         </>
       )}

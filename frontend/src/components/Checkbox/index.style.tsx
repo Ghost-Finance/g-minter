@@ -6,7 +6,7 @@ export const useStyles = makeStyles((theme: Theme) => ({
     borderRadius: '24px',
     fontFamily: 'Inter',
     fontWeight: 700,
-    margin: '0 1rem',
+    margin: '0 1rem 25px',
     padding: '1rem',
   },
   checkboxYellow: {
@@ -15,6 +15,11 @@ export const useStyles = makeStyles((theme: Theme) => ({
     '&:hover': {
       backgroundColor: '#2b2e00',
     },
+  },
+  checkboxLabel: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   checkboxGrey: {
     backgroundColor: theme?.palette.primary.dark,

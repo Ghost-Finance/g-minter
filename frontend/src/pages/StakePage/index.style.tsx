@@ -19,12 +19,11 @@ const useStyle = makeStyles((theme: Theme) =>
     headerStake: {
       display: 'flex',
       justifyContent: 'space-between',
-      marginLeft: '3rem',
       position: 'absolute',
       top: '3rem',
-      width: '60vw',
+      right: '5.5rem',
+      width: '60%',
       zIndex: 210,
-      right: '4rem',
     },
     link: {
       color: theme?.palette.secondary.dark,
@@ -67,6 +66,15 @@ const useStyle = makeStyles((theme: Theme) =>
         width: '40%',
       },
     },
+    formIcon: {
+      display: 'block',
+      position: 'absolute',
+      left: '52%',
+      bottom: '-34px',
+      width: '96px',
+      height: '68px',
+      transform: 'translateX(-50%)',
+    },
     formTitle: {
       color: theme?.palette.secondary.main,
       fontSize: '2.25rem',
@@ -83,6 +91,7 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     formLine: {
       display: 'flex',
+      alignItems: 'center',
       marginBottom: '1rem',
       height: '3rem',
     },

@@ -17,7 +17,7 @@ const Checkbox = ({ yellow, image, label, rotate }: Props) => {
         yellow ? classes.checkboxYellow : classes.checkboxGrey
       }`}
     >
-      <label htmlFor={label}>
+      <label htmlFor={label} className={classes.checkboxLabel}>
         <img
           alt={label}
           src={image}
