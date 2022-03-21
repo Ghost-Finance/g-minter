@@ -8,13 +8,12 @@ import { useStyles } from './index.style';
 import AppMenu from '../AppMenu';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import NavElement from '../../components/NavElement';
-import { ContentPage, ContextPage } from '../ContentPage';
+import { ContentPage } from '../ContentPage';
 import CardContent from '../../components/CardContent';
 import MintPage from '../MintPage';
 import MintAndBurnPage from '../MintAndBurnPage';
 import RewardPage from '../RewardPage';
 import StakePage from '../StakePage';
-import AlertPage from '../AlertPage';
 import ProgressBar from '../../components/ProgressBar';
 import GcardLink from '../../components/GcardLink';
 import GhostRatio from '../../components/GhostRatioComponent/GhostRatio';
@@ -71,11 +70,13 @@ const MainPage = () => {
   } = useSelector(state => state.app);
   const { account, network } = useSelector(state => state.wallet);
   const dispatch = useDispatch();
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     dispatch(setStatus('pending'));
     setRootPageChanged(location.pathname === '/');
     setStakePage(location.pathname === '/stake');
+
     setDialogWrongNetWork(network !== networkName);
 
     let intervalId: any;
@@ -223,12 +224,26 @@ const MainPage = () => {
             justify="flex-start"
             alignContent="center"
           >
-            <Grid item xs={8} sm spacing={2} style={{ marginTop: 40 }}>
+            <Grid
+              item
+              xs={8}
+              sm
+              spacing={2}
+              style={{ marginTop: 40 }}
+              className={classes.walletContainer}
+            >
               <div className={classes.walletGrid}>
                 <ConnectWallet />
               </div>
             </Grid>
-            <Grid item xs={8} sm spacing={2} alignContent="center">
+            <Grid
+              item
+              xs={8}
+              sm
+              spacing={2}
+              alignContent="center"
+              className={classes.center}
+            >
               <InvalidNetwork
                 isOpen={showDialogWrongNetwork}
                 targetNetwork={networkName}

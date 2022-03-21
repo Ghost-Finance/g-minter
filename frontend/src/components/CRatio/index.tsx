@@ -47,7 +47,7 @@ const CircularProgressBar = (props: Props) => {
   ]);
 
   const SVGCircleProgress = () => (
-    <svg className={classes.svg} width={size} height={size}>
+    <svg className={classes.svg} viewBox={`0 0 ${size} ${size}`}>
       <circle
         className={classes.svgCircle}
         stroke={circleOneStroke}
@@ -78,7 +78,7 @@ const CircularProgressBar = (props: Props) => {
       className={classes.root}
     >
       <SVGCircleProgress />
-      <div className={classes.infos} style={{ width: size, height: size }}>
+      <div className={classes.infos}>
         <div className={classes.svgCircleText}>
           {`${isNaN(progress) || progress <= 0 ? '-' : Math.round(progress)}%`}
         </div>

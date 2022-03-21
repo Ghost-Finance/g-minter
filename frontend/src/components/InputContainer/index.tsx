@@ -6,7 +6,8 @@ interface Props {
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
-    width: '330px',
+    maxWidth: '330px',
+    width: '100%',
     height: '50px',
     backgroundColor: theme.palette.primary.main,
     borderRadius: '30px',

@@ -5,8 +5,6 @@ import { parseEther, parseUnits } from '@ethersproject/units';
 
 let oneEther = BigNumber.from(parseEther('1'));
 let cRatio = BigNumber.from(parseEther('9'));
-let LONG: string = 'Long';
-let SHORT: string = 'Short';
 
 export const mint =
   (

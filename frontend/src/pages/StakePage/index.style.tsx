@@ -2,6 +2,11 @@ import { makeStyles, createStyles, Theme } from '@material-ui/core';
 
 const useStyle = makeStyles((theme: Theme) =>
   createStyles({
+    content: {
+      backgroundColor: theme.palette.primary.dark,
+      width: '100vw',
+      minHeight: '100vh',
+    },
     coverImage: {
       height: '300px',
       left: 0,
@@ -14,11 +19,17 @@ const useStyle = makeStyles((theme: Theme) =>
     headerStake: {
       display: 'flex',
       justifyContent: 'space-between',
-      marginLeft: '3rem',
       position: 'absolute',
       top: '3rem',
-      width: '60vw',
+      right: '5.5rem',
+      width: '60%',
       zIndex: 210,
+    },
+    link: {
+      color: theme?.palette.secondary.dark,
+      textDecoration: 'none',
+      fontSize: '0.825rem',
+      fontWeight: 'bold',
     },
     cancelButton: {
       backgroundColor: theme?.palette.primary.dark,
@@ -30,13 +41,6 @@ const useStyle = makeStyles((theme: Theme) =>
       display: 'inline-block',
       padding: '1rem 1.125rem',
     },
-    link: {
-      color: theme?.palette.secondary.dark,
-      textDecoration: 'none',
-      fontSize: '0.825rem',
-      fontWeight: 'bold',
-    },
-    walletGrid: {},
     formWrapper: {
       alignItems: 'center',
       backgroundColor: theme?.palette.primary.light,
@@ -60,6 +64,15 @@ const useStyle = makeStyles((theme: Theme) =>
         width: '40%',
       },
     },
+    formIcon: {
+      display: 'block',
+      position: 'absolute',
+      left: '52%',
+      bottom: '-34px',
+      width: '96px',
+      height: '68px',
+      transform: 'translateX(-50%)',
+    },
     formTitle: {
       color: theme?.palette.secondary.main,
       fontSize: '2.25rem',
@@ -76,8 +89,16 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     formLine: {
       display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
       marginBottom: '1rem',
       height: '3rem',
+    },
+    groupInputs: {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      width: '100%',
     },
     formInfoImage: {
       height: '24px',

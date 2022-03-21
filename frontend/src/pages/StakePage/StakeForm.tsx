@@ -217,66 +217,69 @@ const StakeForm = ({ synth }: Props) => {
       disableButton={btnDisabled}
     >
       <p className={classes.formSubtitle}>{synth.subtitle}</p>
-      <div className={classes.formLine}>
-        <RadioGroup row value={direction} onChange={handleDirection}>
-          <Checkbox
-            label={
-              <>
-                <ArrowDown
-                  color={
-                    direction === 'Short'
-                      ? theme.brand.main
-                      : theme.palette.secondary.light
-                  }
-                />
-                &nbsp;<span>Short</span>
-              </>
-            }
-            value={SHORT}
-            checked={direction === SHORT}
-          />
-          <InputContainer>
-            <img
-              alt={synth.title}
-              src={synth.logo}
-              className={classes.formInfoImage}
-            />
-            <span className={classes.formInfoText}>{synth.subtitle}</span>
-
-            <NumericalInput
-              id="synth"
-              placeholder="0.0 gDai"
-              value={synthValue}
-              className={classes.formInput}
-              {...synthField}
-            />
-
-            <div>
-              <ButtonForm
-                text="MAX"
-                className={classes.formInfoMax}
-                onClick={handleMaxAmounts}
+      <RadioGroup
+        row
+        className={classes.groupInputs}
+        value={direction}
+        onChange={handleDirection}
+      >
+        <Checkbox
+          label={
+            <>
+              <ArrowDown
+                color={
+                  direction === 'Short'
+                    ? theme.brand.main
+                    : theme.palette.secondary.light
+                }
               />
-            </div>
-          </InputContainer>
-          <Checkbox
-            label={
-              <>
-                <ArrowUp
-                  color={
-                    direction === LONG
-                      ? theme.brand.main
-                      : theme.palette.secondary.light
-                  }
-                />
-                &nbsp;<span>Long</span>
-              </>
-            }
-            value={LONG}
-            checked={direction === LONG}
+              &nbsp;<span>Short</span>
+            </>
+          }
+          value={SHORT}
+          checked={direction === SHORT}
+        />
+        <InputContainer>
+          <img
+            alt={synth.title}
+            src={synth.logo}
+            className={classes.formInfoImage}
           />
-        </RadioGroup>
-      </div>
+          <span className={classes.formInfoText}>{synth.subtitle}</span>
+
+          <NumericalInput
+            id="synth"
+            placeholder="0.0 gDai"
+            value={synthValue}
+            className={classes.formInput}
+            {...synthField}
+          />
+
+          <div>
+            <ButtonForm
+              text="MAX"
+              className={classes.formInfoMax}
+              onClick={handleMaxAmounts}
+            />
+          </div>
+        </InputContainer>
+        <Checkbox
+          label={
+            <>
+              <ArrowUp
+                color={
+                  direction === LONG
+                    ? theme.brand.main
+                    : theme.palette.secondary.light
+                }
+              />
+              &nbsp;<span>Long</span>
+            </>
+          }
+          value={LONG}
+          checked={direction === LONG}
+        />
+      </RadioGroup>
 
       <div className={classes.formLine}>
         <InputContainer>

@@ -51,6 +51,9 @@ export const ContentPage = (props: ContentProps) => {
           width: '100%',
           opacity: '0.5',
         },
+        [theme.breakpoints.down('sm')]: {
+          zIndex: '200',
+        },
       },
     })
   )(Box);

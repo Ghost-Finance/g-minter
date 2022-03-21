@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { FormControlLabel, Radio } from '@material-ui/core';
 import { useStyles } from './index.style';
 
