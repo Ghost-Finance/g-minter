@@ -1,32 +1,31 @@
 import React from 'react';
-
+import { FormControlLabel, Radio } from '@material-ui/core';
 import { useStyles } from './index.style';
 
 interface Props {
-  image?: string;
-  label: string;
-  yellow?: boolean;
-  rotate?: boolean;
+  label: JSX.Element;
+  checked?: boolean;
+  value?: string | number | any;
 }
 
-const Checkbox = ({ yellow, image, label, rotate }: Props) => {
+const Checkbox = ({ label, checked, value }: Props) => {
   const classes = useStyles();
+
   return (
-    <div
-      className={`${classes.checkboxWrapper} ${
-        yellow ? classes.checkboxYellow : classes.checkboxGrey
-      }`}
-    >
-      <label htmlFor={label}>
-        <img
-          alt={label}
-          src={image}
-          className={`${classes.labelImage} ${rotate &&
-            classes.labelImageRotate}`}
-        />
-        {label}
-      </label>
-      <input id={label} type="checkbox" className={classes.checkBoxInput} />
+    <div className={classes.checkboxWrapper}>
+      <FormControlLabel
+        value={value}
+        control={<Radio className={`${classes.checkBoxInput}`} />}
+        label={
+          <div className={`${classes.gridCenter} ${classes.label}`}>
+            {label}
+          </div>
+        }
+        labelPlacement="end"
+        className={`${classes.checkbox} ${
+          checked ? classes.checkboxYellow : classes.checkboxGrey
+        }`}
+      />
     </div>
   );
 };

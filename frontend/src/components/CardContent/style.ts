@@ -8,11 +8,11 @@ const useStyle = makeStyles((theme: Theme) =>
       alignItems: 'flex-start',
     },
     cardForm: {
-      marginTop: 20,
+      margin: '100px auto',
       width: 'calc(100% - 40px)',
-      backgroundColor: '#393939',
+      position: 'relative',
+      backgroundColor: theme?.palette?.primary?.light,
       border: 1,
-      padding: '0 20px',
       [theme.breakpoints.down('md')]: {
         marginTop: 0,
         width: '100%',
@@ -42,6 +42,21 @@ const useStyle = makeStyles((theme: Theme) =>
         marginRight: 12,
         backgroundColor: theme.palette.primary.dark,
         borderRadius: '0 0 40px 40px',
+      },
+    },
+    stake: {
+      margin: '0 auto',
+      backgroundColor: theme?.palette?.primary?.light,
+      borderTopLeftRadius: '48px',
+      borderTopRightRadius: '48px',
+      // content: '""',
+      height: '3rem',
+      position: 'relative',
+      top: '-6%',
+      width: '320px',
+      [theme.breakpoints.down('sm')]: {
+        top: '12%',
+        width: '100%',
       },
     },
   })

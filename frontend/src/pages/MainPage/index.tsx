@@ -8,13 +8,12 @@ import { useStyles } from './index.style';
 import AppMenu from '../AppMenu';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import NavElement from '../../components/NavElement';
-import { ContentPage, ContextPage } from '../ContentPage';
+import { ContentPage } from '../ContentPage';
 import CardContent from '../../components/CardContent';
 import MintPage from '../MintPage';
 import MintAndBurnPage from '../MintAndBurnPage';
 import RewardPage from '../RewardPage';
 import StakePage from '../StakePage';
-import AlertPage from '../AlertPage';
 import ProgressBar from '../../components/ProgressBar';
 import GcardLink from '../../components/GcardLink';
 import GhostRatio from '../../components/GhostRatioComponent/GhostRatio';
@@ -36,7 +35,6 @@ import {
   feedPrice,
 } from '../../utils/calls';
 import { useERC20, useMinter, useFeed } from '../../hooks/useContract';
-import useRedirect from '../../hooks/useRedirect';
 import { setCRatio, setBalanceOfGHO, setStatus } from '../../redux/app/actions';
 import {
   ghoAddress,
@@ -48,7 +46,7 @@ import { useSelector } from '../../redux/hooks';
 import { bigNumberToFloat, formatCurrency } from '../../utils/StringUtils';
 
 const MainPage = () => {
-  const pagesWithoutNavElement = ['/alert', '/wallet-connect'];
+  const pagesWithoutNavElement = ['/wallet-connect'];
   const classes = useStyles();
   const location = useLocation();
   const [rootPage, setRootPageChanged] = useState(true);

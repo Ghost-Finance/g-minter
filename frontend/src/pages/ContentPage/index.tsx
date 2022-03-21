@@ -1,13 +1,15 @@
-import React, { useState, createContext, useContext, useEffect } from 'react';
+import React, { useState, createContext } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Grid } from '@material-ui/core';
+import { Grid, Box, Theme, withStyles, createStyles } from '@material-ui/core';
 import AlertPage from '../AlertPage';
 import useStyles from '../style';
 import ButtonForm from '../../components/Button/ButtonForm';
 import ConnectWallet from '../../components/Button/ConnectWallet';
 import useRedirect from '../../hooks/useRedirect';
-export interface Props {
+
+export interface ContentProps {
   showCancel?: boolean;
+  backgroundImage?: string;
   children: React.ReactNode;
 }
 
@@ -20,11 +22,41 @@ export const ContextPage = createContext({
   setCurrentAction: (value: any) => {},
 });
 
-export const ContentPage = (props: Props) => {
+export const ContentPage = (props: ContentProps) => {
   const { redirect, redirectHome, setRedirect, setRedirectHome } =
     useRedirect();
   const [action, setCurrentAction] = useState('');
   const classes = useStyles();
+
+  const ContentWithBackground = withStyles((theme: Theme) =>
+    createStyles({
+      root: {
+        top: 0,
+        left: 0,
+        ...(props.backgroundImage && {
+          backgroundImage: `url(${props.backgroundImage})`,
+        }),
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: '100%',
+        position: 'fixed',
+        width: '100%',
+        height: '300px',
+        '&:before': {
+          content: '',
+          backgroundColor: '#171717',
+          left: 0,
+          top: 0,
+          position: 'fixed',
+          width: '100%',
+          opacity: '0.5',
+        },
+        [theme.breakpoints.down('sm')]: {
+          zIndex: '200',
+        },
+      },
+    })
+  )(Box);
 
   return (
     <ContextPage.Provider
@@ -55,6 +87,7 @@ export const ContentPage = (props: Props) => {
             spacing={4}
             className={classes.root}
           >
+            {<ContentWithBackground component="div" />}
             {props.showCancel && (
               <Grid
                 container

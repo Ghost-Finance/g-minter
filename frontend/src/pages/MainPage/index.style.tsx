@@ -17,17 +17,18 @@ export const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       width: '100%',
       minHeight: '100vh',
-      backgroundColor: theme.palette.primary.light,
+      backgroundColor: theme.palette.primary.dark,
     },
     pageActivedTop: {
       width: '100%',
       height: 300,
       backgroundPosition: 'center center',
       backgroundSize: 'cover',
-      backgroundColor: theme.palette.primary.dark,
+      backgroundColor: theme.palette.primary.main,
       [theme.breakpoints.down('sm')]: {
         height: 0,
         display: 'none',
+        backgroundColor: theme.palette.primary.main,
       },
     },
     main: {

@@ -48,14 +48,10 @@ const AlertPage = ({ open }: Props) => {
     );
     setMessageAction(action);
     filterByEvent(minterContract, 'Mint', account as string).then((data) => {
-      if (data.length) {
-        setIsFirstTransaction(false);
-      } else {
-        setIsFirstTransaction(true);
-      }
+      setIsFirstTransaction(data.length === 0);
     });
   }, [status, action, minterContract, account]);
-  debugger;
+
   return (
     <div
       className={`${classes.alert} ${open ? classes.active : classes.close}`}

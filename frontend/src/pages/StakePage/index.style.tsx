@@ -3,7 +3,7 @@ import { makeStyles, createStyles, Theme } from '@material-ui/core';
 const useStyle = makeStyles((theme: Theme) =>
   createStyles({
     content: {
-      backgroundColor: '#1E1E1E',
+      backgroundColor: theme.palette.primary.dark,
       width: '100vw',
       minHeight: '100vh',
     },
@@ -42,10 +42,8 @@ const useStyle = makeStyles((theme: Theme) =>
       display: 'inline-block',
       padding: '1rem 1.125rem',
     },
-    walletGrid: {},
     formWrapper: {
       alignItems: 'center',
-      borderBottom: `4px solid ${theme?.brand.main}`,
       backgroundColor: theme?.palette.primary.light,
       display: 'flex',
       flexDirection: 'column',
@@ -83,8 +81,15 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     formLine: {
       display: 'flex',
+      flexDirection: 'column',
       marginBottom: '1rem',
       height: '3rem',
+    },
+    groupInputs: {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      width: '100%',
     },
     formInfoImage: {
       height: '24px',
