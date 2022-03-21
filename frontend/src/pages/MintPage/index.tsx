@@ -52,7 +52,8 @@ const MintPage = ({ title }: Props) => {
   const { account } = useSelector((state) => state.wallet);
   const { balanceOfGho } = useSelector((state) => state.app);
 
-  const { setRedirectHome, setRedirect } = useContext(ContextPage);
+  const { action, setRedirectHome, setRedirect, setCurrentAction } =
+    useContext(ContextPage);
   const [btnDisabled, setBtnDisabled] = useState(true);
   const {
     reset: resetGhoField,
@@ -75,6 +76,7 @@ const MintPage = ({ title }: Props) => {
     if (btnDisabled || ghoField.value === '' || gdaiField.value === '') return;
 
     setRedirect(true);
+    setCurrentAction('mint');
     await approve(
       ghoContract,
       account as string,
@@ -198,8 +200,6 @@ const MintPage = ({ title }: Props) => {
             synthDebt.toString()
           )
         );
-
-        dispatchLoading('success');
       } catch (error) {
         setBtnDisabled(true);
         dispatchLoading('error');

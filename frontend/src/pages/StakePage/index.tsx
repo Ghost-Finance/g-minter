@@ -1,38 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Link, Redirect } from 'react-router-dom';
-import { Grid } from '@material-ui/core';
-import IconButton from '@material-ui/core/IconButton';
-import CloseIcon from '@material-ui/icons/Close';
-import useStyle from './index.style';
-import { useSelector } from '../../redux/hooks';
+import React, { useState } from 'react';
+import { ContentPage } from '../ContentPage';
+import CardContent from '../../components/CardContent';
+import PopUp from '../../components/PopUp';
+import StakeForm from './StakeForm';
 
 const StakePage = () => {
-  const { account } = useSelector((state) => state.wallet);
-  const [redirectHome, setRedirectHome] = useState(false);
-  const classes = useStyle();
+  const [chosenStake, setChosenStake] = useState<any>();
 
-  useEffect(() => {
-    setRedirectHome(account === null);
-  }, [account]);
   return (
-    <div className="modal side-left">
-      {redirectHome ? (
-        <Redirect
-          to={{
-            pathname: '/',
-          }}
-        />
-      ) : null}
-      <Grid container direction="row" className={classes.root}>
-        <div>
-          <Link to="/">
-            <IconButton>
-              <CloseIcon style={{ color: '#fff' }} />
-            </IconButton>
-          </Link>
-        </div>
-      </Grid>
-    </div>
+    <>
+      {(!chosenStake && <PopUp changeStake={setChosenStake} />) || (
+        <ContentPage showCancel={true} backgroundImage={chosenStake.background}>
+          <CardContent typeCard="stake">
+            <StakeForm synth={chosenStake} />
+          </CardContent>
+        </ContentPage>
+      )}
+    </>
   );
 };
 

@@ -20,9 +20,10 @@ import Notification from '../../Notification';
 const GhostRatio = () => {
   const classes = useStyles(theme);
   const [position, setPosition] = useState(0);
-  const { account } = useSelector((state) => state.wallet);
-  const app = useSelector((state) => state.app);
+  const { account } = useSelector(state => state.wallet);
+  const app = useSelector(state => state.app);
   const gSpotContract = useGSpot(gSpotAddress as string);
+  
   const {
     cRatioValue,
     balanceOfGho,
@@ -39,7 +40,7 @@ const GhostRatio = () => {
   };
 
   const listTokenSynth = (part: SynthData) => {
-    getSynthAmountByKey(part.key).then((amount) => (part.amount = amount));
+    getSynthAmountByKey(part.key).then(amount => (part.amount = amount));
 
     return {
       ...part,
@@ -83,7 +84,13 @@ const GhostRatio = () => {
               <TokenBorderLight
                 key={key}
                 label={args.subtitle}
-                icon={<img src={args.logo} alt={args.title} />}
+                icon={
+                  <img
+                    src={args.logo}
+                    className={classes.logo}
+                    alt={args.title}
+                  />
+                }
                 amount={0}
                 valueNumber={`${args.amount || ''} gDai`}
               />
@@ -107,7 +114,7 @@ const GhostRatio = () => {
   }, [collateralBalance, synthDebt, cRatioValue]);
 
   return (
-    <Box component="div" m={3}>
+    <Box component="div" p={3} className={classes.box}>
       <div className={classes.content}>
         <CRatio
           size={200}

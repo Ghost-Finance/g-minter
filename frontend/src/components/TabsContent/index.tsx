@@ -6,7 +6,7 @@ import { TabList } from '@material-ui/lab';
 export const TabsListWithTheme = withStyles((theme: Theme) =>
   createStyles({
     root: {
-      backgroundColor: '#393939',
+      backgroundColor: theme.palette.primary.light,
       color: theme.palette.primary.contrastText,
     },
     indicator: {

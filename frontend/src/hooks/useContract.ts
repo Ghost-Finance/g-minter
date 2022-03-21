@@ -3,6 +3,7 @@ import minterAbi from '../contracts/Minter.json';
 import ghoABI from '../contracts/GHO.json';
 import feedABI from '../contracts/Feed.json';
 import gSpotABI from '../contracts/GSpot.json';
+import updateHouseABI from '../contracts/UpdateHouse.json';
 import useWeb3 from './useWeb3';
 import contractAddress from '../contracts/contract-address.json';
 
@@ -31,6 +32,10 @@ export const useFeed = (feedAddress: string) => {
 
 export const useGSpot = (address: string) => {
   return useContract(gSpotABI.abi, address);
+};
+
+export const useUpdateHouse = (address: string) => {
+  return useContract(updateHouseABI.abi, address);
 };
 
 export default useContract;

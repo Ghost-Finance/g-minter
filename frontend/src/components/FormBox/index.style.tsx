@@ -9,7 +9,15 @@ const useStyle = makeStyles((theme: Theme) => ({
     width: '100%',
   },
   container: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
+    paddingBottom: '110px',
+    [theme.breakpoints.down('sm')]: {
+      paddingBottom: '10px',
+    },
   },
   title: {
     marginTop: '50px',
@@ -18,6 +26,7 @@ const useStyle = makeStyles((theme: Theme) => ({
     marginBottom: '40px',
     lineHeight: '37px',
     fontWeight: 'bold',
+    color: theme.palette.primary.contrastText,
     [theme.breakpoints.down('md')]: {
       marginTop: '35px',
     },
@@ -34,7 +43,7 @@ const useStyle = makeStyles((theme: Theme) => ({
     },
   },
   button: {
-    width: '325px !important',
+    width: '100%',
     maxWidth: '325px',
     fontWeight: 'bold',
     marginBottom: '90px',

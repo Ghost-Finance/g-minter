@@ -21,6 +21,9 @@ export default makeStyles((theme: Theme) => ({
     display: 'flex',
     flexFlow: 'column',
     padding: '25px',
+    [theme.breakpoints.down('md')]: {
+      padding: '0 25px 5px',
+    },
   },
   logo: {
     width: 40,

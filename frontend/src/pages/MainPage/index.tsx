@@ -8,19 +8,18 @@ import { useStyles } from './index.style';
 import AppMenu from '../AppMenu';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import NavElement from '../../components/NavElement';
-import { ContentPage, ContextPage } from '../ContentPage';
+import { ContentPage } from '../ContentPage';
 import CardContent from '../../components/CardContent';
 import MintPage from '../MintPage';
-import BurnPage from '../BurnPage';
 import MintAndBurnPage from '../MintAndBurnPage';
 import RewardPage from '../RewardPage';
 import StakePage from '../StakePage';
-import AlertPage from '../AlertPage';
 import ProgressBar from '../../components/ProgressBar';
 import GcardLink from '../../components/GcardLink';
 import GhostRatio from '../../components/GhostRatioComponent/GhostRatio';
 import LinkCard from '../../components/LinkCard';
 import GhostRatioMint from '../../components/GhostRatioComponent/GhostRatioMint';
+import GhostRatioStake from '../../components/GhostRatioComponent/GhostRadioStake';
 import { NetworkNames } from '../../config/enums';
 import InvalidNetwork from '../../components/InvalidNetwork';
 import cardsData from './cardsData';
@@ -36,7 +35,6 @@ import {
   feedPrice,
 } from '../../utils/calls';
 import { useERC20, useMinter, useFeed } from '../../hooks/useContract';
-import useRedirect from '../../hooks/useRedirect';
 import { setCRatio, setBalanceOfGHO, setStatus } from '../../redux/app/actions';
 import {
   ghoAddress,
@@ -48,16 +46,11 @@ import { useSelector } from '../../redux/hooks';
 import { bigNumberToFloat, formatCurrency } from '../../utils/StringUtils';
 
 const MainPage = () => {
-  const pagesWithoutNavElement = ['/alert', '/wallet-connect'];
+  const pagesWithoutNavElement = ['/wallet-connect'];
   const classes = useStyles();
   const location = useLocation();
-  const {
-    redirect,
-    redirectHome,
-    setRedirect,
-    setRedirectHome,
-  } = useRedirect();
   const [rootPage, setRootPageChanged] = useState(true);
+  const [stakePage, setStakePage] = useState(false);
   const [showDialogWrongNetwork, setDialogWrongNetWork] = useState<boolean>(
     false
   );
@@ -77,10 +70,13 @@ const MainPage = () => {
   } = useSelector(state => state.app);
   const { account, network } = useSelector(state => state.wallet);
   const dispatch = useDispatch();
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     dispatch(setStatus('pending'));
     setRootPageChanged(location.pathname === '/');
+    setStakePage(location.pathname === '/stake');
+
     setDialogWrongNetWork(network !== networkName);
 
     let intervalId: any;
@@ -211,7 +207,13 @@ const MainPage = () => {
           <div>
             <LogoIcon />
           </div>
-          {rootPage ? <GhostRatio /> : <GhostRatioMint />}
+          {rootPage ? (
+            <GhostRatio />
+          ) : stakePage ? (
+            <GhostRatioStake />
+          ) : (
+            <GhostRatioMint />
+          )}
         </NavElement>
       )}
       {rootPage && status !== 'error' && status !== 'pending' && (
@@ -222,12 +224,26 @@ const MainPage = () => {
             justify="flex-start"
             alignContent="center"
           >
-            <Grid item xs={8} sm spacing={2} style={{ marginTop: 40 }}>
+            <Grid
+              item
+              xs={8}
+              sm
+              spacing={2}
+              style={{ marginTop: 40 }}
+              className={classes.walletContainer}
+            >
               <div className={classes.walletGrid}>
                 <ConnectWallet />
               </div>
             </Grid>
-            <Grid item xs={8} sm spacing={2} alignContent="center">
+            <Grid
+              item
+              xs={8}
+              sm
+              spacing={2}
+              alignContent="center"
+              className={classes.center}
+            >
               <InvalidNetwork
                 isOpen={showDialogWrongNetwork}
                 targetNetwork={networkName}
@@ -280,27 +296,17 @@ const MainPage = () => {
             <Route
               path="/mint"
               children={
-                <ContextPage.Provider
-                  value={{
-                    redirect,
-                    redirectHome,
-                    setRedirect,
-                    setRedirectHome,
-                  }}
-                >
-                  <ContentPage>
-                    <CardContent typeCard="mint">
-                      <MintPage title={'Mint your gDai'} />
-                    </CardContent>
-                  </ContentPage>
-                </ContextPage.Provider>
+                <ContentPage showCancel={true}>
+                  <CardContent typeCard="mint">
+                    <MintPage title={'Mint your gDai'} />
+                  </CardContent>
+                </ContentPage>
               }
             />
             <Route path="/mint-burn" children={<MintAndBurnPage />} />
             <Route path="/rewards" children={<RewardPage />} />
             <Route path="/stake" children={<StakePage />} />
             <Route path="/wallet-connect" children={<WalletConnectPage />} />
-            <Route path="/alert" children={<AlertPage />} />
           </Switch>
         </CSSTransition>
       </TransitionGroup>

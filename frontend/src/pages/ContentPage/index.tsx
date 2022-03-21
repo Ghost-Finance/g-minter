@@ -1,78 +1,130 @@
-import React, { useState, createContext, useContext, useEffect } from 'react';
+import React, { useState, createContext } from 'react';
 import { Link, Redirect } from 'react-router-dom';
-import { Grid } from '@material-ui/core';
+import { Grid, Box, Theme, withStyles, createStyles } from '@material-ui/core';
+import AlertPage from '../AlertPage';
 import useStyles from '../style';
 import ButtonForm from '../../components/Button/ButtonForm';
 import ConnectWallet from '../../components/Button/ConnectWallet';
-export interface Props {
+import useRedirect from '../../hooks/useRedirect';
+
+export interface ContentProps {
+  showCancel?: boolean;
+  backgroundImage?: string;
   children: React.ReactNode;
 }
 
 export const ContextPage = createContext({
   redirect: false,
   redirectHome: false,
+  action: '',
   setRedirect: (value: any) => {},
   setRedirectHome: (value: any) => {},
+  setCurrentAction: (value: any) => {},
 });
 
-export const ContentPage = (props: Props) => {
-  const { redirect, redirectHome } = useContext(ContextPage);
+export const ContentPage = (props: ContentProps) => {
+  const { redirect, redirectHome, setRedirect, setRedirectHome } =
+    useRedirect();
+  const [action, setCurrentAction] = useState('');
   const classes = useStyles();
 
-  return (
-    <div className="modal side-left">
-      {redirect ? (
-        <Redirect
-          to={{
-            pathname: '/alert',
-          }}
-        />
-      ) : null}
+  const ContentWithBackground = withStyles((theme: Theme) =>
+    createStyles({
+      root: {
+        top: 0,
+        left: 0,
+        ...(props.backgroundImage && {
+          backgroundImage: `url(${props.backgroundImage})`,
+        }),
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: '100%',
+        position: 'fixed',
+        width: '100%',
+        height: '300px',
+        '&:before': {
+          content: '',
+          backgroundColor: '#171717',
+          left: 0,
+          top: 0,
+          position: 'fixed',
+          width: '100%',
+          opacity: '0.5',
+        },
+        [theme.breakpoints.down('sm')]: {
+          zIndex: '200',
+        },
+      },
+    })
+  )(Box);
 
-      {redirectHome ? (
-        <Redirect
-          to={{
-            pathname: '/',
-          }}
-        />
-      ) : null}
-      <Grid
-        container
-        direction="column"
-        justify="flex-start"
-        spacing={4}
-        className={classes.root}
-      >
-        <Grid
-          container
-          direction="row"
-          item
-          xs={8}
-          sm
-          spacing={2}
-          className={classes.contentCard}
-        >
-          <Grid item xs={6}>
-            <Link to="/" className={classes.link}>
-              <ButtonForm text="Cancel" className={classes.buttonCancel} />
-            </Link>
+  return (
+    <ContextPage.Provider
+      value={{
+        redirect,
+        redirectHome,
+        action,
+        setRedirect,
+        setRedirectHome,
+        setCurrentAction,
+      }}
+    >
+      {redirect ? (
+        <AlertPage open={true} />
+      ) : (
+        <div className="modal side-left">
+          {redirectHome ? (
+            <Redirect
+              to={{
+                pathname: '/',
+              }}
+            />
+          ) : null}
+          <Grid
+            container
+            direction="column"
+            justify="flex-start"
+            spacing={4}
+            className={classes.root}
+          >
+            {<ContentWithBackground component="div" />}
+            {props.showCancel && (
+              <Grid
+                container
+                direction="row"
+                item
+                xs={8}
+                sm
+                spacing={2}
+                className={classes.contentCard}
+              >
+                <Grid item xs={6}>
+                  <Link to="/" className={classes.link}>
+                    <ButtonForm
+                      text="Cancel"
+                      className={classes.buttonCancel}
+                    />
+                  </Link>
+                </Grid>
+                <Grid item xs={2}>
+                  <ConnectWallet />
+                </Grid>
+              </Grid>
+            )}
+            <Grid
+              container
+              direction="column"
+              item
+              xs={8}
+              sm
+              spacing={2}
+              className={classes.contentCard}
+            >
+              {props.children}
+            </Grid>
           </Grid>
-          <Grid item xs={2}>
-            <ConnectWallet />
-          </Grid>
-        </Grid>
-        <Grid
-          container
-          direction="column"
-          item
-          xs={8}
-          sm
-          spacing={2}
-          className={classes.contentCard}
-        >
-          {props.children}
-        </Grid>
-      </Grid>
-    </div>
+        </div>
+      )}
+    </ContextPage.Provider>
   );
 };

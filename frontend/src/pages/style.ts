@@ -6,9 +6,29 @@ const useStyle = makeStyles((theme: Theme) =>
       flexGrow: 1,
       color: theme.palette.primary.contrastText,
       marginTop: 20,
+      [theme.breakpoints.down('sm')]: {
+        padding: '4rem 0 4rem 16px',
+        margin: '0',
+        width: '100vw',
+        backgroundColor: '#1e1e1e',
+      },
+      [theme.breakpoints.down('xs')]: {
+        padding: '4rem 0 4rem 8px',
+      },
     },
     contentCard: {
-      width: '100%',
+      width: '66%',
+      justifyContent: 'space-between',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        maxWidth: '100%',
+      },
+    },
+    walletContent: {
+      [theme.breakpoints.down('sm')]: {
+        maxWidth: '50%',
+        flexBasis: '50%',
+      },
     },
     link: {
       textDecoration: 'none',
@@ -35,7 +55,7 @@ const useStyle = makeStyles((theme: Theme) =>
       marginLeft: '15px',
     },
     active: {
-      width: '325px !important',
+      width: '100%',
       maxWidth: '325px',
       fontWeight: 'bold',
       marginBottom: '90px',
@@ -44,7 +64,7 @@ const useStyle = makeStyles((theme: Theme) =>
       },
     },
     disabled: {
-      width: '325px !important',
+      width: '100%',
       maxWidth: '325px',
       fontWeight: 'bold',
       marginBottom: '90px',
@@ -95,10 +115,13 @@ const useStyle = makeStyles((theme: Theme) =>
       marginTop: '10px',
       marginLeft: '55px',
       letterSpacing: '0.008em',
+      [theme.breakpoints.down('md')]: {
+        marginLeft: '10px',
+      },
     },
     topBox: {
       margin: '0 auto',
-      width: '325px !important',
+      width: '100%',
       maxWidth: '325px',
       height: '41px',
       backgroundColor: theme.palette.primary.dark,

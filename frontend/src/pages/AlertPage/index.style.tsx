@@ -2,11 +2,26 @@ import { makeStyles, createStyles, Theme } from '@material-ui/core';
 
 const useStyle = makeStyles((theme: Theme) =>
   createStyles({
+    alert: {
+      position: 'fixed',
+      zIndex: 100,
+      left: 0,
+      top: 0,
+      width: '100%',
+      height: '100%',
+      overflow: 'auto',
+      backgroundColor: theme.palette.primary.main,
+    },
+    active: {
+      display: 'block',
+    },
+    close: {
+      display: 'none',
+    },
     root: {
       flexGrow: 1,
       color: theme.palette.primary.contrastText,
       left: '30%',
-      width: '100%',
       marginTop: 20,
     },
     paperContent: {
@@ -24,10 +39,14 @@ const useStyle = makeStyles((theme: Theme) =>
     cardForm: {
       marginTop: 20,
       width: 'calc(50% - 40px)',
+      [theme.breakpoints.down('md')]: {
+        width: '100%',
+        padding: '0 20px',
+      },
     },
     boxMessage: {
-      marginTop: 150,
-      marginBottom: 150,
+      marginTop: '6.5rem',
+      marginBottom: '6.5rem',
       [theme.breakpoints.down('md')]: {
         marginTop: 0,
         marginBottom: 0,
@@ -46,9 +65,9 @@ const useStyle = makeStyles((theme: Theme) =>
       color: '#444',
     },
     button: {
-      backgroundColor: theme.palette.primary.light,
+      backgroundColor: `${theme.palette.primary.light} !important`,
       '&:hover': {
-        backgroundColor: theme.palette.primary.light,
+        backgroundColor: `${theme.palette.primary.light} !important`,
       },
     },
     buttonCancel: {
@@ -110,7 +129,7 @@ const useStyle = makeStyles((theme: Theme) =>
     },
     topBox: {
       margin: '0 auto',
-      width: '325px !important',
+      width: '100%',
       maxWidth: '325px',
       height: '41px',
       backgroundColor: '#171717',
