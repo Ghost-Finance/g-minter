@@ -8,6 +8,7 @@ const useStyle = makeStyles((theme: Theme) =>
       marginTop: 20,
     },
     contentCard: {
+      zIndex: 1,
       width: '100%',
     },
     link: {

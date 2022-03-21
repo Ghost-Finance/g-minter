@@ -36,7 +36,6 @@ import {
   feedPrice,
 } from '../../utils/calls';
 import { useERC20, useMinter, useFeed } from '../../hooks/useContract';
-import useRedirect from '../../hooks/useRedirect';
 import { setCRatio, setBalanceOfGHO, setStatus } from '../../redux/app/actions';
 import {
   ghoAddress,
@@ -77,7 +76,6 @@ const MainPage = () => {
     dispatch(setStatus('pending'));
     setRootPageChanged(location.pathname === '/');
     setStakePage(location.pathname === '/stake');
-
     setDialogWrongNetWork(network !== networkName);
 
     let intervalId: any;

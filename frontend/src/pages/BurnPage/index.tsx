@@ -51,7 +51,7 @@ const BurnPage = () => {
   const { balanceOfGdai } = useSelector((state) => state.app);
   const dispatch = useDispatch();
 
-  const { action, setRedirectHome, setRedirect, setCurrentAction } =
+  const { setRedirectHome, setRedirect, setCurrentAction } =
     useContext(ContextPage);
 
   function dispatchLoading(key: string) {
@@ -60,6 +60,7 @@ const BurnPage = () => {
 
   async function handleBurn() {
     if (btnDisabled || gdaiValue === '') return;
+
     setRedirect(true);
     setCurrentAction('burn');
     try {
