@@ -3,14 +3,16 @@ import { makeStyles, createStyles, Theme } from '@material-ui/core';
 const useStyle = makeStyles((theme: Theme) =>
   createStyles({
     popUpWrapper: {
-      position: 'fixed',
-      zIndex: 100,
-      left: 30,
+      position: 'absolute',
+      zIndex: 200,
       right: 30,
-      top: 50,
       bottom: 30,
-      height: '100vh',
+      height: 'calc(100vh - 60px)',
       overflow: 'auto',
+      left: '50%',
+      top: '50%',
+      width: '95%',
+      transform: 'translate(-50%, -50%)',
       [theme.breakpoints.down('sm')]: {
         left: 0,
         right: 0,
@@ -26,7 +28,7 @@ const useStyle = makeStyles((theme: Theme) =>
       backgroundSize: '100%',
       display: 'flex',
       justifyContent: 'center',
-      padding: '14rem 0 7rem',
+      minHeight: 'calc(100vh - 60px)',
       [theme.breakpoints.down('sm')]: {
         backgroundSize: 'cover',
       },
@@ -59,17 +61,16 @@ const useStyle = makeStyles((theme: Theme) =>
       alignItems: 'center',
       display: 'flex',
       justifyContent: 'space-between',
-      margin: '4rem 0 0 20.375rem',
+      margin: '4rem 0 0',
       position: 'absolute',
       top: '0',
+      left: '50%',
       zIndex: 210,
-      width: '40%',
-
+      width: '40vw',
+      transform: 'translateX(-50%)',
       [theme.breakpoints.down('sm')]: {
-        margin: '0 auto',
-        left: '5vw',
         top: '6rem',
-        width: '90vw',
+        width: '70%',
       },
     },
     link: {
@@ -112,10 +113,11 @@ const useStyle = makeStyles((theme: Theme) =>
       borderBottom: `4px solid ${theme?.brand.main}`,
       display: 'flex',
       flexDirection: 'column',
-      marginTop: '2rem',
+      marginTop: '8rem',
       paddingTop: '2rem',
       position: 'relative',
-      width: '40%',
+      width: '40vw',
+      minHeight: '20vw',
       zIndex: 2,
       '&::before': {
         backgroundColor: 'rgba(30, 30, 30, 0.8)',

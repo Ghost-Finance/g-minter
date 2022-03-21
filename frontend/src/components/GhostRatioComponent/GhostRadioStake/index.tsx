@@ -46,7 +46,7 @@ const GhostRatioStake = () => {
           />
         </ListSynths>
 
-        <ListSynths label="Staking">
+        <ListSynths label="Staking" isSubtitle>
           <TokenLight
             icon={<SpaceXIcon iconColor={`${theme?.brand.main}`} />}
             label="gSPX"
