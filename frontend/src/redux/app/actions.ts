@@ -13,6 +13,7 @@ export const setCRatio = ({
   synthDebt,
   collateralBalancePrice,
   synthDebtPrice,
+  dataPositions,
 }: any) => ({
   type: Types.SET_CRATIO,
   cRatioValue,
@@ -22,6 +23,7 @@ export const setCRatio = ({
   synthDebt,
   collateralBalancePrice,
   synthDebtPrice,
+  dataPositions,
 });
 
 export const setCRatioSimulateMint = (

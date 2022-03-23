@@ -1,6 +1,5 @@
 import { Contract } from 'web3-eth-contract';
 import { BigNumber } from '@ethersproject/bignumber';
-import { bigNumberToFloat } from './StringUtils';
 import { parseEther, parseUnits } from '@ethersproject/units';
 
 let oneEther = BigNumber.from(parseEther('1'));
@@ -259,6 +258,16 @@ export const filterByEvent = async (
     fromBlock: 0,
     toBlock: 'latest',
   });
+};
+
+export const filterSynthPositionsByAccount = async (
+  contract: Contract,
+  key: string,
+  account: string
+) => {
+  return contract.methods
+    .data()
+    .filter((args: any) => args.account === account && args.synth === key);
 };
 
 export const getSynthAmount = async (

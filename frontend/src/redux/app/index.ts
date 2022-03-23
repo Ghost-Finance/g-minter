@@ -29,6 +29,7 @@ type TState = {
   synthDebt?: string;
   collateralBalancePrice?: string;
   synthDebtPrice?: string;
+  dataPositions?: [];
 };
 
 type TAction = {
@@ -51,6 +52,7 @@ const initialState: TState = {
   synthDebt: '0',
   collateralBalancePrice: '0',
   synthDebtPrice: '0',
+  dataPositions: [],
 };
 
 // eslint-disable-next-line import/no-anonymous-default-export
@@ -67,6 +69,7 @@ export default (state: TState = initialState, action: TAction) => {
     synthDebt,
     collateralBalancePrice,
     synthDebtPrice,
+    dataPositions,
   } = action;
   switch (type) {
     case Types.SET_TXSUCCESS:
@@ -89,6 +92,7 @@ export default (state: TState = initialState, action: TAction) => {
         synthDebt,
         collateralBalancePrice,
         synthDebtPrice,
+        dataPositions,
       };
     case Types.SET_CRATIO_SIMULATE_MINT:
       return {

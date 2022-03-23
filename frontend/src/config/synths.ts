@@ -28,14 +28,18 @@ export const stakesData = [
     subtitle: 'gSPX',
   },
   // {
-  //   key: process.env.GNEURALINK_KEY,
+  //   key:
+  //     process.env.GNEURALINK_KEY ||
+  //     '0x4753504143455800000000000000000000000000000000000000000000000000',
   //   background: NeuraLinkBackground,
   //   logo: NeuralinkLogo,
   //   title: 'Neuralink',
   //   subtitle: 'gNLK',
   // },
   // {
-  //   key: process.env.GMADEINSPACE_KEY,
+  //   key:
+  //     process.env.GMADEINSPACE_KEY ||
+  //     '0x4753504143455800000000000000000000000000000000000000000000000000',
   //   background: MadeInSpaceBackground,
   //   logo: MadeInSpaceLogo,
   //   title: 'Made in Space',

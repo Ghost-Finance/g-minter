@@ -36,20 +36,26 @@ export const ContentPage = (props: ContentProps) => {
         ...(props.backgroundImage && {
           backgroundImage: `url(${props.backgroundImage})`,
         }),
-        backgroundPosition: 'center',
+        backgroundPosition: 'center center',
         backgroundRepeat: 'no-repeat',
-        backgroundSize: '100%',
+        backgroundSize: 'cover',
         position: 'fixed',
         width: '100%',
         height: '300px',
-        '&:before': {
-          content: '',
-          backgroundColor: '#171717',
+        '&::before': {
+          content: '""',
           left: 0,
           top: 0,
           position: 'fixed',
           width: '100%',
           opacity: '0.5',
+          backgroundColor: 'rgba(51, 51, 51, 0.9)',
+          height: '300px',
+          pointerEvents: 'none',
+          zIndex: 1,
+          [theme.breakpoints.down('sm')]: {
+            height: '100px',
+          },
         },
         [theme.breakpoints.down('sm')]: {
           zIndex: '200',

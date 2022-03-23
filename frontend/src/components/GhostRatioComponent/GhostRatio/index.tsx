@@ -7,23 +7,26 @@ import TokenBorderLight from '../../TokenBorderLight';
 import { GhostIcon, DaiIcon, GdaiIcon, GhoIcon } from '../../Icons';
 import { stakesData, SynthData } from '../../../config/synths';
 import { useSelector } from '../../../redux/hooks';
-import { getSynthAmount } from '../../../utils/calls';
+import { getSynthAmount, filterByEvent } from '../../../utils/calls';
 import { formatBalance, bigNumberToFloat } from '../../../utils/StringUtils';
 import { SpaceXPulseIcon } from '../../Icons';
 import CRatio from '../../CRatio';
 import useStyles from './styles';
 import theme from '../../../theme.style';
-import { useGSpot } from '../../../hooks/useContract';
-import { gSpotAddress } from '../../../utils/constants';
+import { useGSpot, useUpdateHouse } from '../../../hooks/useContract';
+import { gSpotAddress, updateHouseAddress } from '../../../utils/constants';
+import { filterPositionByAccount } from '../../../utils/FilterUtils';
 import Notification from '../../Notification';
 
 const GhostRatio = () => {
   const classes = useStyles(theme);
   const [position, setPosition] = useState(0);
-  const { account } = useSelector(state => state.wallet);
-  const app = useSelector(state => state.app);
+  const [dataPositionToAccount, setDataPositionToAccount] = useState<any>();
+  const { account } = useSelector((state) => state.wallet);
+  const app = useSelector((state) => state.app);
   const gSpotContract = useGSpot(gSpotAddress as string);
-  
+  const updateHouseContract = useUpdateHouse(updateHouseAddress);
+
   const {
     cRatioValue,
     balanceOfGho,
@@ -32,6 +35,7 @@ const GhostRatio = () => {
     synthDebt,
     collateralBalancePrice,
     synthDebtPrice,
+    dataPositions,
   } = app;
 
   const getSynthAmountByKey = async (key: string) => {
@@ -40,7 +44,7 @@ const GhostRatio = () => {
   };
 
   const listTokenSynth = (part: SynthData) => {
-    getSynthAmountByKey(part.key).then(amount => (part.amount = amount));
+    getSynthAmountByKey(part.key).then((amount) => (part.amount = amount));
 
     return {
       ...part,
@@ -105,13 +109,24 @@ const GhostRatio = () => {
       </>
     );
   };
+
   useEffect(() => {
     setPosition(
       parseInt(collateralBalance || '0') > 0 && parseInt(synthDebt || '0') > 0
         ? 1
         : 0
     );
-  }, [collateralBalance, synthDebt, cRatioValue]);
+
+    dataPositions &&
+      setDataPositionToAccount(
+        filterPositionByAccount(
+          account as string,
+          dataPositions,
+          0,
+          (dataPositions || []).length - 1
+        )
+      );
+  }, [account, collateralBalance, dataPositions, synthDebt, cRatioValue]);
 
   return (
     <Box component="div" p={3} className={classes.box}>
