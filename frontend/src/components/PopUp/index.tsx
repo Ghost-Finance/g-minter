@@ -31,11 +31,9 @@ const PopUp = ({ changeStake }: PopUpProps) => {
         }}
         centeredSlides
       >
-        <div className={classes.closePopUp}>
-          <Link to="/" className={classes.link}>
-            Cancel
-          </Link>
-        </div>
+        <Link to="/" className={classes.link}>
+          <div className={classes.closePopUp}>Cancel</div>
+        </Link>
 
         <div className={classes.popUpHeader}>
           <p className={classes.popupText}>Choose a gSynth</p>
