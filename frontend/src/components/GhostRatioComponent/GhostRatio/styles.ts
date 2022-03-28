@@ -26,7 +26,7 @@ export default makeStyles((theme: Theme) => ({
     },
   },
   logo: {
-    width: 40,
-    height: 40,
+    width: 29,
+    height: 24,
   },
 }));

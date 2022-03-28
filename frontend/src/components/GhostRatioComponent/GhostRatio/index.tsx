@@ -7,23 +7,25 @@ import TokenBorderLight from '../../TokenBorderLight';
 import { GhostIcon, DaiIcon, GdaiIcon, GhoIcon } from '../../Icons';
 import { stakesData, SynthData } from '../../../config/synths';
 import { useSelector } from '../../../redux/hooks';
-import { getSynthAmount } from '../../../utils/calls';
+import { getSynthAmount, filterByEvent } from '../../../utils/calls';
 import { formatBalance, bigNumberToFloat } from '../../../utils/StringUtils';
 import { SpaceXPulseIcon } from '../../Icons';
 import CRatio from '../../CRatio';
 import useStyles from './styles';
 import theme from '../../../theme.style';
-import { useGSpot } from '../../../hooks/useContract';
-import { gSpotAddress } from '../../../utils/constants';
+import { useGSpot, useUpdateHouse } from '../../../hooks/useContract';
+import { gSpotAddress, updateHouseAddress } from '../../../utils/constants';
+import { filterPositionByAccount } from '../../../utils/FilterUtils';
 import Notification from '../../Notification';
 
 const GhostRatio = () => {
   const classes = useStyles(theme);
   const [position, setPosition] = useState(0);
-  const { account } = useSelector(state => state.wallet);
-  const app = useSelector(state => state.app);
+  const [dataPositionToAccount, setDataPositionToAccount] = useState<any>();
+  const { account } = useSelector((state) => state.wallet);
+  const app = useSelector((state) => state.app);
   const gSpotContract = useGSpot(gSpotAddress as string);
-  
+
   const {
     cRatioValue,
     balanceOfGho,
@@ -32,19 +34,36 @@ const GhostRatio = () => {
     synthDebt,
     collateralBalancePrice,
     synthDebtPrice,
+    dataPositions,
   } = app;
 
   const getSynthAmountByKey = async (key: string) => {
     const amount = await getSynthAmount(gSpotContract, key, account as string);
+
     return bigNumberToFloat(amount.toString());
   };
 
-  const listTokenSynth = (part: SynthData) => {
-    getSynthAmountByKey(part.key).then(amount => (part.amount = amount));
+  const updateSynthTokenAmount = (part: SynthData) => {
+    getSynthAmountByKey(part.key).then((amount) => (part.amount = amount));
+    return part;
+  };
 
-    return {
-      ...part,
-    };
+  const listTokenSynth = (synth: SynthData) => {
+    const data = dataPositionToAccount
+      .filter((position: any) => synth.key === position.synth)
+      .reduce(
+        (acc: any, part: any, index: number) => ({
+          ...acc,
+          [index]: {
+            ...synth,
+            synthAmount: bigNumberToFloat(part.synthTokenAmount),
+            direction: Number(part.direction),
+          } as SynthData,
+        }),
+        {}
+      );
+
+    return data ? data : { 0: synth };
   };
 
   const tokenValues = () => (
@@ -79,39 +98,84 @@ const GhostRatio = () => {
         />
         <ListSynths label={'Staking'} isSubtitle={true}>
           {stakesData
+            .map(updateSynthTokenAmount)
             .map(listTokenSynth)
-            .map((args: SynthData, key: number) => (
-              <TokenBorderLight
-                key={key}
-                label={args.subtitle}
-                icon={
-                  <img
-                    src={args.logo}
-                    className={classes.logo}
-                    alt={args.title}
-                  />
-                }
-                amount={0}
-                valueNumber={`${args.amount || ''} gDai`}
-              />
-            ))}
+            .map((args: SynthData) => {
+              return (
+                <>
+                  {Object.values(args).map((data: any) => {
+                    return (
+                      <>
+                        {data.synthAmount ? (
+                          <TokenLight
+                            label={data.subtitle}
+                            icon={
+                              <img
+                                src={data.logo}
+                                className={classes.logo}
+                                alt={data.title}
+                              />
+                            }
+                            amount={formatBalance(
+                              Number(data.synthAmount || '0'),
+                              3
+                            )}
+                            valueNumber={`${data.amount || ''} gDai`}
+                          />
+                        ) : (
+                          <TokenBorderLight
+                            label={data.subtitle}
+                            icon={
+                              <img
+                                src={data.logo}
+                                className={classes.logo}
+                                alt={data.title}
+                              />
+                            }
+                            amount={formatBalance(
+                              Number(data.synthAmount || '0'),
+                              3
+                            )}
+                            valueNumber={`${data.amount || ''} gDai`}
+                          />
+                        )}
+                      </>
+                    );
+                  })}
+                </>
+              );
+            })}
         </ListSynths>
-        <Notification
-          icon={<SpaceXPulseIcon />}
-          message={`Welcome to Defi revolution`}
-          severity="warning"
-          color="info"
-        />
+        {!dataPositionToAccount &&
+          ((
+            <Notification
+              icon={<SpaceXPulseIcon />}
+              message={`Welcome to Defi revolution`}
+              severity="warning"
+              color="info"
+            />
+          ) || <></>)}
       </>
     );
   };
+
   useEffect(() => {
     setPosition(
       parseInt(collateralBalance || '0') > 0 && parseInt(synthDebt || '0') > 0
         ? 1
         : 0
     );
-  }, [collateralBalance, synthDebt, cRatioValue]);
+
+    dataPositions &&
+      setDataPositionToAccount(
+        filterPositionByAccount(
+          account as string,
+          dataPositions,
+          0,
+          (dataPositions || []).length - 1
+        )
+      );
+  }, [account, collateralBalance, dataPositions, synthDebt, cRatioValue]);
 
   return (
     <Box component="div" p={3} className={classes.box}>

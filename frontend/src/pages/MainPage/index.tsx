@@ -33,14 +33,21 @@ import {
   getCRatio,
   synthDebtOf,
   feedPrice,
+  filterByEvent,
 } from '../../utils/calls';
-import { useERC20, useMinter, useFeed } from '../../hooks/useContract';
+import {
+  useERC20,
+  useMinter,
+  useFeed,
+  useUpdateHouse,
+} from '../../hooks/useContract';
 import { setCRatio, setBalanceOfGHO, setStatus } from '../../redux/app/actions';
 import {
   ghoAddress,
   gDaiAddress,
   feedGdaiAddress,
   feedGhoAddress,
+  updateHouseAddress,
 } from '../../utils/constants';
 import { useSelector } from '../../redux/hooks';
 import { bigNumberToFloat, formatCurrency } from '../../utils/StringUtils';
@@ -56,6 +63,7 @@ const MainPage = () => {
   );
   const [cardsDataArray, setCardsDataArray] = useState(cardsData);
   const minterContract = useMinter();
+  const updateHouseContract = useUpdateHouse(updateHouseAddress);
   const feedGhoContract = useFeed(feedGhoAddress);
   const feedGdaiContract = useFeed(feedGdaiAddress);
   const ghoContract = useERC20(ghoAddress);
@@ -114,6 +122,7 @@ const MainPage = () => {
           synthDebtOf(minterContract, gDaiAddress, account as string),
           feedPrice(feedGhoContract),
           feedPrice(feedGdaiContract),
+          filterByEvent(updateHouseContract, 'Create', account as string),
         ],
         (data: any) => {
           const [
@@ -124,8 +133,8 @@ const MainPage = () => {
             synthDebt,
             feedGhoPrice,
             feedGdaiPrice,
+            dataPositions,
           ] = data;
-
           dispatch(
             setCRatio({
               cRatioValue: bigNumberToFloat(cRatio) * 100,
@@ -140,6 +149,7 @@ const MainPage = () => {
               synthDebtPrice: formatCurrency(
                 bigNumberToFloat(synthDebt) * bigNumberToFloat(feedGdaiPrice)
               ),
+              dataPositions,
             })
           );
           dispatch(setStatus('success'));
@@ -207,13 +217,7 @@ const MainPage = () => {
           <div>
             <LogoIcon />
           </div>
-          {rootPage ? (
-            <GhostRatio />
-          ) : stakePage ? (
-            <GhostRatioStake />
-          ) : (
-            <GhostRatioMint />
-          )}
+          {rootPage || stakePage ? <GhostRatio /> : <GhostRatioMint />}
         </NavElement>
       )}
       {rootPage && status !== 'error' && status !== 'pending' && (
