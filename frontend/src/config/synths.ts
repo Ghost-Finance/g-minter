@@ -14,6 +14,8 @@ export interface SynthData {
   logo: string;
   title: string;
   subtitle: string;
+  direction?: number;
+  synthAmount?: number;
   amount?: number;
 }
 

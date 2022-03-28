@@ -135,7 +135,6 @@ const MainPage = () => {
             feedGdaiPrice,
             dataPositions,
           ] = data;
-          debugger;
           dispatch(
             setCRatio({
               cRatioValue: bigNumberToFloat(cRatio) * 100,
@@ -218,13 +217,7 @@ const MainPage = () => {
           <div>
             <LogoIcon />
           </div>
-          {rootPage ? (
-            <GhostRatio />
-          ) : stakePage ? (
-            <GhostRatioStake />
-          ) : (
-            <GhostRatioMint />
-          )}
+          {rootPage || stakePage ? <GhostRatio /> : <GhostRatioMint />}
         </NavElement>
       )}
       {rootPage && status !== 'error' && status !== 'pending' && (

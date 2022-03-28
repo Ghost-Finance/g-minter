@@ -12,7 +12,7 @@ import { convertCurrency } from '../utils';
 type T = {
   label: string;
   icon?: JSX.Element;
-  amount?: number;
+  amount?: number | string;
   valueNumber: number | string;
   center?: boolean;
   full?: boolean;

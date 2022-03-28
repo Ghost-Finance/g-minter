@@ -25,7 +25,6 @@ const GhostRatio = () => {
   const { account } = useSelector((state) => state.wallet);
   const app = useSelector((state) => state.app);
   const gSpotContract = useGSpot(gSpotAddress as string);
-  const updateHouseContract = useUpdateHouse(updateHouseAddress);
 
   const {
     cRatioValue,
@@ -40,15 +39,31 @@ const GhostRatio = () => {
 
   const getSynthAmountByKey = async (key: string) => {
     const amount = await getSynthAmount(gSpotContract, key, account as string);
+
     return bigNumberToFloat(amount.toString());
   };
 
-  const listTokenSynth = (part: SynthData) => {
+  const updateSynthTokenAmount = (part: SynthData) => {
     getSynthAmountByKey(part.key).then((amount) => (part.amount = amount));
+    return part;
+  };
 
-    return {
-      ...part,
-    };
+  const listTokenSynth = (synth: SynthData) => {
+    const data = dataPositionToAccount
+      .filter((position: any) => synth.key === position.synth)
+      .reduce(
+        (acc: any, part: any, index: number) => ({
+          ...acc,
+          [index]: {
+            ...synth,
+            synthAmount: bigNumberToFloat(part.synthTokenAmount),
+            direction: Number(part.direction),
+          } as SynthData,
+        }),
+        {}
+      );
+
+    return data ? data : { 0: synth };
   };
 
   const tokenValues = () => (
@@ -83,29 +98,63 @@ const GhostRatio = () => {
         />
         <ListSynths label={'Staking'} isSubtitle={true}>
           {stakesData
+            .map(updateSynthTokenAmount)
             .map(listTokenSynth)
-            .map((args: SynthData, key: number) => (
-              <TokenBorderLight
-                key={key}
-                label={args.subtitle}
-                icon={
-                  <img
-                    src={args.logo}
-                    className={classes.logo}
-                    alt={args.title}
-                  />
-                }
-                amount={0}
-                valueNumber={`${args.amount || ''} gDai`}
-              />
-            ))}
+            .map((args: SynthData) => {
+              return (
+                <>
+                  {Object.values(args).map((data: any) => {
+                    return (
+                      <>
+                        {data.synthAmount ? (
+                          <TokenLight
+                            label={data.subtitle}
+                            icon={
+                              <img
+                                src={data.logo}
+                                className={classes.logo}
+                                alt={data.title}
+                              />
+                            }
+                            amount={formatBalance(
+                              Number(data.synthAmount || '0'),
+                              3
+                            )}
+                            valueNumber={`${data.amount || ''} gDai`}
+                          />
+                        ) : (
+                          <TokenBorderLight
+                            label={data.subtitle}
+                            icon={
+                              <img
+                                src={data.logo}
+                                className={classes.logo}
+                                alt={data.title}
+                              />
+                            }
+                            amount={formatBalance(
+                              Number(data.synthAmount || '0'),
+                              3
+                            )}
+                            valueNumber={`${data.amount || ''} gDai`}
+                          />
+                        )}
+                      </>
+                    );
+                  })}
+                </>
+              );
+            })}
         </ListSynths>
-        <Notification
-          icon={<SpaceXPulseIcon />}
-          message={`Welcome to Defi revolution`}
-          severity="warning"
-          color="info"
-        />
+        {!dataPositionToAccount &&
+          ((
+            <Notification
+              icon={<SpaceXPulseIcon />}
+              message={`Welcome to Defi revolution`}
+              severity="warning"
+              color="info"
+            />
+          ) || <></>)}
       </>
     );
   };
