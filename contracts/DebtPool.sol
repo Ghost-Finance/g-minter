@@ -35,7 +35,7 @@ contract DebtPool is Ownable {
   }
 
   function transferFrom(address receiver, uint256 amount) public onlyHouse {
-    token.transfer(receiver, amount);
+    require(token.transfer(receiver, amount), 'Token transfer failed');
   }
 
   function getSynthDebt() public view returns (uint256) {

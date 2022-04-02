@@ -98,7 +98,7 @@ contract Minter {
     require(calculateCRatio(futureCollateralValue, debtValue) >= cRatioActive[token], "below cRatio");
 
     collateralBalance[msg.sender][token] -= amount;
-    require(collateralToken.transfer(msg.sender, amount), "transfer failed)");
+    require(collateralToken.transfer(msg.sender, amount), "transfer failed");
 
     emit WithdrawnCollateral(msg.sender, address(token), amount);
   }

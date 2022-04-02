@@ -19,8 +19,9 @@ contract PositionVault {
   }
 
   function addDeposit(uint256 position, address account, uint256 amount) public onlyOwner {
-    require(token.transferFrom(account, address(this), amount));
     positionVaultData[position] += amount;
+
+    require(token.transferFrom(account, address(this), amount));
   }
 
   function removeDeposit(uint256 position, uint256 amount) public onlyOwner {
@@ -34,6 +35,6 @@ contract PositionVault {
   }
 
   function transferFrom(address receiver, uint256 amount) public onlyOwner {
-    token.transfer(receiver, amount);
+    require(token.transfer(receiver, amount), "Trasfer failed");
   }
 }
