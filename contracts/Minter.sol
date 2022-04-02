@@ -104,7 +104,7 @@ contract Minter {
   }
 
   function mint(GTokenERC20 token, uint256 amountToDeposit, uint256 amountToMint) external isCollateral(token) {
-    collateralToken.approve(msg.sender, amountToDeposit);
+    require(collateralToken.approve(msg.sender, amountToDeposit), "token approval failed");
     require(collateralToken.transferFrom(msg.sender, address(this), amountToDeposit), 'transfer failed');
     collateralBalance[msg.sender][token] += amountToDeposit;
 
@@ -156,7 +156,7 @@ contract Minter {
     uint256 debtValue = globalAccountDebt(token, address(user)) * syntFeed.price() / 1 ether;
     require((collateralValue < debtValue * cRatioActive[token] / 100) || (collateralValue < debtValue * cRatioPassive[token] / 100 && plrDelay[user][token] < block.timestamp), 'above cRatio');
 
-    collateralToken.approve(address(auctionHouse), collateralBalance[user][token]);
+    require(collateralToken.approve(address(auctionHouse), collateralBalance[user][token]), "token approval failed");
     {
       uint debtAmountTransferable = debtValue / 10;
       _mintPenalty(token, user, msg.sender, debtAmountTransferable);

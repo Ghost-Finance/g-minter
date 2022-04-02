@@ -120,8 +120,8 @@ contract AuctionHouse is CoreMath {
     require(collateralToken.transfer(receiver, slice), "transfer token to keeper fail");
 
     if (auction.auctionTarget == 0) {
-      collateralToken.approve(address(auction.minterAddress), auction.collateralBalance);
-      synthToken.approve(address(auction.minterAddress), auction.synthAmount);
+      require(collateralToken.approve(address(auction.minterAddress), auction.collateralBalance), "token approval failed");
+      require(synthToken.approve(address(auction.minterAddress), auction.synthAmount), "token approval failed");
 
       auctionFinishCallback(
         auctionId,
