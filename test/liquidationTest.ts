@@ -29,8 +29,8 @@ describe('Liquidation tests', async function() {
       'GDAI',
       'GDAI',
       amount,
-      200,
-      300,
+      BigNumber.from(parseEther('2')),
+      BigNumber.from(parseEther('3')),
       feedSynth.address
     );
 

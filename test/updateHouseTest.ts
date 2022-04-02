@@ -51,8 +51,8 @@ describe('#UpdateHouse', async function() {
       'GDAI',
       'GDAI',
       BigNumber.from(parseEther('500.0')),
-      200,
-      300,
+      BigNumber.from(parseEther('2')),
+      BigNumber.from(parseEther('3')),
       feedSynth.address
     );
     synthTokenAddress = await state.minter.getSynth(0);
