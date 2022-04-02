@@ -31,8 +31,8 @@ describe('Minter', async function() {
             'Test coin',
             'COIN',
             amount,
-            100,
-            200,
+            BigNumber.from(parseEther('2')),
+            BigNumber.from(parseEther('3')),
             feedSynth.address
           );
       } catch (error) {
@@ -48,8 +48,8 @@ describe('Minter', async function() {
           'Test coin',
           'COIN',
           amount,
-          300,
-          200,
+          BigNumber.from(parseEther('3')),
+          BigNumber.from(parseEther('2')),
           feedSynth.address
         );
       } catch (error) {
@@ -64,8 +64,8 @@ describe('Minter', async function() {
         'Test coin',
         'COIN',
         amount,
-        200,
-        300,
+        BigNumber.from(parseEther('2')),
+        BigNumber.from(parseEther('3')),
         feedSynth.address
       );
 
@@ -93,8 +93,8 @@ describe('Minter', async function() {
         'Test coin',
         'COIN',
         amount,
-        200,
-        300,
+        BigNumber.from(parseEther('2')),
+        BigNumber.from(parseEther('3')),
         feedSynth.address
       );
 
@@ -154,8 +154,8 @@ describe('Minter', async function() {
         'Test coin',
         'COIN',
         amount,
-        200,
-        300,
+        BigNumber.from(parseEther('2')),
+        BigNumber.from(parseEther('3')),
         feedSynth.address
       );
 
@@ -175,7 +175,11 @@ describe('Minter', async function() {
         try {
           await state.minter
             .connect(accountOne)
-            .updateSynthCRatio(synthTokenAddress, 200, 300);
+            .updateSynthCRatio(
+              synthTokenAddress,
+              BigNumber.from(parseEther('2')),
+              BigNumber.from(parseEther('3'))
+            );
         } catch (error) {
           expect(error.message).to.match(/unauthorized/);
         }
@@ -183,20 +187,28 @@ describe('Minter', async function() {
 
       it('validates active c-Ratio is bigger than passive c-Ratio', async function() {
         try {
-          await state.minter.updateSynthCRatio(synthTokenAddress, 400, 300);
+          await state.minter.updateSynthCRatio(
+            synthTokenAddress,
+            BigNumber.from(parseEther('4')),
+            BigNumber.from(parseEther('3'))
+          );
         } catch (error) {
           expect(error.message).to.match(/invalid cRatio/);
         }
       });
 
       it('Should return success when update cRatios', async function() {
-        await state.minter.updateSynthCRatio(synthTokenAddress, 300, 400);
+        await state.minter.updateSynthCRatio(
+          synthTokenAddress,
+          BigNumber.from(parseEther('3')),
+          BigNumber.from(parseEther('4'))
+        );
 
         expect(await state.minter.cRatioActive(synthTokenAddress)).to.be.equal(
-          300
+          BigNumber.from(parseEther('3'))
         );
         expect(await state.minter.cRatioPassive(synthTokenAddress)).to.be.equal(
-          400
+          BigNumber.from(parseEther('4'))
         );
       });
     });
@@ -252,7 +264,12 @@ describe('Minter', async function() {
 
       it('#simulateCRatio validates amount is positive', async function() {
         try {
-          await state.minter.simulateCRatio(synthTokenAddress, 0, 0);
+          await state.minter.simulateCRatio(
+            synthTokenAddress,
+            accountOne.address,
+            0,
+            0
+          );
         } catch (error) {
           expect(error.message).to.match(/Incorrect values/);
         }
@@ -262,6 +279,7 @@ describe('Minter', async function() {
         try {
           await state.minter.simulateCRatio(
             synthTokenAddress,
+            accountOne.address,
             BigNumber.from(parseEther('2.0')).toString(),
             BigNumber.from(parseEther('3.0').toString())
           );
@@ -273,6 +291,7 @@ describe('Minter', async function() {
       it('#simulateCRatio Should return a simulate c-Ratio', async function() {
         const cRatioValue = await state.minter.simulateCRatio(
           synthTokenAddress,
+          accountOne.address,
           BigNumber.from(parseEther('180.0')).toString(),
           BigNumber.from(parseEther('20.0').toString())
         );
@@ -356,7 +375,7 @@ describe('Minter', async function() {
           );
         const amountRatioBefore = await state.minter
           .connect(accountOne)
-          .getCRatio(synthTokenAddress);
+          .getCRatio(synthTokenAddress, accountOne.address);
 
         expect(amountRatioBefore.toString()).to.be.equal(
           BigNumber.from(parseEther('9.0'))
@@ -366,7 +385,7 @@ describe('Minter', async function() {
         await state.feed.updatePrice(BigNumber.from(parseEther('0.5')));
         const amountRatioAfterPriceDown = await state.minter
           .connect(accountOne)
-          .getCRatio(synthTokenAddress);
+          .getCRatio(synthTokenAddress, accountOne.address);
 
         expect(amountRatioAfterPriceDown.toString()).to.be.equal(
           BigNumber.from(parseEther('4.5'))
@@ -381,7 +400,7 @@ describe('Minter', async function() {
           .burn(synthTokenAddress, BigNumber.from(parseEther('10.0')));
         const amountRatioAfter = await state.minter
           .connect(accountOne)
-          .getCRatio(synthTokenAddress);
+          .getCRatio(synthTokenAddress, accountOne.address);
 
         expect(amountRatioAfter.toString()).to.be.equal(
           BigNumber.from(parseEther('9.0'))
@@ -406,7 +425,7 @@ describe('Minter', async function() {
           .burn(synthTokenAddress, burnAmount);
         const amountRatio = await state.minter
           .connect(accountOne)
-          .getCRatio(synthTokenAddress);
+          .getCRatio(synthTokenAddress, accountOne.address);
 
         expect(
           await checkBurnEvent(

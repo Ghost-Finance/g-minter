@@ -108,7 +108,7 @@ contract UpdateHouse is CoreMath, Ownable {
     dataPosition.synthTokenAmount = newSynthTokenAmount;
     dataPosition.lastSynthPrice = currentPrice;
 
-    _removePositionVault(index, address(msg.sender), tokenAmount);
+    _removePositionVault(index, tokenAmount);
 
     emit Decrease(msg.sender, dataPosition);
   }
@@ -171,7 +171,7 @@ contract UpdateHouse is CoreMath, Ownable {
     return dataPosition;
   }
 
-  function getPositionFix(Direction direction, uint256 synthTokenAmount, uint256 currentTokenSynthAmount, uint256 lastTokenSynthAmount) public returns (int) {
+  function getPositionFix(Direction direction, uint256 synthTokenAmount, uint256 currentTokenSynthAmount, uint256 lastTokenSynthAmount) public pure returns (int) {
     uint256 newPrice = synthTokenAmount.mul(currentTokenSynthAmount) / WAD;
     uint256 oldPrice = synthTokenAmount.mul(lastTokenSynthAmount) / WAD;
 
@@ -184,7 +184,7 @@ contract UpdateHouse is CoreMath, Ownable {
     vault.addDeposit(index, account, amount);
   }
 
-  function _removePositionVault(uint index, address account, uint amount) internal {
-    vault.removeDeposit(index, account, amount);
+  function _removePositionVault(uint index, uint amount) internal {
+    vault.removeDeposit(index, amount);
   }
 }

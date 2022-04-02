@@ -23,11 +23,11 @@ contract PositionVault {
     positionVaultData[position] += amount;
   }
 
-  function removeDeposit(uint256 position, address account, uint256 amount) public onlyOwner {
+  function removeDeposit(uint256 position, uint256 amount) public onlyOwner {
     positionVaultData[position] -= amount;
   }
 
-  function withdrawFullDeposit(uint256 position) public onlyOwner returns (uint256) {
+  function withdrawFullDeposit(uint256 position) public view onlyOwner returns (uint256) {
     require(positionVaultData[position] != 0, 'Invalid position');
 
     return positionVaultData[position];
