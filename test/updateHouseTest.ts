@@ -302,6 +302,7 @@ describe('#UpdateHouse', async function() {
 
     it('#finish should transfer gDai to winner in a LONG position', async function() {
       // Increase the price of gSpx in 10%
+      let dataAccountBefore = await updateHouse.connect(alice).data(1);
       await median.poke(BigNumber.from(parseEther('92')));
       let currentPrice = await gSpot.connect(alice).read(gSpacexKey);
       expect(currentPrice.toString()).to.be.equal(
@@ -313,7 +314,11 @@ describe('#UpdateHouse', async function() {
       let balanceOfAlice = await state.token
         .attach(synthTokenAddress)
         .balanceOf(alice.address);
+      let dataAccountAfter = await updateHouse.connect(alice).data(1);
 
+      expect(dataAccountAfter.status).to.be.equal(2);
+      expect(dataAccountAfter.updated_at > dataAccountBefore.updated_at).to.be
+        .true;
       // Check event Winner
       expect(
         await checkFinishPositionWithWinnerOrLoserEvent(
