@@ -160,8 +160,8 @@ contract Minter {
     {
       uint debtAmountTransferable = debtValue / 10;
       _mintPenalty(token, user, msg.sender, debtAmountTransferable);
-      _transferLiquidate(token, msg.sender, debtAmountTransferable);
       auctionDebt[user][token] += synthDebt[user][token];
+
       uint256 _collateralBalance = collateralBalance[user][token];
       uint256 _auctionDebt = (auctionDebt[user][token] * syntFeed.price()) / 1 ether;
       auctionHouse.start(user, address(token), address(collateralToken), msg.sender, _collateralBalance, collateralValue, _auctionDebt, priceFeed);
@@ -201,8 +201,6 @@ contract Minter {
     emit AccountFlaggedForLiquidation(user, msg.sender, plrDelay[user][token]);
   }
 
-  function settleDebt(address user, GTokenERC20 token, uint amount) public {}
-
   function balanceOfSynth(address from, GTokenERC20 token) external view returns (uint) {
     return token.balanceOf(from);
   }
@@ -211,17 +209,6 @@ contract Minter {
     require(cRatioPassivo_ > cRatio_, 'invalid cRatio');
     cRatioActive[token] = cRatio_;
     cRatioPassive[token] = cRatioPassivo_;
-  }
-
-  function _mintPenalty(GTokenERC20 token, address user, address keeper, uint256 amount) public {
-    token.mint(address(keeper), amount);
-    synthDebt[address(user)][token] += amount;
-  }
-
-  // address riskReserveAddress, address liquidationVaultAddress
-  function _transferLiquidate(GTokenERC20 token, address keeper, uint256 amount) public {
-    uint keeperAmount = (amount / 100) * 60;
-    require(token.transfer(address(keeper), keeperAmount), 'failed transfer incentive');
   }
 
   function maximumByCollateral(GTokenERC20 token, uint256 amount) external view returns (uint256) {
@@ -259,5 +246,17 @@ contract Minter {
 
   function calculateCRatio(uint collateralValue, uint debtValue) internal pure returns (uint) {
       return collateralValue.mul(1 ether).div(debtValue);
+  }
+
+  function _mintPenalty(GTokenERC20 token, address user, address keeper, uint256 amount) internal {
+    synthDebt[address(user)][token] += amount;
+
+    token.mint(address(keeper), amount);
+  }
+
+  function _transferLiquidate(GTokenERC20 token, address keeper, uint256 amount) internal {
+    uint keeperAmount = (amount / 100) * 60;
+
+    require(token.transfer(address(keeper), keeperAmount), 'failed transfer incentive');
   }
 }

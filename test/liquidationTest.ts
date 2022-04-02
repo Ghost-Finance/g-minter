@@ -203,7 +203,7 @@ describe('Liquidation tests', async function() {
         synthTokenAddress
       );
       expect(balanceOfAfter.toString()).to.be.equal(
-        balanceOfBefore.add(BigNumber.from(parseEther('6.68')))
+        balanceOfBefore.add(BigNumber.from(parseEther('5.3')))
       );
     });
   });

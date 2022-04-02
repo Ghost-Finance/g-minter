@@ -202,7 +202,7 @@ describe('Auction House tests', async function() {
       BigNumber.from(parseEther('20.0'))
     );
     expect(keeperBalanceOfGDAI.toString()).to.be.equal(
-      BigNumber.from(parseEther('22.68'))
+      BigNumber.from(parseEther('21.30'))
     );
   });
 
@@ -298,7 +298,7 @@ describe('Auction House tests', async function() {
       BigNumber.from(parseEther('119.8125'))
     );
     expect(keeperBalanceOfGDAI.toString()).to.be.equal(
-      BigNumber.from(parseEther('2.0175'))
+      BigNumber.from(parseEther('0.6375'))
     );
 
     const userCollateral = await state.minter.collateralBalance(
@@ -363,7 +363,7 @@ describe('Auction House tests', async function() {
         state.minter
           .balanceOfSynth(accountTwo.address, synthTokenAddress)
           .then(balance => {
-            expect(balance).to.be.equal(BigNumber.from(parseEther('2.7175')));
+            expect(balance).to.be.equal(BigNumber.from(parseEther('1.3375')));
           })
           .catch(error => {
             throw error;
