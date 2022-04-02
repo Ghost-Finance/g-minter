@@ -7,8 +7,6 @@ import './base/Feed.sol';
 import './DebtPool.sol';
 import './base/CoreMath.sol';
 
-import 'hardhat/console.sol';
-
 contract Minter {
   using SafeMath for uint256;
 
