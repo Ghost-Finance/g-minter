@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import './oracle/GSpot.sol';
@@ -77,7 +77,6 @@ contract UpdateHouse is CoreMath, Ownable {
     require(dataPosition.account == msg.sender && dataPosition.status != Status.FINISHED);
     uint256 currentPrice = spot.read(dataPosition.synth);
     require(currentPrice > 0, 'Invalid synth price');
-    _addPositionVault(index, address(msg.sender), deltaAmount);
 
     uint256 newSynthTokenAmount = mul(deltaAmount, WAD).div(currentPrice);
     uint256 oldSynthPrice = div(dataPosition.synthTokenAmount.mul(dataPosition.averagePrice), WAD);
@@ -87,6 +86,8 @@ contract UpdateHouse is CoreMath, Ownable {
     dataPosition.averagePrice = averagePrice;
     dataPosition.tokenAmount += deltaAmount;
     dataPosition.synthTokenAmount = newSynthTokenAmount;
+
+    _addPositionVault(index, address(msg.sender), deltaAmount);
     emit Increase(msg.sender, dataPosition);
   }
 
@@ -126,28 +127,29 @@ contract UpdateHouse is CoreMath, Ownable {
 
     uint256 currentPricePosition = uint(int(dataPosition.tokenAmount) + positionFixValue);
 
-    uint256 amount = vault.withdrawFullDeposit(index);
+    dataPosition.status = Status.FINISHED;
+    dataPosition.updated_at = block.timestamp;
+    data[index] = dataPosition;
+
     uint256 amountToReceive;
+    uint256 amount = vault.withdrawFullDeposit(index);
     if (currentPricePosition >= dataPosition.tokenAmount) {
       amountToReceive = currentPricePosition - dataPosition.tokenAmount;
-      debtPool.mint(amountToReceive);
 
+      debtPool.mint(amountToReceive);
       vault.transferFrom(address(msg.sender), amount);
       debtPool.transferFrom(address(msg.sender), amountToReceive);
 
       emit Winner(address(msg.sender), amount + amountToReceive);
     } else {
       amountToReceive = amount - currentPricePosition;
-      vault.transferFrom(address(debtPool), amountToReceive);
+
       debtPool.burn(amountToReceive);
+      vault.transferFrom(address(debtPool), amountToReceive);
       vault.transferFrom(address(msg.sender), currentPricePosition);
 
       emit Loser(address(msg.sender), currentPricePosition);
     }
-
-    dataPosition.status = Status.FINISHED;
-    dataPosition.updated_at = block.timestamp;
-    data[index] = dataPosition;
 
     emit Finish(address(msg.sender), dataPosition.direction, dataPosition.status);
   }
