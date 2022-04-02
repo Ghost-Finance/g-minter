@@ -14,8 +14,8 @@ const gDaiArgs = [
   'GDAI',
   'GDAI',
   BigNumber.from(parseEther('200000000.0')),
-  200,
-  300,
+  BigNumber.from(parseEther('2')),
+  BigNumber.from(parseEther('3')),
 ];
 const feedGhoArgs = [parseEther('1'), 'GHO'];
 const feedGdaiArgs = [parseEther('1'), 'GDAI'];

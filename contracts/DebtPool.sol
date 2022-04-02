@@ -38,7 +38,7 @@ contract DebtPool is Ownable {
     require(token.transfer(receiver, amount), 'Token transfer failed');
   }
 
-  function getSynthDebt() public returns (uint256) {
+  function getSynthDebt() public view returns (uint256) {
     return minter.synthDebt(address(this), token);
   }
 }
