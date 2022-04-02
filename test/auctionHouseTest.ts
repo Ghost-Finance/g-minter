@@ -27,7 +27,6 @@ describe('Auction House tests', async function() {
       300,
       feedSynth.address
     );
-
     synthTokenAddress = await state.minter.getSynth(0);
     const GDAI = await ethers.getContractFactory('GTokenERC20');
     gDai = await GDAI.attach(synthTokenAddress);

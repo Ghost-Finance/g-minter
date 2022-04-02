@@ -35,6 +35,6 @@ contract PositionVault {
   }
 
   function transferFrom(address receiver, uint256 amount) public onlyOwner {
-    token.transfer(receiver, amount);
+    require(token.transfer(receiver, amount), "Trasfer failed");
   }
 }
