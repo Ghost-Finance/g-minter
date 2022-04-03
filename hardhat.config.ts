@@ -4,6 +4,7 @@ import 'hardhat-deploy';
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-etherscan';
 import '@nomiclabs/hardhat-waffle';
+import '@primitivefi/hardhat-dodoc';
 import 'hardhat-typechain';
 import 'solidity-coverage';
 import { HardhatUserConfig, NetworkUserConfig } from 'hardhat/types';
