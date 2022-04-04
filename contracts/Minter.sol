@@ -165,7 +165,9 @@ contract Minter {
       uint256 _collateralBalance = collateralBalance[user][token];
       uint256 _auctionDebt = (auctionDebt[user][token] * syntFeed.price()) / 1 ether;
       auctionHouse.start(user, address(token), address(collateralToken), msg.sender, _collateralBalance, collateralValue, _auctionDebt, priceFeed);
+
       updateCollateralAndSynthDebt(user, token);
+      _transferLiquidate(token, msg.sender, debtAmountTransferable);
 
       emit Liquidate(user, msg.sender, address(token));
     }
@@ -255,8 +257,8 @@ contract Minter {
   }
 
   function _transferLiquidate(GTokenERC20 token, address keeper, uint256 amount) internal {
-    uint keeperAmount = (amount / 100) * 60;
+    uint keeperReceiveAmount = (amount / 100) * 60;
 
-    require(token.transfer(address(keeper), keeperAmount), 'failed transfer incentive');
+    require(token.transfer(address(keeper), keeperReceiveAmount), 'failed transfer incentive');
   }
 }

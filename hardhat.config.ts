@@ -8,7 +8,6 @@ import 'hardhat-typechain';
 import 'solidity-coverage';
 import { HardhatUserConfig, NetworkUserConfig } from 'hardhat/types';
 import { task } from 'hardhat/config';
-import { constants } from 'ethers';
 
 const {
   ALCHEMY_KEY,
@@ -124,5 +123,4 @@ const config: HardhatUserConfig = {
   },
 } as HardhatUserConfig;
 
-console.log(config);
 export default config;

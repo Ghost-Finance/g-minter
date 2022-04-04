@@ -202,8 +202,9 @@ describe('Liquidation tests', async function() {
         accountTwo.address,
         synthTokenAddress
       );
+
       expect(balanceOfAfter.toString()).to.be.equal(
-        balanceOfBefore.add(BigNumber.from(parseEther('5.3')))
+        balanceOfBefore.add(BigNumber.from(parseEther('6.68')))
       );
     });
   });
