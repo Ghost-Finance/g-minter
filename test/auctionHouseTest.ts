@@ -5,13 +5,15 @@ import { parseEther } from 'ethers/lib/utils';
 import { checkAuctionHouseTakeEvent } from './util/CheckEvent';
 import setup from './util/setup';
 
-describe('Auction House tests', async function() {
+describe.only('Auction House tests', async function() {
   let state, synthTokenAddress, accountOne, accountTwo, gDai;
   const amount = BigNumber.from(parseEther('500.0'));
   const amountToDeposit = BigNumber.from(parseEther('180.0'));
 
   beforeEach(async function() {
     state = await setup();
+    await state.auctionHouse.setMinter(state.minter.address);
+
     accountOne = state.contractAccounts[0];
     accountTwo = state.contractAccounts[1];
 
@@ -81,6 +83,46 @@ describe('Auction House tests', async function() {
       expect(error.message).to.match(
         /'price time house is bigger than collateral price'/
       );
+    }
+  });
+
+  it.only('validate only owner can set minter contract address', async function() {
+    try {
+      await state.auctionHouse
+        .connect(accountOne)
+        .setMinter(state.minter.address);
+    } catch (error) {
+      expect(error.message).to.match(/Ownable: caller is not the owner/);
+    }
+  });
+
+  it.only('validate is a valid contract address', async function() {
+    try {
+      await state.auctionHouse.setMinter(
+        '0x0000000000000000000000000000000000000000'
+      );
+    } catch (error) {
+      console.log(error.message);
+      expect(error.message).to.match(/Is not a contract address/);
+    }
+  });
+
+  it('validates only minter can execute start method', async function() {
+    try {
+      await state.auctionHouse
+        .connect(accountOne)
+        .start(
+          accountTwo.address,
+          synthTokenAddress,
+          state.token.address,
+          accountTwo.address,
+          BigNumber.from(parseEther('180')),
+          BigNumber.from(parseEther('20')),
+          BigNumber.from(parseEther('10')),
+          BigNumber.from(parseEther('1'))
+        );
+    } catch (error) {
+      expect(error.message).to.match(/Only Minter contract/);
     }
   });
 

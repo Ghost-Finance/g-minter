@@ -1,12 +1,14 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 import './GTokenERC20.sol';
 import './Minter.sol';
 import './base/Feed.sol';
 import './base/CoreMath.sol';
 
-contract AuctionHouse is CoreMath {
+contract AuctionHouse is CoreMath, Ownable {
   struct Auction {
     address user;
     address tokenAddress;
@@ -17,10 +19,11 @@ contract AuctionHouse is CoreMath {
     uint256 synthAmount;
     uint256 auctionTarget;
     uint256 initialFeedPrice;
-    address minterAddress;
     uint startTimestamp;
     uint endTimestamp;
   }
+
+  Minter public minter;
 
   uint256 constant PRICE_REDUCTION_RATIO = (uint256(99) * RAY) / 100;
   uint256 constant ratio = 9;
@@ -35,6 +38,11 @@ contract AuctionHouse is CoreMath {
   event Start(address indexed cdp, address indexed keeper, uint amount, uint start, uint end);
   event Take(uint256 indexed id, address indexed keeper, address indexed to, uint256 amount, uint256 price, uint256 end);
 
+  modifier onlyMinter() {
+    require(address(minter) == _msgSender(), 'Only Minter contract');
+    _;
+  }
+
   function start (
     address user_,
     address tokenAddress_,
@@ -44,7 +52,7 @@ contract AuctionHouse is CoreMath {
     uint256 collateralValue_,
     uint256 auctionTarget_,
     uint256 initialFeedPrice_
-  ) public {
+  ) public onlyMinter {
     uint256 startTimestamp_ = block.timestamp;
     uint256 endTimestamp_ = startTimestamp_ + 1 weeks;
 
@@ -59,7 +67,6 @@ contract AuctionHouse is CoreMath {
         0,
         auctionTarget_,
         initialFeedPrice_,
-        msg.sender,
         startTimestamp_,
         endTimestamp_
       )
@@ -120,12 +127,11 @@ contract AuctionHouse is CoreMath {
     require(collateralToken.transfer(receiver, slice), "transfer token to keeper fail");
 
     if (auction.auctionTarget == 0) {
-      require(collateralToken.approve(address(auction.minterAddress), auction.collateralBalance), "token approval failed");
-      require(synthToken.approve(address(auction.minterAddress), auction.synthAmount), "token approval failed");
+      require(collateralToken.approve(address(minter), auction.collateralBalance), "token approval failed");
+      require(synthToken.approve(address(minter), auction.synthAmount), "token approval failed");
 
-      auctionFinishCallback(
+      _auctionFinishCallback(
         auctionId,
-        Minter(auction.minterAddress),
         address(auction.user),
         collateralToken,
         synthToken,
@@ -151,7 +157,19 @@ contract AuctionHouse is CoreMath {
     return rmul(initialPrice, rpow(PRICE_REDUCTION_RATIO, duration / step, RAY));
   }
 
-  function auctionFinishCallback(uint256 id, Minter minter, address user, GTokenERC20 tokenCollateral, GTokenERC20 synthToken, uint256 collateralBalance, uint256 synthAmount) public {
+  function setMinter(address _minter) public onlyOwner {
+    require(_minter != address(0), 'Is not a contract address');
+    minter = Minter(_minter);
+  }
+
+  function _auctionFinishCallback(
+    uint256 id,
+    address user,
+    GTokenERC20 tokenCollateral,
+    GTokenERC20 synthToken,
+    uint256 collateralBalance,
+    uint256 synthAmount
+  ) internal {
     minter.auctionFinish(id, user, tokenCollateral, synthToken, collateralBalance, synthAmount);
   }
 }
