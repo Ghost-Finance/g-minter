@@ -5,7 +5,7 @@ import { parseEther } from 'ethers/lib/utils';
 import { checkAuctionHouseTakeEvent } from './util/CheckEvent';
 import setup from './util/setup';
 
-describe.only('Auction House tests', async function() {
+describe('Auction House tests', async function() {
   let state, synthTokenAddress, accountOne, accountTwo, gDai;
   const amount = BigNumber.from(parseEther('500.0'));
   const amountToDeposit = BigNumber.from(parseEther('180.0'));
@@ -86,7 +86,7 @@ describe.only('Auction House tests', async function() {
     }
   });
 
-  it.only('validate only owner can set minter contract address', async function() {
+  it('validate only owner can set minter contract address', async function() {
     try {
       await state.auctionHouse
         .connect(accountOne)
@@ -96,7 +96,7 @@ describe.only('Auction House tests', async function() {
     }
   });
 
-  it.only('validate is a valid contract address', async function() {
+  it('validate is a valid contract address', async function() {
     try {
       await state.auctionHouse.setMinter(
         '0x0000000000000000000000000000000000000000'
