@@ -12,8 +12,6 @@ describe('Auction House tests', async function() {
 
   beforeEach(async function() {
     state = await setup();
-    await state.auctionHouse.setMinter(state.minter.address);
-
     accountOne = state.contractAccounts[0];
     accountTwo = state.contractAccounts[1];
 
@@ -102,7 +100,6 @@ describe('Auction House tests', async function() {
         '0x0000000000000000000000000000000000000000'
       );
     } catch (error) {
-      console.log(error.message);
       expect(error.message).to.match(/Is not a contract address/);
     }
   });

@@ -48,6 +48,8 @@ const setup = async () => {
     auctionHouse.address
   );
 
+  await auctionHouse.setMinter(minter.address);
+
   await token.approve(minter.address, amount);
   await token.transfer(
     contractAccounts[0].address,
