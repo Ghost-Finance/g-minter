@@ -84,6 +84,45 @@ describe('Auction House tests', async function() {
     }
   });
 
+  it('validate only owner can set minter contract address', async function() {
+    try {
+      await state.auctionHouse
+        .connect(accountOne)
+        .setMinter(state.minter.address);
+    } catch (error) {
+      expect(error.message).to.match(/Ownable: caller is not the owner/);
+    }
+  });
+
+  it('validate is a valid contract address', async function() {
+    try {
+      await state.auctionHouse.setMinter(
+        '0x0000000000000000000000000000000000000000'
+      );
+    } catch (error) {
+      expect(error.message).to.match(/Is not a contract address/);
+    }
+  });
+
+  it('validates only minter can execute start method', async function() {
+    try {
+      await state.auctionHouse
+        .connect(accountOne)
+        .start(
+          accountTwo.address,
+          synthTokenAddress,
+          state.token.address,
+          accountTwo.address,
+          BigNumber.from(parseEther('180')),
+          BigNumber.from(parseEther('20')),
+          BigNumber.from(parseEther('10')),
+          BigNumber.from(parseEther('1'))
+        );
+    } catch (error) {
+      expect(error.message).to.match(/Only Minter contract/);
+    }
+  });
+
   it('validates when amount is zero', async function() {
     const id = 0;
     const amount = BigNumber.from(parseEther('0.0'));
