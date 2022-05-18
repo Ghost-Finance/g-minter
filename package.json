@@ -63,6 +63,7 @@
     "@chainlink/contracts": "^0.2.1",
     "@chainlink/test-helpers": "^0.0.7-alpha",
     "@nomiclabs/hardhat-web3": "^2.0.0",
+    "@primitivefi/hardhat-dodoc": "^0.2.3",
     "@walletconnect/web3-provider": "^1.4.1",
     "chai-datetime": "^1.8.0",
     "eth-rpc-errors": "^4.0.3",
